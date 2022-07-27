@@ -44,8 +44,8 @@ export class SelectingIterator<T, V> implements IterableIterator<V> {
 	readonly #thisArg: any;
 	readonly #select: Select<T, V>;
 
-	constructor(iter: Iterator<T>, thisArg: any, select: Select<T, V>) {
-		this.#iter = iter;
+	constructor(iter: Iterable<T>, thisArg: any, select: Select<T, V>) {
+		this.#iter = iter[Symbol.iterator]();
 		this.#thisArg = thisArg;
 		this.#select = select;
 	}
@@ -147,12 +147,12 @@ export class RepeatIterator<T> implements IterableIterator<T> {
 }
 
 export class ConcatIterator<T> implements IterableIterator<T> {
-	readonly #it: Iterator<Iterable<T>>;
+	readonly #iter: Iterator<Iterable<T>>;
 	#current: null | Iterator<T>;
 	#done: boolean;
 
-	constructor(it: Iterator<Iterable<T>>) {
-		this.#it = it;
+	constructor(iter: Iterable<Iterable<T>>) {
+		this.#iter = iter[Symbol.iterator]();
 		this.#current = null;
 		this.#done = false;
 	}
@@ -163,7 +163,7 @@ export class ConcatIterator<T> implements IterableIterator<T> {
 		
 		let current = this.#current;
 		if (current == null) {
-			let v = this.#it.next();
+			let v = this.#iter.next();
 			if (v.done) {
 				this.#done = true;
 				return res(true);
@@ -182,7 +182,7 @@ export class ConcatIterator<T> implements IterableIterator<T> {
 				return res(false, value);
 			}
 
-			let v = this.#it.next();
+			let v = this.#iter.next();
 			if (v.done) {
 				this.#done = true;
 				this.#current = null;

@@ -454,7 +454,7 @@ export class LinqSelect<T, V> extends LinqInternal<V> {
 	}
 
 	source(): Iterator<V> {
-		return new it.SelectingIterator(this.#source[Symbol.iterator](), undefined, this.#select);
+		return new it.SelectingIterator(this.#source, undefined, this.#select);
 	}
 }
 
@@ -470,7 +470,7 @@ export class LinqSelectMany<T, V> extends LinqInternal<V> {
 	}
 
 	source(): Iterator<V> {
-		let select = new it.SelectingIterator(this.#source[Symbol.iterator](), undefined, this.#select);
+		let select = new it.SelectingIterator(this.#source, undefined, this.#select);
 		return new it.ConcatIterator(select);
 	}
 }
