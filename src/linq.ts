@@ -1,5 +1,5 @@
 import type { Select, Predictate } from './funcs';
-import { FilteringIterator, SelectingIterator } from "./iterators.js";
+import { FilteringIterator, RangeIterator, SelectingIterator } from "./iterators.js";
 
 export interface Linq<T = any> extends Iterable<T> {
 	sum(): number;
@@ -17,12 +17,19 @@ export interface Linq<T = any> extends Iterable<T> {
 	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Map<K, V>;
 }
 
+export interface LinqConstructor {
+	readonly prototype: Linq;
+
+	<T>(values: Iterable<T>): Linq<T>;
+
+	range(start: number, count: number, step?: number): Linq<number>;
+}
+
 declare var LinqImpl: {
 	readonly prototype: Linq;
 	new(): Linq;
 }
 
-/** @internal */
 declare abstract class LinqBase<T = any> extends LinqImpl {
 	get length(): number | undefined;
 	abstract source(): Iterator<T>;
@@ -32,12 +39,7 @@ declare abstract class LinqBase<T = any> extends LinqImpl {
 	constructor();
 };
 
-export interface LinqConstructor {
-	<T>(values: Iterable<T>): Linq<T>;
-	readonly prototype: Linq;
-}
-
-let linq = function Linq<T>(value: Iterable<T>): Linq<T> {
+let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): Linq<T> {
 	if (new.target != null)
 		return undefined!;
 
@@ -47,9 +49,19 @@ let linq = function Linq<T>(value: Iterable<T>): Linq<T> {
 	return Array.isArray(value) ? new LinqArray<T>(value) : new LinqIterable<T>(value);
 }
 
+linq.range = function(start, count, step?: number) {
+	return new LinqRange(start, count, step);
+}
+
+export var Linq: LinqConstructor = linq;
+export default Linq;
+
 let linqBase: typeof LinqBase = <any>linq;
 
-linq.prototype.length = null;
+Object.defineProperty(linqBase, 'length', {
+	configurable: true,
+	value: null
+})
 
 linqBase.prototype.sum = function(query?: Select) {
 	let sum = 0;
@@ -222,6 +234,24 @@ export class LinqArray<T> extends linqBase<T> {
 	}
 }
 
+/** @internal */
+export class LinqRange extends linqBase<number> {
+	readonly #start: number;
+	readonly #count: number;
+	readonly #step: number;
 
-export var Linq: LinqConstructor = linq;
-export default Linq;
+	get length(): number | undefined {
+		return this.#count;
+	}
+
+	constructor(start: number, count: number, step?: number) {
+		super();
+		this.#start = start;
+		this.#count = count;
+		this.#step = step ?? 1;
+	}
+
+	source(): Iterator<number, any, undefined> {
+		return new RangeIterator(this.#start, this.#count, this.#step);
+	}
+}

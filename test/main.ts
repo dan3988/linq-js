@@ -29,22 +29,8 @@ interface SampleRow {
 }
 
 let data: SampleRow[] = await fs.promises.readFile('./data.json').then(v => v.toString()).then(JSON.parse);
-let lq = Linq(data);
-let b = lq.toSet();
-let c = lq.toMap(v => v._id);
-let d = [...lq];
 
-let age1 = lq.where(v => v.age >= 40);
-let age2 = age1.where(v => v.age < 60);
-let names1 = [...lq.select(({ name, age }) => ({ name, age }))];
-let names2 = [...age1.select(({ name, age }) => ({ name, age }))];
-let names3 = [...age2.select(({ name, age }) => ({ name, age }))];
-
-let sum1 = lq.sum();
-let sum2 = lq.select(v => v.age).sum();
-
-let f = [...lq.select(v => v.name + ' (' + v.email + ')')];
-
-let test = lq.sum(v => new Date(v.registered))
-
+let test0 = Linq.range(0, 0).toArray();
+let test1 = Linq.range(0, 2).toArray();
+let test2 = Linq.range(0, 100, 3).toArray();
 debugger;

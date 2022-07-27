@@ -51,3 +51,37 @@ export class FilteringIterator<T> implements IterableIterator<T> {
 		
 	}
 }
+
+export class RangeIterator implements Iterable<number>, Iterator<number, number> {
+	readonly #start: number;
+	readonly #count: number;
+	readonly #step: number;
+
+	#index: number;
+	#current: null | number;
+
+	constructor(start: number, count: number, step: number) {
+		this.#start = start;
+		this.#count = count;
+		this.#step = step;
+		this.#index = 0;
+		this.#current = null;
+	}
+
+	next(): IteratorResult<number, number> {
+		if (this.#count == 0)
+			return { done: true, value: this.#start };
+
+		if (this.#index == this.#count)
+			return { done: true, value: this.#current! };
+
+		this.#index++;
+		this.#current = this.#current == null ? this.#start : (this.#current + this.#step);
+		return { done: false, value: this.#current };
+	}
+
+	[Symbol.iterator](): Iterator<number, number, undefined> {
+		return this;
+	}
+
+}
