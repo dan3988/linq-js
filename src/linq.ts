@@ -17,29 +17,19 @@ export interface Linq<T = any> extends Iterable<T> {
 	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Map<K, V>;
 }
 
+declare var LinqImpl: {
+	readonly prototype: Linq;
+	new(): Linq;
+}
+
 /** @internal */
-declare abstract class LinqBase<T = any> implements Linq<T> {
-	get length(): number | null;
+declare abstract class LinqBase<T = any> extends LinqImpl {
+	get length(): number | undefined;
 	abstract source(): Iterator<T>;
 
 	predictate?(value: T): boolean;
 
 	constructor();
-
-	sum(): number;
-	sum(query: Select<T, number | { [Symbol.toPrimitive](hint: 'number'): number; }>): number;
-	count(): number;
-	count(filter: Predictate<T>): number;
-	any(): boolean;
-	any(filter: Predictate<T>): boolean;
-	where(filter: Predictate<T>): Linq<T>;
-	select<V>(query: Select<T, V>): Linq<V>;
-	select<K extends keyof T>(query: K): Linq<T[K]>;
-	toArray(): T[];
-	toSet(): Set<T>;
-	toMap<K>(keySelector: Select<T, K>): Map<K, T>;
-	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Map<K, V>;
-	[Symbol.iterator](): Iterator<T, any, undefined>;
 };
 
 export interface LinqConstructor {
