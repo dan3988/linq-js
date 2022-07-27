@@ -73,6 +73,8 @@ export interface LinqConstructor {
 
 	empty<T = any>(): Linq<T>;
 	range(start: number, count: number, step?: number): Linq<number>;
+	fromObject(obj: object): Linq<[string, any]>;
+	fromObject<V>(obj: object, select: (key: string, value: any) => V): Linq<V>;
 }
 
 declare var LinqImpl: LinqConstructor & { new<T>(): Linq<T> };
@@ -110,6 +112,15 @@ linqBase.empty = function() {
 
 linqBase.range = function(start, count, step) {
 	return new LinqRange(start, count, step);
+}
+
+linqBase.fromObject = function(obj: object, select?: (key: string, value: any) => any) {
+	let source = Object.entries(obj);
+	let linq: LinqBase = new LinqArray(source);
+	if (select != null)
+		linq = new LinqSelect(linq, a => select.apply(undefined, a))
+	
+	return linq;
 }
 
 export var Linq: LinqConstructor = linq as any;

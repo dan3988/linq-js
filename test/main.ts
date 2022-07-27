@@ -50,4 +50,6 @@ let test6 = Linq(types).ofType(Date).toArray();
 
 let many = Linq(data).selectMany('tags').toArray();
 
+let obj = Linq.fromObject(data[0]).toArray();
+
 debugger;
