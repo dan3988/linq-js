@@ -56,6 +56,8 @@ export interface Linq<T = any> extends Iterable<T> {
 	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): Linq<T>;
 	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): Linq<T>;
 
+	toObject<K extends PropertyKey>(keySelector: Select<T, K>): Record<K, any>;
+	toObject<K extends PropertyKey, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Record<K, V>;
 	toArray(): T[];
 	toSet(): Set<T>;
 	toMap<K>(keySelector: Select<T, K>): Map<K, T>;
@@ -282,10 +284,22 @@ linqBase.prototype.orderByDesc = function(query: SelectType, comp?: Comparer) {
 	return orderBy.call(this, query, comp, true);
 }
 
+linqBase.prototype.toObject = function(keySelector: Select, valueSelector?: Select) {
+	const result: any = {};
+	for (let item of this) {
+		const key = keySelector(item);
+		const value = valueSelector ? valueSelector(item) : item;
+		result[key] = value;
+	}
+
+	return result;
+}
+
 linqBase.prototype.toArray = function() {
-	let array = [];
+	let array = Array(this.length ?? 0);
+	let i = 0;
 	for (let value of this)
-		array.push(value);
+		array[i] = value;
 
 	return array;
 }
@@ -405,6 +419,10 @@ export class LinqArray<T> extends linqBase<T> {
 
 	any() {
 		return this.#source.length > 0;
+	}
+
+	toArray(): T[] {
+		return Array.from(this.#source)
 	}
 
 	toSet(): Set<T> {
