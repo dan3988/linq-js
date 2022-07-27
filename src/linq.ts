@@ -80,7 +80,7 @@ export interface Linq<T = any> extends Iterable<T> {
 	ofType(type: 'object'): Linq<object>;
 	ofType(type: 'function'): Linq<Function>;
 	ofType(type: 'undefined'): Linq<undefined>;
-	ofType<T>(type: Constructor<T>): Linq<T>;
+	ofType<V>(type: Constructor<V>): Linq<V>;
 
 	concat<V>(...values: Iterable<V>[]): Linq<T | V>;
 
@@ -166,45 +166,87 @@ linqBase.prototype[Symbol.iterator] = function() {
 	return this.predictate == null ? iter : new it.FilteringIterator(iter, this, this.predictate);
 }
 
-linqBase.prototype.first = function() {
-	let iter = this[Symbol.iterator]();
+function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
+function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
+function first(linq: Linq, query: undefined | SelectType, required: boolean) {
+	let iter = linq[Symbol.iterator]();
 	let { done, value } = iter.next();
-	if (done)
-		throw errNoElements();
+	if (!done) {
+		if (query == null)
+			return value;
+		
+		if (typeof query !== 'function')
+			query = getter.bind(undefined, query);
 
-	return value;
-}
+		do {
+			if (query(value))
+				return value;
 
-linqBase.prototype.firstOrDefault = function() {
-	let iter = this[Symbol.iterator]();
-	let { done, value } = iter.next();
-	return done ? undefined : value;
-}
-
-linqBase.prototype.last = function() {
-	let iter = this[Symbol.iterator]();
-	let { done, value } = iter.next();
-	if (done)
-		throw errNoElements();
-
-	for (let last = value; ; last = value) {
-		({ done, value } = iter.next());
-		if (done)
-			return last;
+			({ done, value } = iter.next());
+		} while (!done);
 	}
-}
 
-linqBase.prototype.lastOrDefault = function() {
-	let iter = this[Symbol.iterator]();
-	let { done, value } = iter.next();
-	if (done)
+	if (!required)
 		return undefined;
 
-	for (let last = value; ; last = value) {
-		({ done, value } = iter.next());
-		if (done)
-			return last;
+	throw errNoElements();
+}
+
+function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
+function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
+function last(linq: Linq, query: undefined | SelectType, required: boolean) {
+	let iter = linq[Symbol.iterator]();
+	let { done, value } = iter.next();
+	if (!done) {
+		if (query == null) {
+			for (let last = value; ; last = value) {
+				({ done, value } = iter.next());
+				if (done)
+					return last;
+			}
+		} else {
+			if (typeof query !== 'function')
+				query = getter.bind(undefined, query);
+
+			let any = false;
+			let last = undefined;
+	
+			while (true) {
+				({ done, value } = iter.next());
+				if (done)
+					break;
+
+				if (query(value)) {
+					last = value;
+					any = true;
+				}
+			}
+
+			if (any)
+				return last;
+		}
 	}
+
+	if (!required)
+		return undefined;
+
+	throw errNoElements();
+}
+
+linqBase.prototype.first = function(query?: Predictate) {
+	return first(this, query, true);
+}
+
+linqBase.prototype.firstOrDefault = function(query?: Predictate) {
+	return first(this, query, false);
+}
+
+linqBase.prototype.last = function(query?: Predictate) {
+	return last(this, query, true);
+}
+
+linqBase.prototype.lastOrDefault = function(query?: Predictate) {
+	return last(this, query, false);
 }
 
 function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: false, initial: number, handle: (result: number, value: number) => number): number;
