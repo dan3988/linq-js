@@ -53,7 +53,7 @@ export interface Linq<T = any> extends Iterable<T> {
 
 	select<V>(query: Select<T, V>): Linq<V>;
 	select<K extends keyof T>(query: K): Linq<T[K]>;
-	selectMany<V, K extends ValidKey<T, Iterable<V>>>(query: K): Linq<V>;
+	selectMany<K extends ValidKey<T, Iterable<any>>>(query: K): Linq<T[K] extends Iterable<infer V> ? V : unknown>;
 	selectMany<V>(query: Select<T, Iterable<V>>): Linq<V>;
 
 	order(comparer?: Comparer<T>): Linq<T>;
@@ -89,7 +89,6 @@ export interface Linq<T = any> extends Iterable<T> {
 
 export interface LinqConstructor {
 	readonly prototype: Linq;
-	
 	<T>(values: Iterable<T>): Linq<T>;
 
 	empty<T = any>(): Linq<T>;
@@ -99,18 +98,19 @@ export interface LinqConstructor {
 	fromObject<V>(obj: object, select: BiSelect<string, any, V>): Linq<V>;
 }
 
-declare var LinqImpl: LinqConstructor & { new<T>(): Linq<T> };
-
-declare abstract class LinqBase<T = any> extends LinqImpl<T> {
+interface LinqInternal<T = any> extends Linq<T> {
 	get length(): number | undefined;
-	abstract source(): Iterator<T>;
-
+	source(): Iterator<T>;
 	predictate?(value: T): boolean;
+}
 
-	constructor();
-};
+interface LinqInternalConstructor {
+	readonly prototype: LinqInternal;
+	<T>(values: Iterable<T>): LinqInternal<T>;
+	new<T>(): LinqInternal<T>;
+}
 
-let linq = function Linq<T>(value: Iterable<T>): LinqBase<T> {
+let linq: Partial<LinqConstructor> = <any>function Linq<T>(value: Iterable<T>): LinqInternal<T> {
 	if (new.target != null)
 		return undefined!;
 
@@ -126,42 +126,42 @@ let linq = function Linq<T>(value: Iterable<T>): LinqBase<T> {
 	return new LinqIterable<T>(value);
 }
 
-let linqBase: typeof LinqBase = linq as any;
-
-linqBase.empty = function() {
-	return linq.prototype;
+linq.empty = function<T>() {
+	return <LinqInternal<T>>LinqInternal.prototype;
 }
 
-linqBase.range = function(start, count, step) {
+linq.range = function(start, count, step) {
 	return new LinqRange(start, count, step);
 }
 
-linqBase.repeat = function(value, count) {
+linq.repeat = function(value, count) {
 	return new LinqRepeat(value, count);
 }
 
-linqBase.fromObject = function(obj: object, select?: BiSelect<string>) {
+linq.fromObject = function(obj: object, select?: BiSelect<string>) {
 	let source = Object.entries(obj);
-	let linq: LinqBase = new LinqArray(source);
+	let linq: LinqInternal = new LinqArray(source);
 	if (select != null)
 		linq = new LinqSelect(linq, a => select.apply(undefined, a))
-	
+
 	return linq;
 }
+
+let LinqInternal: LinqInternalConstructor = <any>linq;
 
 export var Linq: LinqConstructor = linq as any;
 export default Linq;
 
-Object.defineProperty(linqBase, 'length', {
+Object.defineProperty(LinqInternal, 'length', {
 	configurable: true,
 	value: null
 })
 
-linqBase.prototype.source = function() {
+LinqInternal.prototype.source = function() {
 	return it.EmptyIterator.INSTANCE;
 }
 
-linqBase.prototype[Symbol.iterator] = function() {
+LinqInternal.prototype[Symbol.iterator] = function() {
 	let iter = this.source();
 	return this.predictate == null ? iter : new it.FilteringIterator(iter, this, this.predictate);
 }
@@ -233,19 +233,19 @@ function last(linq: Linq, query: undefined | SelectType, required: boolean) {
 	throw errNoElements();
 }
 
-linqBase.prototype.first = function(query?: Predictate) {
+LinqInternal.prototype.first = function(query?: Predictate) {
 	return first(this, query, true);
 }
 
-linqBase.prototype.firstOrDefault = function(query?: Predictate) {
+LinqInternal.prototype.firstOrDefault = function(query?: Predictate) {
 	return first(this, query, false);
 }
 
-linqBase.prototype.last = function(query?: Predictate) {
+LinqInternal.prototype.last = function(query?: Predictate) {
 	return last(this, query, true);
 }
 
-linqBase.prototype.lastOrDefault = function(query?: Predictate) {
+LinqInternal.prototype.lastOrDefault = function(query?: Predictate) {
 	return last(this, query, false);
 }
 
@@ -279,19 +279,19 @@ function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: boo
 	}
 }
 
-linqBase.prototype.sum = function(query?: SelectType) {
+LinqInternal.prototype.sum = function(query?: SelectType) {
 	return arithmetic(this, query, false, 0, (a, b) => a + b);
 }
 
-linqBase.prototype.min = function(query?: SelectType) {
+LinqInternal.prototype.min = function(query?: SelectType) {
 	return arithmetic(this, query, false, Infinity, (min, v) => min > v ? v : min);
 }
 
-linqBase.prototype.max = function(query?: SelectType) {
+LinqInternal.prototype.max = function(query?: SelectType) {
 	return arithmetic(this, query, false, -Infinity, (max, v) => max < v ? v : max);
 }
 
-linqBase.prototype.average = function(query?: SelectType) {
+LinqInternal.prototype.average = function(query?: SelectType) {
 	let [total, count] = arithmetic(this, query, true, 0, (a, b) => a + b);
 	if (count === 0)
 		throw errNoElements();
@@ -299,7 +299,7 @@ linqBase.prototype.average = function(query?: SelectType) {
 	return total / count;
 }
 
-linqBase.prototype.count = function(filter?: Predictate) {
+LinqInternal.prototype.count = function(filter?: Predictate) {
 	let len = this.length;
 	if (len != null)
 		return len;
@@ -312,7 +312,7 @@ linqBase.prototype.count = function(filter?: Predictate) {
 	return i;
 }
 
-linqBase.prototype.any = function(filter?: Predictate) {
+LinqInternal.prototype.any = function(filter?: Predictate) {
 	let en = this[Symbol.iterator]();
 	let result = en.next();
 	if (filter == null)
@@ -327,18 +327,18 @@ linqBase.prototype.any = function(filter?: Predictate) {
 	}
 }
 
-linqBase.prototype.where = function(filter: Predictate) {
+LinqInternal.prototype.where = function(filter: Predictate) {
 	return new LinqFiltered(this, filter);
 }
 
-linqBase.prototype.select = function(query: SelectType) {
+LinqInternal.prototype.select = function(query: SelectType) {
 	if (typeof query != 'function')
 		query = getter.bind(undefined, query);
 
 	return new LinqSelect(this, query);
 }
 
-linqBase.prototype.selectMany = function(query: SelectType) {
+LinqInternal.prototype.selectMany = function(query: SelectType) {
 	if (typeof query != 'function')
 		query = getter.bind(undefined, query);
 
@@ -351,21 +351,21 @@ function defaultCompare(x?: any, y?: any): number {
 	return x.localeCompare(y);
 }
 
-linqBase.prototype.order = function(comp?: Comparer) {
+LinqInternal.prototype.order = function(comp?: Comparer) {
 	if (comp == null)
 		comp = defaultCompare;
 
 	return new LinqOrdered(this, false, comp);
 }
 
-linqBase.prototype.orderDesc = function(comp?: Comparer) {
+LinqInternal.prototype.orderDesc = function(comp?: Comparer) {
 	if (comp == null)
 		comp = defaultCompare;
 
 	return new LinqOrdered(this, true, comp);
 }
 
-function orderBy<T>(this: LinqBase<T>, query: SelectType, comp: Comparer | undefined, desc: boolean) {
+function orderBy<T>(this: LinqInternal<T>, query: SelectType, comp: Comparer | undefined, desc: boolean) {
 	if (comp == null)
 		comp = defaultCompare;
 
@@ -378,15 +378,15 @@ function orderBy<T>(this: LinqBase<T>, query: SelectType, comp: Comparer | undef
 	});
 }
 
-linqBase.prototype.orderBy = function(query: SelectType, comp?: Comparer) {
+LinqInternal.prototype.orderBy = function(query: SelectType, comp?: Comparer) {
 	return orderBy.call(this, query, comp, false);
 }
 
-linqBase.prototype.orderByDesc = function(query: SelectType, comp?: Comparer) {
+LinqInternal.prototype.orderByDesc = function(query: SelectType, comp?: Comparer) {
 	return orderBy.call(this, query, comp, true);
 }
 
-linqBase.prototype.toObject = function(keySelector: Select, valueSelector?: Select) {
+LinqInternal.prototype.toObject = function(keySelector: Select, valueSelector?: Select) {
 	const result: any = {};
 	for (let item of this) {
 		const key = keySelector(item);
@@ -397,7 +397,7 @@ linqBase.prototype.toObject = function(keySelector: Select, valueSelector?: Sele
 	return result;
 }
 
-linqBase.prototype.toArray = function() {
+LinqInternal.prototype.toArray = function() {
 	let array = Array(this.length ?? 0);
 	let i = 0;
 	for (let value of this)
@@ -406,7 +406,7 @@ linqBase.prototype.toArray = function() {
 	return array;
 }
 
-linqBase.prototype.toSet = function() {
+LinqInternal.prototype.toSet = function() {
 	let set = new Set();
 	for (let value of this)
 		set.add(value);
@@ -414,7 +414,7 @@ linqBase.prototype.toSet = function() {
 	return set;
 }
 
-linqBase.prototype.toMap = function(keySelector: Select, valueSelector?: Select) {
+LinqInternal.prototype.toMap = function(keySelector: Select, valueSelector?: Select) {
 	const map = new Map();
 	for (const item of this) {
 		const key = keySelector(item);
@@ -425,29 +425,29 @@ linqBase.prototype.toMap = function(keySelector: Select, valueSelector?: Select)
 	return map;
 }
 
-linqBase.prototype.ofType = function(type: string | Function): Linq<any> {
+LinqInternal.prototype.ofType = function(type: string | Function): Linq<any> {
 	return new LinqFiltered(this, typeof type === 'string' ? isType.bind(undefined, type) : isInstance.bind(undefined, type));
 }
 
-linqBase.prototype.concat = function(...values) {
+LinqInternal.prototype.concat = function(...values) {
 	values.unshift(this);
 	return new LinqConcat<any>(values);
 }
 
-linqBase.prototype.join = function(sep) {
+LinqInternal.prototype.join = function(sep) {
 	return this.toArray().join(sep);
 }
 
 /** @internal */
-export class LinqSelect<T, V> extends linqBase<V> {
-	readonly #source: LinqBase<T>;
+export class LinqSelect<T, V> extends LinqInternal<V> {
+	readonly #source: LinqInternal<T>;
 	readonly #select: Select<T, V>;
 
 	get length(): number | undefined {
 		return this.#source.length;
 	}
 
-	constructor(iter: LinqBase<T>, select: Select<T, V>) {
+	constructor(iter: LinqInternal<T>, select: Select<T, V>) {
 		super();
 		this.#source = iter;
 		this.#select = select;
@@ -459,11 +459,11 @@ export class LinqSelect<T, V> extends linqBase<V> {
 }
 
 /** @internal */
-export class LinqSelectMany<T, V> extends linqBase<V> {
-	readonly #source: LinqBase<T>;
+export class LinqSelectMany<T, V> extends LinqInternal<V> {
+	readonly #source: LinqInternal<T>;
 	readonly #select: Select<T, Iterable<V>>;
 
-	constructor(iter: LinqBase<T>, select: Select<T, Iterable<V>>) {
+	constructor(iter: LinqInternal<T>, select: Select<T, Iterable<V>>) {
 		super();
 		this.#source = iter;
 		this.#select = select;
@@ -476,11 +476,11 @@ export class LinqSelectMany<T, V> extends linqBase<V> {
 }
 
 /** @internal */
-export class LinqFiltered<T> extends linqBase<T> {
-	readonly #source: LinqBase<T>;
+export class LinqFiltered<T> extends LinqInternal<T> {
+	readonly #source: LinqInternal<T>;
 	readonly #predictate: Predictate<T>;
 
-	constructor(source: LinqBase<T>, predictate: Predictate<T>) {
+	constructor(source: LinqInternal<T>, predictate: Predictate<T>) {
 		super();
 		this.#source = source;
 		this.#predictate = predictate;
@@ -497,7 +497,7 @@ export class LinqFiltered<T> extends linqBase<T> {
 }
 
 /** @internal */
-export class LinqIterable<T> extends linqBase<T> {
+export class LinqIterable<T> extends LinqInternal<T> {
 	readonly #source: Iterable<T>;
 
 	constructor(source: Iterable<T>) {
@@ -511,7 +511,7 @@ export class LinqIterable<T> extends linqBase<T> {
 }
 
 /** @internal */
-export class LinqArray<T> extends linqBase<T> {
+export class LinqArray<T> extends LinqInternal<T> {
 	readonly #source: readonly T[];
 
 	get length(): number {
@@ -587,7 +587,7 @@ interface MapOrSet<T> extends Iterable<T> {
 }
 
 /** @internal */
-export class LinqSet<T> extends linqBase<T> {
+export class LinqSet<T> extends LinqInternal<T> {
 	readonly #source: MapOrSet<T>;
 
 	get length(): number {
@@ -617,7 +617,7 @@ export class LinqSet<T> extends linqBase<T> {
 }
 
 /** @internal */
-export class LinqRange extends linqBase<number> {
+export class LinqRange extends LinqInternal<number> {
 	readonly #start: number;
 	readonly #count: number;
 	readonly #step: number;
@@ -719,7 +719,7 @@ export class LinqRange extends linqBase<number> {
 }
 
 /** @internal */
-export class LinqRepeat<T> extends linqBase<T> {
+export class LinqRepeat<T> extends LinqInternal<T> {
 	readonly #value: T;
 	readonly #count: number;
 
@@ -814,7 +814,7 @@ export class LinqRepeat<T> extends linqBase<T> {
 }
 
 /** @internal */
-export class LinqConcat<T> extends linqBase<T> {
+export class LinqConcat<T> extends LinqInternal<T> {
 	readonly #values: Linq<T>[];
 	readonly #length: number | undefined;
 
@@ -826,7 +826,7 @@ export class LinqConcat<T> extends linqBase<T> {
 		let l = 0;
 		let v: Linq<T>[] = [];
 		for (let value of values) {
-			let lq: LinqBase<T> = value instanceof linqBase ? value : linq(value);
+			let lq: LinqInternal<T> = value instanceof LinqInternal ? value : LinqInternal(value);
 			l += lq.length ?? NaN;
 			v.push(lq);
 		}
@@ -842,8 +842,8 @@ export class LinqConcat<T> extends linqBase<T> {
 }
 
 /** @internal */
-export class LinqOrdered<T> extends linqBase<T> {
-	readonly #source: LinqBase<T>;
+export class LinqOrdered<T> extends LinqInternal<T> {
+	readonly #source: LinqInternal<T>;
 	readonly #desc: boolean;
 	readonly #comp: undefined | Comparer<T>;
 
@@ -851,7 +851,7 @@ export class LinqOrdered<T> extends linqBase<T> {
 		return this.#source.length;
 	}
 
-	constructor(source: LinqBase<T>, desc: boolean, comp: undefined | Comparer<T>) {
+	constructor(source: LinqInternal<T>, desc: boolean, comp: undefined | Comparer<T>) {
 		super();
 		this.#source = source;
 		this.#comp = comp;
