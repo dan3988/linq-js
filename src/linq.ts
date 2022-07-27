@@ -1,5 +1,5 @@
-import type { Select, Predictate, Constructor, Comparer, BiSelect } from './funcs';
-import { ConcatIterator, EmptyIterator, FilteringIterator, RangeIterator, RepeatIterator, ReverseIterator, SelectingIterator } from "./iterators.js";
+import type { BiSelect, Comparer, Constructor, Predictate, Select } from './funcs.js';
+import * as it from "./iterators.js";
 
 type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
 type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
@@ -147,12 +147,12 @@ Object.defineProperty(linqBase, 'length', {
 })
 
 linqBase.prototype.source = function() {
-	return EmptyIterator.INSTANCE;
+	return it.EmptyIterator.INSTANCE;
 }
 
 linqBase.prototype[Symbol.iterator] = function() {
 	let iter = this.source();
-	return this.predictate == null ? iter : new FilteringIterator(iter, this, this.predictate);
+	return this.predictate == null ? iter : new it.FilteringIterator(iter, this, this.predictate);
 }
 
 function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: false, initial: number, handle: (result: number, value: number) => number): number;
@@ -349,7 +349,7 @@ export class LinqSelect<T, V> extends linqBase<V> {
 	}
 
 	source(): Iterator<V> {
-		return new SelectingIterator(this.#source[Symbol.iterator](), undefined, this.#select);
+		return new it.SelectingIterator(this.#source[Symbol.iterator](), undefined, this.#select);
 	}
 }
 
@@ -365,8 +365,8 @@ export class LinqSelectMany<T, V> extends linqBase<V> {
 	}
 
 	source(): Iterator<V> {
-		let it = new SelectingIterator(this.#source[Symbol.iterator](), undefined, this.#select);
-		return new ConcatIterator(it);
+		let select = new it.SelectingIterator(this.#source[Symbol.iterator](), undefined, this.#select);
+		return new it.ConcatIterator(select);
 	}
 }
 
@@ -491,7 +491,7 @@ export class LinqRange extends linqBase<number> {
 	}
 
 	source(): Iterator<number, any, undefined> {
-		return new RangeIterator(this.#start, this.#count, this.#step);
+		return new it.RangeIterator(this.#start, this.#count, this.#step);
 	}
 }
 
@@ -511,7 +511,7 @@ export class LinqRepeat<T> extends linqBase<T> {
 	}
 
 	source(): Iterator<T> {
-		return new RepeatIterator(this.#value, this.#count);
+		return new it.RepeatIterator(this.#value, this.#count);
 	}
 }
 
@@ -539,7 +539,7 @@ export class LinqConcat<T> extends linqBase<T> {
 	}
 
 	source(): Iterator<T, any, undefined> {
-		return new ConcatIterator(this.#values[Symbol.iterator]());
+		return new it.ConcatIterator(this.#values[Symbol.iterator]());
 	}
 }
 
@@ -562,7 +562,7 @@ export class LinqOrdered<T> extends linqBase<T> {
 
 	source(): Iterator<T> {
 		let all = this.#source.toArray().sort(this.#comp);
-		let it = this.#desc ? new ReverseIterator(all) : all;
+		let it = this.#desc ? new it.ReverseIterator(all) : all;
 		return it[Symbol.iterator]();
 	}
 }
