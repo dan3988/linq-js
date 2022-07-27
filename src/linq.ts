@@ -74,6 +74,8 @@ export interface Linq<T = any> extends Iterable<T> {
 	ofType<T>(type: Constructor<T>): Linq<T>;
 
 	concat<V>(...values: Iterable<V>[]): Linq<T | V>;
+
+	join(separator?: string): string;
 }
 
 export interface LinqConstructor {
@@ -335,6 +337,10 @@ linqBase.prototype.ofType = function(type: string | Function): Linq<any> {
 linqBase.prototype.concat = function(...values) {
 	values.unshift(this);
 	return new LinqConcat<any>(values);
+}
+
+linqBase.prototype.join = function(sep) {
+	return this.toArray().join(sep);
 }
 
 /** @internal */
