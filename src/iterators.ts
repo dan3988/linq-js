@@ -108,10 +108,10 @@ export class RangeIterator implements Iterable<number>, Iterator<number, number>
 	}
 
 	next(): IteratorResult<number, number> {
-		if (this.#count == 0)
+		if (this.#count === 0)
 			return res(true, this.#start);
 
-		if (this.#index == this.#count)
+		if (this.#index === this.#count)
 			return res(true, this.#current!);
 
 		this.#index++;
@@ -120,6 +120,28 @@ export class RangeIterator implements Iterable<number>, Iterator<number, number>
 	}
 
 	[Symbol.iterator](): Iterator<number, number, undefined> {
+		return this;
+	}
+}
+
+export class RepeatIterator<T> implements IterableIterator<T> {
+	readonly #value: T;
+	#remaining: number;
+
+	constructor(value: T, count: number) {
+		this.#value = value;
+		this.#remaining = count;
+	}
+
+	next(): IteratorResult<T> {
+		if (this.#remaining === 0)
+			return res(true);
+
+		this.#remaining--;
+		return res(false, this.#value);
+	}
+
+	[Symbol.iterator](): IterableIterator<T> {
 		return this;
 	}
 }

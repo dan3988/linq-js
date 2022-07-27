@@ -57,4 +57,6 @@ let test_2 = Linq(data).orderByDesc('age').select(v => `${v.name} (${v.age})`).t
 let test_3 = Linq(data).select(v => v.name).order().toArray();
 let test_4 = Linq(data).select(v => v.name).orderDesc().toArray();
 
+let test_5 = Linq.repeat('test', 100).toArray();
+
 debugger;

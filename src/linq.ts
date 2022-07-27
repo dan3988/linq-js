@@ -1,5 +1,5 @@
 import type { Select, Predictate, Constructor, Comparer, BiSelect } from './funcs';
-import { ConcatIterator, EmptyIterator, FilteringIterator, RangeIterator, ReverseIterator, SelectingIterator } from "./iterators.js";
+import { ConcatIterator, EmptyIterator, FilteringIterator, RangeIterator, RepeatIterator, ReverseIterator, SelectingIterator } from "./iterators.js";
 
 type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
 type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
@@ -83,6 +83,7 @@ export interface LinqConstructor {
 
 	empty<T = any>(): Linq<T>;
 	range(start: number, count: number, step?: number): Linq<number>;
+	repeat<T>(value: T, count: number): Linq<T>;
 	fromObject(obj: object): Linq<[string, any]>;
 	fromObject<V>(obj: object, select: BiSelect<string, any, V>): Linq<V>;
 }
@@ -122,6 +123,10 @@ linqBase.empty = function() {
 
 linqBase.range = function(start, count, step) {
 	return new LinqRange(start, count, step);
+}
+
+linqBase.repeat = function(value, count) {
+	return new LinqRepeat(value, count);
 }
 
 linqBase.fromObject = function(obj: object, select?: BiSelect<string>) {
@@ -299,7 +304,7 @@ linqBase.prototype.toArray = function() {
 	let array = Array(this.length ?? 0);
 	let i = 0;
 	for (let value of this)
-		array[i] = value;
+		array[i++] = value;
 
 	return array;
 }
@@ -487,6 +492,26 @@ export class LinqRange extends linqBase<number> {
 
 	source(): Iterator<number, any, undefined> {
 		return new RangeIterator(this.#start, this.#count, this.#step);
+	}
+}
+
+/** @internal */
+export class LinqRepeat<T> extends linqBase<T> {
+	readonly #value: T;
+	readonly #count: number;
+
+	get length(): number | undefined {
+		return this.#count;
+	}
+
+	constructor(value: T, count: number) {
+		super();
+		this.#value = value;
+		this.#count = count;
+	}
+
+	source(): Iterator<T> {
+		return new RepeatIterator(this.#value, this.#count);
 	}
 }
 
