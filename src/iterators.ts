@@ -6,6 +6,18 @@ function res(done: boolean, value?: any): IteratorResult<any, any> {
 	return { done, value };
 }
 
+export class EmptyIterator implements IterableIterator<never> {
+	static readonly INSTANCE = new this();
+
+	[Symbol.iterator](): IterableIterator<never> {
+		return this;
+	}
+
+	next(): IteratorResult<never, undefined> {
+		return res(true);
+	}
+}
+
 export class SelectingIterator<T, V> implements IterableIterator<V> {
 	readonly #iter: Iterator<T>;
 	readonly #thisArg: any;

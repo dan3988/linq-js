@@ -1,5 +1,5 @@
 import type { Select, Predictate } from './funcs';
-import { ConcatIterator, FilteringIterator, RangeIterator, SelectingIterator } from "./iterators.js";
+import { ConcatIterator, EmptyIterator, FilteringIterator, RangeIterator, SelectingIterator } from "./iterators.js";
 
 type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
 type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
@@ -61,7 +61,7 @@ let linq = function Linq<T>(value: Iterable<T>): LinqBase<T> {
 		return undefined!;
 
 	if (value == null)
-		throw new TypeError("'values' is undefined.");
+		throw new TypeError("'values' is required.");
 
 	return Array.isArray(value) ? new LinqArray<T>(value) : new LinqIterable<T>(value);
 }
@@ -79,6 +79,10 @@ Object.defineProperty(linqBase, 'length', {
 	configurable: true,
 	value: null
 })
+
+linqBase.prototype.source = function() {
+	return EmptyIterator.INSTANCE;
+}
 
 linqBase.prototype[Symbol.iterator] = function() {
 	let iter = this.source();
@@ -199,9 +203,7 @@ linqBase.prototype.toMap = function(keySelector: Select, valueSelector?: Select)
 }
 
 linqBase.prototype.concat = function(...values) {
-	if (this !== linq.prototype)
-		values.unshift(this);
-
+	values.unshift(this);
 	return new LinqConcat<any>(values);
 }
 
