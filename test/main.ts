@@ -44,4 +44,7 @@ let average = values.average();
 let min = values.min();
 let max = values.max();
 
+let types = ['56456', '53453', 456546, 'dfjsdkgd', true, false, {}, new Date(), 'dfdf', 555n, new Date(2001, 9, 20, 12, 0, 0, 500)]
+let test5 = Linq(types).ofType('string').toArray();
+let test6 = Linq(types).ofType(Date).toArray();
 debugger;

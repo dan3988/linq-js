@@ -1,9 +1,23 @@
-import type { Select, Predictate } from './funcs';
+import type { Select, Predictate, Constructor } from './funcs';
 import { ConcatIterator, EmptyIterator, FilteringIterator, RangeIterator, SelectingIterator } from "./iterators.js";
 
 type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
 type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
 type SelectType<T = any, R = any> = ValidKey<T, R> | Select<T, R>;
+
+function getter<T = any, K extends keyof T = any>(key: K, value: T): T[K];
+function getter(key: string | symbol | number, value: any): any;
+function getter(key: string | symbol | number, value: any): any {
+	return value[key];
+}
+
+function isType(type: string, value: any): boolean {
+	return typeof value === type;
+}
+
+function isInstance(type: Function, value: any): boolean {
+	return value instanceof type;
+}
 
 export interface Linq<T = any> extends Iterable<T> {
 	sum(): number;
@@ -33,6 +47,16 @@ export interface Linq<T = any> extends Iterable<T> {
 	toSet(): Set<T>;
 	toMap<K>(keySelector: Select<T, K>): Map<K, T>;
 	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Map<K, V>;
+
+	ofType(type: 'string'): Linq<string>;
+	ofType(type: 'boolean'): Linq<number>;
+	ofType(type: 'number'): Linq<number>;
+	ofType(type: 'bigint'): Linq<bigint>;
+	ofType(type: 'symbol'): Linq<symbol>;
+	ofType(type: 'object'): Linq<object>;
+	ofType(type: 'function'): Linq<Function>;
+	ofType(type: 'undefined'): Linq<undefined>;
+	ofType<T>(type: Constructor<T>): Linq<T>;
 
 	concat<V>(...values: Iterable<V>[]): Linq<T | V>;
 }
@@ -202,15 +226,13 @@ linqBase.prototype.toMap = function(keySelector: Select, valueSelector?: Select)
 	return map;
 }
 
+linqBase.prototype.ofType = function(type: string | Function): Linq<any> {
+	return new LinqFiltered(this, typeof type === 'string' ? isType.bind(undefined, type) : isInstance.bind(undefined, type));
+}
+
 linqBase.prototype.concat = function(...values) {
 	values.unshift(this);
 	return new LinqConcat<any>(values);
-}
-
-function getter<T = any, K extends keyof T = any>(key: K, value: T): T[K];
-function getter(key: string | symbol | number, value: any): any;
-function getter(key: string | symbol | number, value: any): any {
-	return value[key];
 }
 
 /** @internal */
