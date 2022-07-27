@@ -19,19 +19,29 @@ function isInstance(type: Function, value: any): boolean {
 	return value instanceof type;
 }
 
+function errNoElements() {
+	return new TypeError("Sequence contains no elements");
+}
+
 export interface Linq<T = any> extends Iterable<T> {
+	first(query?: Predictate<T>): T;
+	firstOrDefault(query?: Predictate<T>): T | undefined;
+
+	last(query?: Predictate<T>): T;
+	lastOrDefault(query?: Predictate<T>): T | undefined;
+
 	sum(): number;
 	sum(query: ValidKey<T, NumberLike>): number;
 	sum(query: Select<T, NumberLike>): number;
-	
+
 	min(): number;
 	min(query: ValidKey<T, NumberLike>): number;
 	min(query: Select<T, NumberLike>): number;
-	
+
 	max(): number;
 	max(query: ValidKey<T, NumberLike>): number;
 	max(query: Select<T, NumberLike>): number;
-	
+
 	average(): number;
 	average(query: ValidKey<T, NumberLike>): number;
 	average(query: Select<T, NumberLike>): number;
@@ -154,6 +164,47 @@ linqBase.prototype.source = function() {
 linqBase.prototype[Symbol.iterator] = function() {
 	let iter = this.source();
 	return this.predictate == null ? iter : new it.FilteringIterator(iter, this, this.predictate);
+}
+
+linqBase.prototype.first = function() {
+	let iter = this[Symbol.iterator]();
+	let { done, value } = iter.next();
+	if (done)
+		throw errNoElements();
+
+	return value;
+}
+
+linqBase.prototype.firstOrDefault = function() {
+	let iter = this[Symbol.iterator]();
+	let { done, value } = iter.next();
+	return done ? undefined : value;
+}
+
+linqBase.prototype.last = function() {
+	let iter = this[Symbol.iterator]();
+	let { done, value } = iter.next();
+	if (done)
+		throw errNoElements();
+
+	for (let last = value; ; last = value) {
+		({ done, value } = iter.next());
+		if (done)
+			return last;
+	}
+}
+
+linqBase.prototype.lastOrDefault = function() {
+	let iter = this[Symbol.iterator]();
+	let { done, value } = iter.next();
+	if (done)
+		return undefined;
+
+	for (let last = value; ; last = value) {
+		({ done, value } = iter.next());
+		if (done)
+			return last;
+	}
 }
 
 function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: false, initial: number, handle: (result: number, value: number) => number): number;
@@ -347,6 +398,10 @@ export class LinqSelect<T, V> extends linqBase<V> {
 	readonly #source: LinqBase<T>;
 	readonly #select: Select<T, V>;
 
+	get length(): number | undefined {
+		return this.#source.length;
+	}
+
 	constructor(iter: LinqBase<T>, select: Select<T, V>) {
 		super();
 		this.#source = iter;
@@ -421,6 +476,44 @@ export class LinqArray<T> extends linqBase<T> {
 	constructor(source: readonly T[]) {
 		super();
 		this.#source = source;
+	}
+
+	first(query?: Predictate<T> | undefined): T {
+		let array = this.#source;
+		if (array.length === 0)
+			throw errNoElements();
+
+		if (query == null)
+			return array[0];
+
+		let i = 0;
+		while(true) {
+			let v = array[i];
+			if (query(v))
+				return v;
+
+			if (++i === array.length)
+				throw errNoElements();
+		}
+	}
+
+	last(query?: Predictate<T> | undefined): T {
+		let array = this.#source;
+		if (array.length === 0)
+			throw errNoElements();
+
+		let i = array.length - 1;
+		if (query == null)
+			return array[i];
+
+		while(true) {
+			let v = array[i];
+			if (query(v))
+				return v;
+
+			if (--i === -1)
+				throw errNoElements();
+		}
 	}
 
 	count() {

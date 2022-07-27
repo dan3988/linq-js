@@ -59,4 +59,9 @@ let test_4 = Linq(data).select(v => v.name).orderDesc().toArray();
 
 let test_5 = Linq.repeat('test', 100).toArray();
 
+let first1 = Linq(data).first();
+let first2 = Linq(data).first(v => v.age < 50);
+let last1 = Linq(data).last();
+let last2 = Linq(data).last(v => v.age < 50);
+
 debugger;
