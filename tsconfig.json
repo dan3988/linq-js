@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "stripInternal": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": true,
+    "outDir": "lib"
+  },
+  "include": [
+    "src"
+  ]
+}
