@@ -52,4 +52,9 @@ let many = Linq(data).selectMany('tags').toArray();
 
 let obj = Linq.fromObject(data[0]).toArray();
 
+let test_1 = Linq(data).orderBy('age').select(v => `${v.name} (${v.age})`).toArray();
+let test_2 = Linq(data).orderByDesc('age').select(v => `${v.name} (${v.age})`).toArray();
+let test_3 = Linq(data).select(v => v.name).order().toArray();
+let test_4 = Linq(data).select(v => v.name).orderDesc().toArray();
+
 debugger;

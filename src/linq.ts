@@ -1,5 +1,5 @@
-import type { Select, Predictate, Constructor } from './funcs';
-import { ConcatIterator, EmptyIterator, FilteringIterator, RangeIterator, SelectingIterator } from "./iterators.js";
+import type { Select, Predictate, Constructor, Comparer, BiSelect } from './funcs';
+import { ConcatIterator, EmptyIterator, FilteringIterator, RangeIterator, ReverseIterator, SelectingIterator } from "./iterators.js";
 
 type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
 type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
@@ -44,9 +44,17 @@ export interface Linq<T = any> extends Iterable<T> {
 
 	select<V>(query: Select<T, V>): Linq<V>;
 	select<K extends keyof T>(query: K): Linq<T[K]>;
-
 	selectMany<V, K extends ValidKey<T, Iterable<V>>>(query: K): Linq<V>;
 	selectMany<V>(query: Select<T, Iterable<V>>): Linq<V>;
+
+	order(comparer?: Comparer<T>): Linq<T>;
+	orderDesc(comparer?: Comparer<T>): Linq<T>;
+
+	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): Linq<T>;
+	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): Linq<T>;
+
+	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): Linq<T>;
+	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): Linq<T>;
 
 	toArray(): T[];
 	toSet(): Set<T>;
@@ -74,7 +82,7 @@ export interface LinqConstructor {
 	empty<T = any>(): Linq<T>;
 	range(start: number, count: number, step?: number): Linq<number>;
 	fromObject(obj: object): Linq<[string, any]>;
-	fromObject<V>(obj: object, select: (key: string, value: any) => V): Linq<V>;
+	fromObject<V>(obj: object, select: BiSelect<string, any, V>): Linq<V>;
 }
 
 declare var LinqImpl: LinqConstructor & { new<T>(): Linq<T> };
@@ -114,7 +122,7 @@ linqBase.range = function(start, count, step) {
 	return new LinqRange(start, count, step);
 }
 
-linqBase.fromObject = function(obj: object, select?: (key: string, value: any) => any) {
+linqBase.fromObject = function(obj: object, select?: BiSelect<string>) {
 	let source = Object.entries(obj);
 	let linq: LinqBase = new LinqArray(source);
 	if (select != null)
@@ -219,18 +227,59 @@ linqBase.prototype.where = function(filter: Predictate) {
 	return new LinqFiltered(this, filter);
 }
 
-linqBase.prototype.select = function(query: Select) {
+linqBase.prototype.select = function(query: SelectType) {
 	if (typeof query != 'function')
 		query = getter.bind(undefined, query);
 
 	return new LinqSelect(this, query);
 }
 
-linqBase.prototype.selectMany = function(query: Select) {
+linqBase.prototype.selectMany = function(query: SelectType) {
 	if (typeof query != 'function')
 		query = getter.bind(undefined, query);
 
 	return new LinqSelectMany(this, query);
+}
+
+function defaultCompare(x?: any, y?: any): number {
+	x = String(x);
+	y = String(y);
+	return x.localeCompare(y);
+}
+
+linqBase.prototype.order = function(comp?: Comparer) {
+	if (comp == null)
+		comp = defaultCompare;
+
+	return new LinqOrdered(this, false, comp);
+}
+
+linqBase.prototype.orderDesc = function(comp?: Comparer) {
+	if (comp == null)
+		comp = defaultCompare;
+
+	return new LinqOrdered(this, true, comp);
+}
+
+function orderBy<T>(this: LinqBase<T>, query: SelectType, comp: Comparer | undefined, desc: boolean) {
+	if (comp == null)
+		comp = defaultCompare;
+
+	const select = typeof query === 'function' ? query : getter.bind(undefined, query);
+
+	return new LinqOrdered<T>(this, desc, (x, y) => {
+		x = select(x);
+		y = select(y);
+		return comp!(x, y);
+	});
+}
+
+linqBase.prototype.orderBy = function(query: SelectType, comp?: Comparer) {
+	return orderBy.call(this, query, comp, false);
+}
+
+linqBase.prototype.orderByDesc = function(query: SelectType, comp?: Comparer) {
+	return orderBy.call(this, query, comp, true);
 }
 
 linqBase.prototype.toArray = function() {
@@ -446,5 +495,28 @@ export class LinqConcat<T> extends linqBase<T> {
 
 	source(): Iterator<T, any, undefined> {
 		return new ConcatIterator(this.#values[Symbol.iterator]());
+	}
+}
+
+export class LinqOrdered<T> extends linqBase<T> {
+	readonly #source: LinqBase<T>;
+	readonly #desc: boolean;
+	readonly #comp: undefined | Comparer<T>;
+
+	get length(): number | undefined {
+		return this.#source.length;
+	}
+
+	constructor(source: LinqBase<T>, desc: boolean, comp: undefined | Comparer<T>) {
+		super();
+		this.#source = source;
+		this.#comp = comp;
+		this.#desc = desc;
+	}
+
+	source(): Iterator<T> {
+		let all = this.#source.toArray().sort(this.#comp);
+		let it = this.#desc ? new ReverseIterator(all) : all;
+		return it[Symbol.iterator]();
 	}
 }

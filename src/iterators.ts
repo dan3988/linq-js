@@ -6,6 +6,27 @@ function res(done: boolean, value?: any): IteratorResult<any, any> {
 	return { done, value };
 }
 
+export class ReverseIterator<T> implements IterableIterator<T> {
+	readonly #values: readonly T[];
+	#index: number;
+
+	constructor(values: readonly T[]) {
+		this.#values = values;
+		this.#index = values.length;
+	}
+
+	[Symbol.iterator](): IterableIterator<T> {
+		return this;
+	}
+
+	next(): IteratorResult<T> {
+		if (this.#index === 0)
+			return res(true);
+
+		return res(false, this.#values[--this.#index]);
+	}
+}
+
 export class EmptyIterator implements IterableIterator<never> {
 	static readonly INSTANCE = new this();
 
