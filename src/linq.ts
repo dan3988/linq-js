@@ -41,8 +41,13 @@ export interface Linq<T = any> extends Iterable<T> {
 	any(): boolean;
 	any(filter: Predictate<T>): boolean;
 	where(filter: Predictate<T>): Linq<T>;
+
 	select<V>(query: Select<T, V>): Linq<V>;
 	select<K extends keyof T>(query: K): Linq<T[K]>;
+
+	selectMany<V, K extends ValidKey<T, Iterable<V>>>(query: K): Linq<V>;
+	selectMany<V>(query: Select<T, Iterable<V>>): Linq<V>;
+
 	toArray(): T[];
 	toSet(): Set<T>;
 	toMap<K>(keySelector: Select<T, K>): Map<K, T>;
@@ -210,6 +215,13 @@ linqBase.prototype.select = function(query: Select) {
 	return new LinqSelect(this, query);
 }
 
+linqBase.prototype.selectMany = function(query: Select) {
+	if (typeof query != 'function')
+		query = getter.bind(undefined, query);
+
+	return new LinqSelectMany(this, query);
+}
+
 linqBase.prototype.toArray = function() {
 	let array = [];
 	for (let value of this)
@@ -259,6 +271,23 @@ export class LinqSelect<T, V> extends linqBase<V> {
 
 	source(): Iterator<V> {
 		return new SelectingIterator(this.#source[Symbol.iterator](), undefined, this.#select);
+	}
+}
+
+/** @internal */
+export class LinqSelectMany<T, V> extends linqBase<V> {
+	readonly #source: LinqBase<T>;
+	readonly #select: Select<T, Iterable<V>>;
+
+	constructor(iter: LinqBase<T>, select: Select<T, Iterable<V>>) {
+		super();
+		this.#source = iter;
+		this.#select = select;
+	}
+
+	source(): Iterator<V> {
+		let it = new SelectingIterator(this.#source[Symbol.iterator](), undefined, this.#select);
+		return new ConcatIterator(it);
 	}
 }
 
