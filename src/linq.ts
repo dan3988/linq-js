@@ -36,10 +36,9 @@ export interface Linq<T = any> extends Iterable<T> {
 	average(query: ValidKey<T, NumberLike>): number;
 	average(query: Select<T, NumberLike>): number;
 	
-	count(): number;
-	count(filter: Predictate<T>): number;
-	any(): boolean;
-	any(filter: Predictate<T>): boolean;
+	count(filter?: Predictate<T>): number;
+	any(filter?: Predictate<T>): boolean;
+
 	where(filter: Predictate<T>): Linq<T>;
 
 	select<V>(query: Select<T, V>): Linq<V>;
