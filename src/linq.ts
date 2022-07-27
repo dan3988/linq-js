@@ -63,9 +63,10 @@ export interface Linq<T = any> extends Iterable<T> {
 
 export interface LinqConstructor {
 	readonly prototype: Linq;
-
+	
 	<T>(values: Iterable<T>): Linq<T>;
 
+	empty<T = any>(): Linq<T>;
 	range(start: number, count: number, step?: number): Linq<number>;
 }
 
@@ -87,10 +88,20 @@ let linq = function Linq<T>(value: Iterable<T>): LinqBase<T> {
 	if (value == null)
 		throw new TypeError("'values' is required.");
 
-	return Array.isArray(value) ? new LinqArray<T>(value) : new LinqIterable<T>(value);
+	if (Array.isArray(value))
+		return new LinqArray<T>(value);
+
+	if (value instanceof Map || value instanceof Set)
+		return new LinqSet<T>(value);
+
+	return new LinqIterable<T>(value);
 }
 
 let linqBase: typeof LinqBase = linq as any;
+
+linqBase.empty = function() {
+	return linq.prototype;
+}
 
 linqBase.range = function(start, count, step) {
 	return new LinqRange(start, count, step);
@@ -305,6 +316,39 @@ export class LinqArray<T> extends linqBase<T> {
 
 	any() {
 		return this.#source.length > 0;
+	}
+
+	toSet(): Set<T> {
+		return new Set(this.#source);
+	}
+
+	source(): Iterator<T> {
+		return this.#source[Symbol.iterator]();
+	}
+}
+
+interface MapOrSet<T> extends Iterable<T> {
+	readonly size: number;
+}
+
+export class LinqSet<T> extends linqBase<T> {
+	readonly #source: MapOrSet<T>;
+
+	get length(): number {
+		return this.#source.size;
+	}
+
+	constructor(source: MapOrSet<T>) {
+		super();
+		this.#source = source;
+	}
+
+	count() {
+		return this.#source.size;
+	}
+
+	any() {
+		return this.#source.size > 0;
 	}
 
 	toSet(): Set<T> {
