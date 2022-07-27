@@ -438,6 +438,7 @@ interface MapOrSet<T> extends Iterable<T> {
 	readonly size: number;
 }
 
+/** @internal */
 export class LinqSet<T> extends linqBase<T> {
 	readonly #source: MapOrSet<T>;
 
@@ -489,6 +490,7 @@ export class LinqRange extends linqBase<number> {
 	}
 }
 
+/** @internal */
 export class LinqConcat<T> extends linqBase<T> {
 	readonly #values: Linq<T>[];
 	readonly #length: number | undefined;
@@ -516,6 +518,7 @@ export class LinqConcat<T> extends linqBase<T> {
 	}
 }
 
+/** @internal */
 export class LinqOrdered<T> extends linqBase<T> {
 	readonly #source: LinqBase<T>;
 	readonly #desc: boolean;
