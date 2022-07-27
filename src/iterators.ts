@@ -1,5 +1,11 @@
 import { Predictate, Select } from "./funcs";
 
+function res<T>(done: false, value?: T): IteratorYieldResult<T>
+function res<T>(done: true, value?: T): IteratorReturnResult<T>
+function res(done: boolean, value?: any): IteratorResult<any, any> {
+	return { done, value };
+}
+
 export class SelectingIterator<T, V> implements IterableIterator<V> {
 	readonly #iter: Iterator<T>;
 	readonly #thisArg: any;
@@ -70,18 +76,70 @@ export class RangeIterator implements Iterable<number>, Iterator<number, number>
 
 	next(): IteratorResult<number, number> {
 		if (this.#count == 0)
-			return { done: true, value: this.#start };
+			return res(true, this.#start);
 
 		if (this.#index == this.#count)
-			return { done: true, value: this.#current! };
+			return res(true, this.#current!);
 
 		this.#index++;
 		this.#current = this.#current == null ? this.#start : (this.#current + this.#step);
-		return { done: false, value: this.#current };
+		return res(false, this.#current);
 	}
 
 	[Symbol.iterator](): Iterator<number, number, undefined> {
 		return this;
 	}
+}
 
+export class ConcatIterator<T> implements IterableIterator<T> {
+	readonly #it: Iterator<Iterable<T>>;
+	#current: null | Iterator<T>;
+	#done: boolean;
+
+	constructor(it: Iterator<Iterable<T>>) {
+		this.#it = it;
+		this.#current = null;
+		this.#done = false;
+	}
+
+	next(): IteratorResult<T, any> {
+		if (this.#done)
+			return res(true);
+		
+		let current = this.#current;
+		if (current == null) {
+			let v = this.#it.next();
+			if (v.done) {
+				this.#done = true;
+				return res(true);
+			}
+
+			current = v.value[Symbol.iterator]();
+		}
+
+		while (true) {
+			while (true) {
+				let { done, value } = current.next();
+				if (done)
+					break;
+
+				this.#current = current;
+				return res(false, value);
+			}
+
+			let v = this.#it.next();
+			if (v.done) {
+				this.#done = true;
+				this.#current = null;
+				return res(true);
+			} else {
+				current = v.value[Symbol.iterator]();
+			}
+		}
+
+	}
+
+	[Symbol.iterator](): IterableIterator<T> {
+		return this;
+	}
 }

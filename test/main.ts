@@ -33,4 +33,6 @@ let data: SampleRow[] = await fs.promises.readFile('./data.json').then(v => v.to
 let test0 = Linq.range(0, 0).toArray();
 let test1 = Linq.range(0, 2).toArray();
 let test2 = Linq.range(0, 100, 3).toArray();
+let test3 = Linq.range(0, 2).concat(['data']);
+let test4 = test3.where(v => typeof v === 'string').toArray();
 debugger;

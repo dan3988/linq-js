@@ -1,5 +1,5 @@
 import type { Select, Predictate } from './funcs';
-import { FilteringIterator, RangeIterator, SelectingIterator } from "./iterators.js";
+import { ConcatIterator, FilteringIterator, RangeIterator, SelectingIterator } from "./iterators.js";
 
 export interface Linq<T = any> extends Iterable<T> {
 	sum(): number;
@@ -15,6 +15,8 @@ export interface Linq<T = any> extends Iterable<T> {
 	toSet(): Set<T>;
 	toMap<K>(keySelector: Select<T, K>): Map<K, T>;
 	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Map<K, V>;
+
+	concat<V>(first: Iterable<V>, ...rest: Iterable<V>[]): Linq<T | V>;
 }
 
 export interface LinqConstructor {
@@ -25,12 +27,9 @@ export interface LinqConstructor {
 	range(start: number, count: number, step?: number): Linq<number>;
 }
 
-declare var LinqImpl: {
-	readonly prototype: Linq;
-	new(): Linq;
-}
+declare var LinqImpl: LinqConstructor & { new<T>(): Linq<T> };
 
-declare abstract class LinqBase<T = any> extends LinqImpl {
+declare abstract class LinqBase<T = any> extends LinqImpl<T> {
 	get length(): number | undefined;
 	abstract source(): Iterator<T>;
 
@@ -39,7 +38,7 @@ declare abstract class LinqBase<T = any> extends LinqImpl {
 	constructor();
 };
 
-let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): Linq<T> {
+let linq = function Linq<T>(value: Iterable<T>): LinqBase<T> {
 	if (new.target != null)
 		return undefined!;
 
@@ -49,11 +48,13 @@ let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): Linq<T> {
 	return Array.isArray(value) ? new LinqArray<T>(value) : new LinqIterable<T>(value);
 }
 
-linq.range = function(start, count, step?: number) {
+let linqImpl: typeof LinqImpl = linq as any;
+
+linqImpl.range = function(start, count, step) {
 	return new LinqRange(start, count, step);
 }
 
-export var Linq: LinqConstructor = linq;
+export var Linq: LinqConstructor = linqImpl;
 export default Linq;
 
 let linqBase: typeof LinqBase = <any>linq;
@@ -62,6 +63,11 @@ Object.defineProperty(linqBase, 'length', {
 	configurable: true,
 	value: null
 })
+
+linqBase.prototype[Symbol.iterator] = function() {
+	let iter = this.source();
+	return this.predictate == null ? iter : new FilteringIterator(iter, this, this.predictate);
+}
 
 linqBase.prototype.sum = function(query?: Select) {
 	let sum = 0;
@@ -142,9 +148,11 @@ linqBase.prototype.toMap = function(keySelector: Select, valueSelector?: Select)
 	return map;
 }
 
-linqBase.prototype[Symbol.iterator] = function() {
-	let iter = this.source();
-	return this.predictate == null ? iter : new FilteringIterator(iter, this, this.predictate);
+linqBase.prototype.concat = function(...values) {
+	if (this !== linq.prototype)
+		values.unshift(this);
+
+	return new LinqConcat(values);
 }
 
 function getter<T = any, K extends keyof T = any>(key: K, value: T): T[K];
@@ -253,5 +261,32 @@ export class LinqRange extends linqBase<number> {
 
 	source(): Iterator<number, any, undefined> {
 		return new RangeIterator(this.#start, this.#count, this.#step);
+	}
+}
+
+export class LinqConcat<T> extends linqBase<T> {
+	readonly #values: Linq<T>[];
+	readonly #length: number | undefined;
+
+	get length(): number | undefined {
+		return this.#length;
+	}
+
+	constructor(values: readonly Iterable<T>[]) {
+		let l = 0;
+		let v: Linq<T>[] = [];
+		for (let value of values) {
+			let lq = value instanceof linqBase ? value : linq(value);
+			l += lq.length ?? NaN;
+			v.push(lq);
+		}
+
+		super();
+		this.#values = v;
+		this.#length = isNaN(l) ? undefined : l;
+	}
+
+	source(): Iterator<T, any, undefined> {
+		return new ConcatIterator(this.#values[Symbol.iterator]());
 	}
 }
