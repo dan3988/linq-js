@@ -562,7 +562,7 @@ export class LinqOrdered<T> extends linqBase<T> {
 
 	source(): Iterator<T> {
 		let all = this.#source.toArray().sort(this.#comp);
-		let it = this.#desc ? new it.ReverseIterator(all) : all;
-		return it[Symbol.iterator]();
+		let iterator = this.#desc ? new it.ReverseIterator(all) : all;
+		return iterator[Symbol.iterator]();
 	}
 }
