@@ -1,9 +1,14 @@
 import type { Select, Predictate } from './funcs';
 import { ConcatIterator, FilteringIterator, RangeIterator, SelectingIterator } from "./iterators.js";
 
+type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
+type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
+type SelectType<T = any, R = any> = ValidKey<T, R> | Select<T, R>;
+
 export interface Linq<T = any> extends Iterable<T> {
 	sum(): number;
-	sum(query: Select<T, number | { [Symbol.toPrimitive](hint: "number"): number }>): number;
+	sum(query: ValidKey<T, NumberLike>): number;
+	sum(query: Select<T, NumberLike>): number;
 	count(): number;
 	count(filter: Predictate<T>): number;
 	any(): boolean;
@@ -16,7 +21,7 @@ export interface Linq<T = any> extends Iterable<T> {
 	toMap<K>(keySelector: Select<T, K>): Map<K, T>;
 	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Map<K, V>;
 
-	concat<V>(first: Iterable<V>, ...rest: Iterable<V>[]): Linq<T | V>;
+	concat<V>(...values: Iterable<V>[]): Linq<T | V>;
 }
 
 export interface LinqConstructor {
@@ -48,16 +53,14 @@ let linq = function Linq<T>(value: Iterable<T>): LinqBase<T> {
 	return Array.isArray(value) ? new LinqArray<T>(value) : new LinqIterable<T>(value);
 }
 
-let linqImpl: typeof LinqImpl = linq as any;
+let linqBase: typeof LinqBase = linq as any;
 
-linqImpl.range = function(start, count, step) {
+linqBase.range = function(start, count, step) {
 	return new LinqRange(start, count, step);
 }
 
-export var Linq: LinqConstructor = linqImpl;
+export var Linq: LinqConstructor = linq as any;
 export default Linq;
-
-let linqBase: typeof LinqBase = <any>linq;
 
 Object.defineProperty(linqBase, 'length', {
 	configurable: true,
@@ -69,8 +72,11 @@ linqBase.prototype[Symbol.iterator] = function() {
 	return this.predictate == null ? iter : new FilteringIterator(iter, this, this.predictate);
 }
 
-linqBase.prototype.sum = function(query?: Select) {
+linqBase.prototype.sum = function(query?: SelectType) {
 	let sum = 0;
+	if (query != null && typeof query !== 'function')
+		query = getter.bind(undefined, query);
+
 	for (let value of this) {
 		let v = +(query ? query(value) : value);
 		if (isNaN(v))
@@ -152,7 +158,7 @@ linqBase.prototype.concat = function(...values) {
 	if (this !== linq.prototype)
 		values.unshift(this);
 
-	return new LinqConcat(values);
+	return new LinqConcat<any>(values);
 }
 
 function getter<T = any, K extends keyof T = any>(key: K, value: T): T[K];
@@ -276,7 +282,7 @@ export class LinqConcat<T> extends linqBase<T> {
 		let l = 0;
 		let v: Linq<T>[] = [];
 		for (let value of values) {
-			let lq = value instanceof linqBase ? value : linq(value);
+			let lq: LinqBase<T> = value instanceof linqBase ? value : linq(value);
 			l += lq.length ?? NaN;
 			v.push(lq);
 		}
