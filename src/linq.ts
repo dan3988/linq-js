@@ -251,6 +251,9 @@ linqBase.prototype.max = function(query?: SelectType) {
 
 linqBase.prototype.average = function(query?: SelectType) {
 	let [total, count] = arithmetic(this, query, true, 0, (a, b) => a + b);
+	if (count === 0)
+		throw errNoElements();
+
 	return total / count;
 }
 
@@ -588,6 +591,86 @@ export class LinqRange extends linqBase<number> {
 		this.#step = step ?? 1;
 	}
 
+	min(query?: SelectType): number {
+		if (this.#count !== 0) {
+			let v = this.#start;
+			if (query == null)
+				return v;
+	
+			if (typeof query !== 'function')
+				query = getter.bind(undefined, query);
+	
+			for (let i = 0; i < this.#count; i++, v -= this.#step)
+				if (query(v))
+					return v;
+		}
+
+		return Infinity;
+	}
+
+	max(query?: SelectType): number {
+		if (this.#count !== 0) {
+			let v = this.#start + (this.#step * this.#count);
+			if (query == null)
+				return v;
+	
+			if (typeof query !== 'function')
+				query = getter.bind(undefined, query);
+	
+			for (let i = 0; i < this.#count; i++, v += this.#step)
+				if (query(v))
+					return v;
+		}
+
+		return -Infinity;
+	}
+
+	first(query?: Predictate<number>) {
+		let v = this.firstOrDefault(query);
+		if (v == null)
+			throw errNoElements();
+
+		return v;
+	}
+
+	firstOrDefault(query?: Predictate<number>) {
+		if (this.#count === 0)
+			throw errNoElements();
+
+		let v = this.#start;
+		if (query == null)
+			return v;
+
+		for (let i = 0; i < this.#count; i++, v += this.#step)
+			if (query(v))
+				return v;
+
+		throw errNoElements();
+	}
+
+	last(query?: Predictate<number>): number {
+		let v = this.lastOrDefault(query);
+		if (v == null)
+			throw errNoElements();
+
+		return v;
+	}
+
+	lastOrDefault(query?: Predictate<number>): number {
+		if (this.#count === 0)
+			throw errNoElements();
+
+		let v = this.#start + (this.#count * this.#step);
+		if (query == null)
+			return v;
+
+		for (let i = 0; i < this.#count; i++, v -= this.#step)
+			if (query(v))
+				return v;
+
+		throw errNoElements();
+	}
+
 	source(): Iterator<number, any, undefined> {
 		return new it.RangeIterator(this.#start, this.#count, this.#step);
 	}
@@ -606,6 +689,81 @@ export class LinqRepeat<T> extends linqBase<T> {
 		super();
 		this.#value = value;
 		this.#count = count;
+	}
+
+	#getAny(required: true, query?: Predictate<T>): T
+	#getAny(required: false, query?: Predictate<T>): T | undefined;
+	#getAny(required: boolean, query?: Predictate<T>) {
+		if (this.#count !== 0 && (query == null || query(this.#value)))
+			return this.#value;
+
+		if (!required)
+			return undefined;
+
+		throw errNoElements();
+	}
+
+	#getMinMaxAvg<V>(noVal: V, query?: SelectType<T, NumberLike>): number | V {
+		if (this.#count === 0)
+			return noVal;
+
+		let val: any = this.#value;
+		if (query != null)
+			val = typeof query === 'function' ? query(val) : val[query];
+
+		return +val;
+	}
+	
+	max(query?: SelectType<T, NumberLike>) {
+		return this.#getMinMaxAvg(-Infinity, query);
+	}
+	
+	min(query?: SelectType<T, NumberLike>) {
+		return this.#getMinMaxAvg(Infinity, query);
+	}
+
+	average(query?: SelectType<T, NumberLike>) {
+		let v = this.#getMinMaxAvg(undefined, query);
+		if (v === undefined)
+			throw errNoElements();
+
+		return v;
+	}
+
+	first(query?: Predictate<T>): T {
+		return this.#getAny(true, query);
+	}
+
+	firstOrDefault(query?: Predictate<T>) {
+		return this.#getAny(false, query);
+	}
+
+	last(query?: Predictate<T>) {
+		return this.#getAny(true, query);
+	}
+
+	lastOrDefault(query?: Predictate<T>) {
+		return this.#getAny(false, query);
+	}
+
+	toArray(): T[] {
+		return Array(this.#count).fill(this.#value);
+	}
+
+	toObject(keySelector: Select, valueSelector?: Select) {
+		let key = keySelector(this.#value);
+		let value = valueSelector == null ? this.#value : valueSelector(this.#value);
+		return { [key]: value };
+	}
+
+	toMap(keySelector: Select, valueSelector?: Select) {
+		let key = keySelector(this.#value);
+		let value = valueSelector == null ? this.#value : valueSelector(this.#value);
+		return new Map().set(key, value)
+	}
+
+	toSet(): Set<T> {
+		return new Set([this.#value]);
 	}
 
 	source(): Iterator<T> {
