@@ -9,6 +9,19 @@ export interface Linq<T = any> extends Iterable<T> {
 	sum(): number;
 	sum(query: ValidKey<T, NumberLike>): number;
 	sum(query: Select<T, NumberLike>): number;
+	
+	min(): number;
+	min(query: ValidKey<T, NumberLike>): number;
+	min(query: Select<T, NumberLike>): number;
+	
+	max(): number;
+	max(query: ValidKey<T, NumberLike>): number;
+	max(query: Select<T, NumberLike>): number;
+	
+	average(): number;
+	average(query: ValidKey<T, NumberLike>): number;
+	average(query: Select<T, NumberLike>): number;
+	
 	count(): number;
 	count(filter: Predictate<T>): number;
 	any(): boolean;
@@ -72,20 +85,51 @@ linqBase.prototype[Symbol.iterator] = function() {
 	return this.predictate == null ? iter : new FilteringIterator(iter, this, this.predictate);
 }
 
-linqBase.prototype.sum = function(query?: SelectType) {
-	let sum = 0;
+function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: false, initial: number, handle: (result: number, value: number) => number): number;
+function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: true, initial: number, handle: (result: number, value: number, index: number) => number): [result: number, count: number];
+function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: boolean, initial: number, handle: Function): number | [number, number] {
 	if (query != null && typeof query !== 'function')
 		query = getter.bind(undefined, query);
 
-	for (let value of this) {
-		let v = +(query ? query(value) : value);
-		if (isNaN(v))
-			return NaN;
+	if (index) {
+		let i = 0;
+		for (let value of it) {
+			let v = +(query ? query(value) : value);
+			if (isNaN(v))
+				return [NaN, -1];
+	
+			initial = handle(initial, v, i++);
+		}
 
-		sum += v;
+		return [initial, i];
+	} else {
+		for (let value of it) {
+			let v = +(query ? query(value) : value);
+			if (isNaN(v))
+				return NaN;
+	
+			initial = handle(initial, v);
+		}
+
+		return initial;
 	}
+}
 
-	return sum;
+linqBase.prototype.sum = function(query?: SelectType) {
+	return arithmetic(this, query, false, 0, (a, b) => a + b);
+}
+
+linqBase.prototype.min = function(query?: SelectType) {
+	return arithmetic(this, query, false, Infinity, (min, v) => min > v ? v : min);
+}
+
+linqBase.prototype.max = function(query?: SelectType) {
+	return arithmetic(this, query, false, -Infinity, (max, v) => max < v ? v : max);
+}
+
+linqBase.prototype.average = function(query?: SelectType) {
+	let [total, count] = arithmetic(this, query, true, 0, (a, b) => a + b);
+	return total / count;
 }
 
 linqBase.prototype.count = function(filter?: Predictate) {

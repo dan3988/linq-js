@@ -35,4 +35,13 @@ let test1 = Linq.range(0, 2).toArray();
 let test2 = Linq.range(0, 100, 3).toArray();
 let test3 = Linq.range(0, 2).concat(['data']);
 let test4 = test3.where(v => typeof v === 'string').toArray();
+
+let source = Array(10).fill(0).map(() => Math.random() / Math.random());
+let values = Linq(source);
+
+let sum = values.sum();
+let average = values.average();
+let min = values.min();
+let max = values.max();
+
 debugger;
