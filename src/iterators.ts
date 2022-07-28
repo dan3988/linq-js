@@ -1,4 +1,4 @@
-import { Predictate, Select } from "./funcs";
+import type { Predictate, Select } from "./util.js";
 
 function res<T>(done: false, value?: T): IteratorYieldResult<T>
 function res<T>(done: true, value?: T): IteratorReturnResult<T>

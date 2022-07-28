@@ -1,5 +1,4 @@
-import type { Predictate } from '../../lib/funcs.js';
-import Linq from '../../lib/linq.js'
+import Linq, { Predictate } from '../../lib/index.js';
 import assert from 'assert';
 
 export function testFirst<T>(linq: Linq<T>, expected: readonly T[], predictate: Predictate<T>) {

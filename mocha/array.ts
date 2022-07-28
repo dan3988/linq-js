@@ -1,5 +1,5 @@
 import data from './test-data.js';
-import Linq from '../lib/linq.js'
+import Linq from '../lib/index.js';
 import * as t from './func-tests/all.js';
 
 const linq = Linq(data);

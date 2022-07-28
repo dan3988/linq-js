@@ -1,5 +1,4 @@
-import type { Predictate, Select } from '../../lib/funcs.js';
-import Linq from '../../lib/linq.js'
+import Linq, { Select } from '../../lib/index.js';
 import assert from 'assert';
 
 export function testMaths<T>(linq: Linq<T>, expected: readonly T[], select: Select<T, number>)
