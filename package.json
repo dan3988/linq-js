@@ -5,12 +5,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -t 5000 lib-mocha"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/mocha": "^9.1.1",
     "@types/node": "^18.6.1",
+    "mocha": "^10.0.0",
     "typescript": "^4.7.4"
   }
 }
