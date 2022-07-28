@@ -23,6 +23,134 @@ function errNoElements() {
 	return new TypeError("Sequence contains no elements");
 }
 
+function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
+function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
+function first(linq: Linq, query: undefined | Predictate, required: boolean) {
+	let iter = linq[Symbol.iterator]();
+	let { done, value } = iter.next();
+	if (!done) {
+		if (query == null)
+			return value;
+		
+		if (typeof query !== 'function')
+			query = getter.bind(undefined, query);
+
+		do {
+			if (query(value))
+				return value;
+
+			({ done, value } = iter.next());
+		} while (!done);
+	}
+
+	if (!required)
+		return undefined;
+
+	throw errNoElements();
+}
+
+function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
+function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
+function last(linq: Linq, query: undefined | Predictate, required: boolean) {
+	let iter = linq[Symbol.iterator]();
+	let { done, value } = iter.next();
+	if (!done) {
+		if (query == null) {
+			for (let last = value; ; last = value) {
+				({ done, value } = iter.next());
+				if (done)
+					return last;
+			}
+		} else {
+			if (typeof query !== 'function')
+				query = getter.bind(undefined, query);
+
+			let any = false;
+			let last = undefined;
+	
+			while (true) {
+				({ done, value } = iter.next());
+				if (done)
+					break;
+
+				if (query(value)) {
+					last = value;
+					any = true;
+				}
+			}
+
+			if (any)
+				return last;
+		}
+	}
+
+	if (!required)
+		return undefined;
+
+	throw errNoElements();
+}
+
+function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: false, initial: number, handle: (result: number, value: number) => number): number;
+function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: true, initial: number, handle: (result: number, value: number, index: number) => number): [result: number, count: number];
+function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: boolean, initial: number, handle: Function): number | [number, number] {
+	if (query != null && typeof query !== 'function')
+		query = getter.bind(undefined, query);
+
+	if (index) {
+		let i = 0;
+		for (let value of it) {
+			let v = +(query ? query(value) : value);
+			if (isNaN(v))
+				return [NaN, -1];
+	
+			initial = handle(initial, v, i++);
+		}
+
+		return [initial, i];
+	} else {
+		for (let value of it) {
+			let v = +(query ? query(value) : value);
+			if (isNaN(v))
+				return NaN;
+	
+			initial = handle(initial, v);
+		}
+
+		return initial;
+	}
+}
+
+function defaultCompare(x?: any, y?: any): number {
+	if (x === undefined) {
+		return y === undefined ? 0 : 1;
+	} else if (y === undefined) {
+		return -1;
+	} else {
+		let strX = String(x);
+		let strY = String(y);
+		if (strX < strY)
+			return -1;
+		
+		if (strX > strY)
+			return 1;
+
+		return 0;
+	}
+}
+
+function orderBy<T>(this: LinqInternal<T>, query: SelectType, comp: Comparer | undefined, desc: boolean) {
+	if (comp == null)
+		comp = defaultCompare;
+
+	const select = typeof query === 'function' ? query : getter.bind(undefined, query);
+
+	return new LinqOrdered<T>(this, desc, (x, y) => {
+		x = select(x);
+		y = select(y);
+		return comp!(x, y);
+	});
+}
+
 export interface Linq<T = any> extends Iterable<T> {
 	first(query?: Predictate<T>): T;
 	firstOrDefault(query?: Predictate<T>): T | undefined;
@@ -166,73 +294,6 @@ LinqInternal.prototype[Symbol.iterator] = function() {
 	return this.predictate == null ? iter : new it.FilteringIterator(iter, this, this.predictate);
 }
 
-function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
-function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
-function first(linq: Linq, query: undefined | Predictate, required: boolean) {
-	let iter = linq[Symbol.iterator]();
-	let { done, value } = iter.next();
-	if (!done) {
-		if (query == null)
-			return value;
-		
-		if (typeof query !== 'function')
-			query = getter.bind(undefined, query);
-
-		do {
-			if (query(value))
-				return value;
-
-			({ done, value } = iter.next());
-		} while (!done);
-	}
-
-	if (!required)
-		return undefined;
-
-	throw errNoElements();
-}
-
-function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
-function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
-function last(linq: Linq, query: undefined | Predictate, required: boolean) {
-	let iter = linq[Symbol.iterator]();
-	let { done, value } = iter.next();
-	if (!done) {
-		if (query == null) {
-			for (let last = value; ; last = value) {
-				({ done, value } = iter.next());
-				if (done)
-					return last;
-			}
-		} else {
-			if (typeof query !== 'function')
-				query = getter.bind(undefined, query);
-
-			let any = false;
-			let last = undefined;
-	
-			while (true) {
-				({ done, value } = iter.next());
-				if (done)
-					break;
-
-				if (query(value)) {
-					last = value;
-					any = true;
-				}
-			}
-
-			if (any)
-				return last;
-		}
-	}
-
-	if (!required)
-		return undefined;
-
-	throw errNoElements();
-}
-
 LinqInternal.prototype.first = function(query?: Predictate) {
 	return first(this, query, true);
 }
@@ -247,36 +308,6 @@ LinqInternal.prototype.last = function(query?: Predictate) {
 
 LinqInternal.prototype.lastOrDefault = function(query?: Predictate) {
 	return last(this, query, false);
-}
-
-function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: false, initial: number, handle: (result: number, value: number) => number): number;
-function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: true, initial: number, handle: (result: number, value: number, index: number) => number): [result: number, count: number];
-function arithmetic(it: Iterable<any>, query: undefined | SelectType, index: boolean, initial: number, handle: Function): number | [number, number] {
-	if (query != null && typeof query !== 'function')
-		query = getter.bind(undefined, query);
-
-	if (index) {
-		let i = 0;
-		for (let value of it) {
-			let v = +(query ? query(value) : value);
-			if (isNaN(v))
-				return [NaN, -1];
-	
-			initial = handle(initial, v, i++);
-		}
-
-		return [initial, i];
-	} else {
-		for (let value of it) {
-			let v = +(query ? query(value) : value);
-			if (isNaN(v))
-				return NaN;
-	
-			initial = handle(initial, v);
-		}
-
-		return initial;
-	}
 }
 
 LinqInternal.prototype.sum = function(query?: SelectType) {
@@ -345,12 +376,6 @@ LinqInternal.prototype.selectMany = function(query: SelectType) {
 	return new LinqSelectMany(this, query);
 }
 
-function defaultCompare(x?: any, y?: any): number {
-	x = String(x);
-	y = String(y);
-	return x.localeCompare(y);
-}
-
 LinqInternal.prototype.order = function(comp?: Comparer) {
 	if (comp == null)
 		comp = defaultCompare;
@@ -363,19 +388,6 @@ LinqInternal.prototype.orderDesc = function(comp?: Comparer) {
 		comp = defaultCompare;
 
 	return new LinqOrdered(this, true, comp);
-}
-
-function orderBy<T>(this: LinqInternal<T>, query: SelectType, comp: Comparer | undefined, desc: boolean) {
-	if (comp == null)
-		comp = defaultCompare;
-
-	const select = typeof query === 'function' ? query : getter.bind(undefined, query);
-
-	return new LinqOrdered<T>(this, desc, (x, y) => {
-		x = select(x);
-		y = select(y);
-		return comp!(x, y);
-	});
 }
 
 LinqInternal.prototype.orderBy = function(query: SelectType, comp?: Comparer) {

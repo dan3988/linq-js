@@ -10,4 +10,6 @@ describe('object', () => {
 	describe('first', () => t.testFirst(linq, expected, v => v[0] === 'about'));
 	describe('last', () => t.testLast(linq, expected, v => v[0] === 'about'));
 	describe('math', () => t.testMaths(linq, expected, v => typeof v[1] === 'number' ? v[1] : 0));
+	describe('order', () => t.testOrder(linq, expected));
+	describe('orderBy', () => t.testOrderBy(linq, expected, v => v[0]));
 })
