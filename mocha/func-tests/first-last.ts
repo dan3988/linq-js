@@ -5,18 +5,18 @@ import assert from 'assert';
 export function testFirst<T>(linq: Linq<T>, expected: readonly T[], predictate: Predictate<T>) {
 	it('should return the first item', () => {
 		let v = linq.first();
-		assert.strictEqual(v, expected[0]);
+		assert.deepEqual(v, expected[0]);
 	});
 
 	it('should return the first item when supplying a query argument', () => {
 		let v = linq.first(predictate);
-		assert.strictEqual(v, expected.find(predictate));
+		assert.deepEqual(v, expected.find(predictate));
 	});
 
 	it('should return the same item when using where()', () => {
 		let v1 = linq.first(predictate);
 		let v2 = linq.where(predictate).first();
-		assert.strictEqual(v1, v2);
+		assert.deepEqual(v1, v2);
 	});
 
 	it('first() should throw an error when no matching item is found', () => {
@@ -39,18 +39,18 @@ export function testFirst<T>(linq: Linq<T>, expected: readonly T[], predictate: 
 export function testLast<T>(linq: Linq<T>, expected: readonly T[], predictate: Predictate<T>) {
 	it('should return the last item', () => {
 		let v = linq.last();
-		assert.strictEqual(v, expected[expected.length - 1]);
+		assert.deepEqual(v, expected[expected.length - 1]);
 	});
 
 	it('should return the last item when supplying a query argument', () => {
 		let v = linq.last(predictate);
-		assert.strictEqual(v, [...expected].reverse().find(predictate));
+		assert.deepEqual(v, [...expected].reverse().find(predictate));
 	});
 
 	it('should return the same item when using where()', () => {
 		let v1 = linq.last(predictate);
 		let v2 = linq.where(predictate).last();
-		assert.strictEqual(v1, v2);
+		assert.deepEqual(v1, v2);
 	});
 
 	it('last() should throw an error when no matching item is found', () => {
