@@ -8,4 +8,5 @@ import "./prototype/query.js";
 import "./prototype/sort.js";
 
 export default Linq;
+export { AsyncLinq, AsyncLinqConstructor, LinqConstructor } from "./linq-base.js"
 export type { Select, BiSelect, Comparer, Predictate } from "./util.js";

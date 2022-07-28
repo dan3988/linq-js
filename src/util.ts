@@ -1,6 +1,8 @@
 export type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
 export type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
 
+export type Awaitable<T> = T | Promise<T>;
+
 export type Select<T = any, V = any> = (value: T) => V;
 export type SelectType<T = any, R = any> = ValidKey<T, R> | Select<T, R>;
 export type BiSelect<X = any, Y = any, V = any> = (x: X, y: Y) => V;
@@ -66,5 +68,43 @@ export function invokeSelect(value: any, required: boolean, select?: SelectType)
 		return select(value);
 	} else {
 		return value[select];
+	}
+}
+
+export type IterCallback<V = any, R = any> = (result: IteratorResult<V>) => void | undefined | R;
+
+async function asyncForEach<T>(values: AsyncIterable<T>, callback: IterCallback<T, void | [any]>) {
+	const iter: AsyncIterator<T> = values[Symbol.asyncIterator]();
+	while (true) {
+		let result = await iter.next();
+		let val = callback(result);
+		if (val != null)
+			return val[0];
+
+		if (result.done)
+			break;
+	}
+}
+
+export function forEach<T>(async: true, values: AsyncIterable<T>, callback: IterCallback<T, void>): Promise<void>;
+export function forEach<T>(async: false, values: Iterable<T>, callback: IterCallback<T, void>): void;
+export function forEach<T>(async: boolean, values: AsyncIterable<T> | Iterable<T>, callback: IterCallback<T, void>): void | Promise<void>;
+export function forEach<T, V>(async: true, values: AsyncIterable<T>, callback: IterCallback<T, readonly [V] | readonly []>): Promise<V>;
+export function forEach<T, V>(async: false, values: Iterable<T>, callback: IterCallback<T, readonly [V] | readonly []>): V;
+export function forEach<T, V>(async: boolean, values: AsyncIterable<T> | Iterable<T>, callback: IterCallback<T, readonly [V] | readonly []>): V | Promise<V>;
+export function forEach(async: boolean, values: any, callback: IterCallback): any {
+	if (async) {
+		return asyncForEach(values, callback);
+	} else {
+		const iter: Iterator<any> = values[Symbol.iterator]();
+		while (true) {
+			let result = iter.next();
+			let val = callback(result);
+			if (val != null)
+				return val[0];
+	
+			if (result.done)
+				break;
+		}
 	}
 }

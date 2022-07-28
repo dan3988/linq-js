@@ -1,4 +1,4 @@
-import { addFactory, Linq, LinqInternal } from "./linq-base.js";
+import { addFactory, Linq, AsyncLinq, LinqInternal } from "./linq-base.js";
 import { LinqArray } from "./impl/array.js";
 import { LinqRange } from "./impl/range.js";
 import { LinqRepeat } from "./impl/repeat.js";
@@ -80,5 +80,6 @@ LinqInternal.prototype.join = function(sep) {
 	return this.toArray().join(sep);
 }
 
-addFactory(<T>(v: Iterable<T>) => Array.isArray(v) ? new LinqArray<T>(v) : undefined);
-addFactory(<T>(v: Iterable<T>) => v instanceof Map || v instanceof Set ? new LinqSet<T>(v) : undefined);
+addFactory(v => Symbol.asyncIterator in v ? new AsyncLinq(v as any) : undefined);
+addFactory(v => v instanceof Map || v instanceof Set ? new LinqSet(v) : undefined);
+addFactory(v => Array.isArray(v) ? new LinqArray(v) : undefined);

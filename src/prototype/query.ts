@@ -1,5 +1,5 @@
-import { ConcatIterator, SelectingIterator } from '../iterators.js';
-import { Linq, LinqInternal } from '../linq-base.js';
+import { ConcatIterator, SelectingAsyncIterator, SelectingIterator } from '../iterators.js';
+import { Linq, AsyncLinq, LinqInternal } from '../linq-base.js';
 import { getter, isInstance, isType, Predictate, Select, SelectType } from '../util.js';
 
 /** @internal */
@@ -69,6 +69,13 @@ LinqInternal.prototype.select = function(query: SelectType) {
 		query = getter.bind(undefined, query);
 
 	return new LinqSelect(this, query);
+}
+
+AsyncLinq.prototype.select = function(query: SelectType) {
+	if (typeof query != 'function')
+		query = getter.bind(undefined, query);
+
+	return new AsyncLinq(new SelectingAsyncIterator(this, undefined, query));
 }
 
 LinqInternal.prototype.selectMany = function(query: SelectType) {

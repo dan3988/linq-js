@@ -28,40 +28,34 @@ interface SampleRow {
 	favoriteFruit: string;
 }
 
-let data: SampleRow[] = await fs.promises.readFile('./data.json').then(v => v.toString()).then(JSON.parse);
+//let data: SampleRow[] = await fs.promises.readFile('./data.json').then(v => v.toString()).then(JSON.parse);
 
-let test0 = Linq.range(0, 0).toArray();
-let test1 = Linq.range(0, 2).toArray();
-let test2 = Linq.range(0, 100, 3).toArray();
-let test3 = Linq.range(0, 2).concat(['data']);
-let test4 = test3.where(v => typeof v === 'string').toArray();
+let stream = fs.createReadStream('./data.json');
 
-let source = Array(10).fill(0).map(() => Math.random() / Math.random());
-let values = Linq(source);
+class Test implements AsyncIterableIterator<number> {
+	#times;
 
-let sum = values.sum();
-let average = values.average();
-let min = values.min();
-let max = values.max();
+	constructor(readonly count: number, readonly delay: number) {
+		this.#times = 0;
+	}
 
-let types = ['56456', '53453', 456546, 'dfjsdkgd', true, false, {}, new Date(), 'dfdf', 555n, new Date(2001, 9, 20, 12, 0, 0, 500)]
-let test5 = Linq(types).ofType('string').toArray();
-let test6 = Linq(types).ofType(Date).toArray();
+	[Symbol.asyncIterator](): AsyncIterableIterator<number> {
+		return this;
+	}
 
-let many = Linq(data).selectMany('tags').toArray();
+	next(): Promise<IteratorResult<number>> {
+		if (this.#times === this.count) {
+			return Promise.resolve({ done: true, value: undefined });
+		} else {
+			let times = this.#times++;
+			return new Promise(r => setTimeout(() => r({ done: false, value: times }), this.delay));
+		}
+	}
+}
 
-let obj = Linq.fromObject(data[0]).toArray();
+let it = new Test(100, 200);
+let linq = Linq(it).select(v => { console.log("iterated %s times.", v); return v; });
 
-let test_1 = Linq(data).orderBy('age').select(v => `${v.name} (${v.age})`).toArray();
-let test_2 = Linq(data).orderByDesc('age').select(v => `${v.name} (${v.age})`).toArray();
-let test_3 = Linq(data).select(v => v.name).order().toArray();
-let test_4 = Linq(data).select(v => v.name).orderDesc().toArray();
-
-let test_5 = Linq.repeat('test', 100).toArray();
-
-let first1 = Linq(data).first();
-let first2 = Linq(data).first(v => v.age < 50);
-let last1 = Linq(data).last();
-let last2 = Linq(data).last(v => v.age < 50);
+let v = await linq.first(v => v > 5);
 
 debugger;

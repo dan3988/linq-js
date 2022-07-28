@@ -6,6 +6,29 @@ function res(done: boolean, value?: any): IteratorResult<any, any> {
 	return { done, value };
 }
 
+export class AsyncArrayIterator<T> implements AsyncIterableIterator<T> {
+	readonly #thisArg: any;
+	readonly #fn: () => Promise<T[]>;
+	#promise: undefined | Promise<T[]>;
+
+	constructor(thisArg: any, fn: () => Promise<T[]>) {
+		this.#thisArg = thisArg;
+		this.#fn = fn;
+		this.#promise = undefined;
+	}
+
+	[Symbol.asyncIterator](): AsyncIterableIterator<T> {
+		return this;
+	}
+
+	next(): Promise<IteratorResult<T>> {
+		if (this.#promise == null)
+			this.#promise = this.#fn.call(this.#thisArg);
+		
+		return this.#promise.then(v => v.length === 0 ? res(true) : res(false, v.shift()));
+	}
+}
+
 export class ReverseIterator<T> implements IterableIterator<T> {
 	readonly #values: readonly T[];
 	#index: number;
@@ -60,6 +83,31 @@ export class SelectingIterator<T, V> implements IterableIterator<V> {
 			result.value = this.#select.call(this.#thisArg, result.value);
 		
 		return result;
+	}
+}
+
+export class SelectingAsyncIterator<T, V> implements AsyncIterableIterator<V> {
+	readonly #iter: AsyncIterator<T>;
+	readonly #thisArg: any;
+	readonly #select: Select<T, V>;
+
+	constructor(iter: AsyncIterable<T>, thisArg: any, select: Select<T, V>) {
+		this.#iter = iter[Symbol.asyncIterator]();
+		this.#thisArg = thisArg;
+		this.#select = select;
+	}
+
+	[Symbol.asyncIterator](): AsyncIterableIterator<V> {
+		return this;
+	}
+
+	next() {
+		return this.#iter.next().then((result: IteratorResult<any>) => {
+			if (!result.done)
+				result.value = this.#select.call(this.#thisArg, result.value);
+
+			return result;
+		});
 	}
 }
 

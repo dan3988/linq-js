@@ -66,11 +66,103 @@ export interface Linq<T = any> extends Iterable<T> {
 	concat<V>(...values: Iterable<V>[]): Linq<T | V>;
 
 	join(separator?: string): string;
+
+	forEach(fn: (item: T) => void): void;
+	forEach<V>(thisArg: V, fn: (this: V, item: T) => void): void;
+}
+
+export interface AsyncLinq<T = any> extends AsyncIterable<T> {
+	first(query?: Predictate<T>): Promise<T>;
+	firstOrDefault(query?: Predictate<T>): Promise<T | undefined>;
+
+	last(query?: Predictate<T>): T;
+	lastOrDefault(query?: Predictate<T>): Promise<T | undefined>;
+
+	sum(): Promise<number>;
+	sum(query: ValidKey<T, NumberLike>): Promise<number>;
+	sum(query: Select<T, NumberLike>): Promise<number>;
+
+	min(): Promise<number>;
+	min(query: ValidKey<T, NumberLike>): Promise<number>;
+	min(query: Select<T, NumberLike>): Promise<number>;
+
+	max(): Promise<number>;
+	max(query: ValidKey<T, NumberLike>): Promise<number>;
+	max(query: Select<T, NumberLike>): Promise<number>;
+
+	average(): Promise<number>;
+	average(query: ValidKey<T, NumberLike>): Promise<number>;
+	average(query: Select<T, NumberLike>): Promise<number>;
+	
+	count(filter?: Predictate<T>): Promise<number>;
+	any(filter?: Predictate<T>): Promise<boolean>;
+
+	where(filter: Predictate<T>): AsyncLinq<T>;
+
+	select<V>(query: Select<T, V>): AsyncLinq<V>;
+	select<K extends keyof T>(query: K): AsyncLinq<T[K]>;
+	selectMany<K extends ValidKey<T, Iterable<any>>>(query: K): AsyncLinq<T[K] extends Iterable<infer V> ? V : unknown>;
+	selectMany<V>(query: Select<T, Iterable<V>>): AsyncLinq<V>;
+
+	order(comparer?: Comparer<T>): AsyncLinq<T>;
+	orderDesc(comparer?: Comparer<T>): AsyncLinq<T>;
+
+	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinq<T>;
+	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinq<T>;
+
+	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinq<T>;
+	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinq<T>;
+
+	toObject<K extends PropertyKey>(keySelector: Select<T, K>): Promise<Record<K, any>>;
+	toObject<K extends PropertyKey, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Promise<Record<K, V>>;
+	toArray(): Promise<T[]>;
+	toSet(): Promise<Set<T>>;
+	toMap<K>(keySelector: Select<T, K>): Promise<Map<K, T>>;
+	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Promise<Map<K, V>>;
+	toMap<K, V extends keyof T>(keySelector: Select<T, K>, valueSelector: V): Promise<Map<K, T[V]>>;
+	toMap<K extends keyof T>(keySelector: K): Promise<Map<T[K], T>>;
+	toMap<K extends keyof T, V>(keySelector: K, valueSelector: Select<T, V>): Promise<Map<T[K], V>>;
+	toMap<K extends keyof T, V extends keyof T>(keySelector: K, valueSelector: V): Promise<Map<T[K], T[V]>>;
+
+	ofType(type: 'string'): AsyncLinq<string>;
+	ofType(type: 'boolean'): AsyncLinq<number>;
+	ofType(type: 'number'): AsyncLinq<number>;
+	ofType(type: 'bigint'): AsyncLinq<bigint>;
+	ofType(type: 'symbol'): AsyncLinq<symbol>;
+	ofType(type: 'object'): AsyncLinq<object>;
+	ofType(type: 'function'): AsyncLinq<Function>;
+	ofType(type: 'undefined'): AsyncLinq<undefined>;
+	ofType<V>(type: Constructor<V>): AsyncLinq<V>;
+
+	concat<V>(...values: Iterable<V>[]): AsyncLinq<T | V>;
+
+	join(separator?: string): Promise<string>;
+
+	forEach(fn: (item: T) => void): Promise<void>;
+	forEach<V>(thisArg: V, fn: (this: V, item: T) => void): Promise<void>;
+}
+
+export interface AsyncLinqConstructor {
+	readonly prototype: AsyncLinq;
+	new<T>(value: AsyncIterable<T>): AsyncLinq<T>;
+}
+
+export var AsyncLinq: AsyncLinqConstructor = <any>class AsyncLinq<T> {
+	readonly #source: AsyncIterable<T>;
+
+	constructor(source: AsyncIterable<T>) {
+		this.#source = source;
+	}
+
+	[Symbol.asyncIterator]() {
+		return this.#source[Symbol.asyncIterator]();
+	}
 }
 
 export interface LinqConstructor {
 	readonly prototype: Linq;
 	<T>(values: Iterable<T>): Linq<T>;
+	<T>(values: AsyncIterable<T>): AsyncLinq<T>;
 
 	empty<T = any>(): Linq<T>;
 	range(start: number, count: number, step?: number): Linq<number>;
@@ -94,7 +186,7 @@ interface LinqInternalConstructor {
 
 /** @internal */
 export interface Factory {
-	<T>(value: Iterable<T>): undefined | LinqInternal<T>;
+	(value: any): any;
 }
 
 const factories: Factory[] = [];

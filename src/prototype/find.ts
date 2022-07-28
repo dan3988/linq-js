@@ -1,85 +1,65 @@
-import { Linq, LinqInternal } from '../linq-base.js';
-import { errNoElements, getter, Predictate } from "../util.js";
+import { Linq, AsyncLinq, LinqInternal } from '../linq-base.js';
+import { errNoElements, forEach, Predictate } from "../util.js";
 
-function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
-function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
-function first(linq: Linq, query: undefined | Predictate, required: boolean) {
-	let iter = linq[Symbol.iterator]();
-	let { done, value } = iter.next();
-	if (!done) {
-		if (query == null)
-			return value;
-		
-		if (typeof query !== 'function')
-			query = getter.bind(undefined, query);
+function firstImpl<T>(linq: Linq<T> | AsyncLinq<T>, query: undefined | Predictate, required: boolean) {
+	return forEach(linq instanceof AsyncLinq, linq, ({ done, value }): [T] | [] | void => {
+		if (done) {
+			if (!required)
+				return [];
 
-		do {
-			if (query(value))
-				return value;
-
-			({ done, value } = iter.next());
-		} while (!done);
-	}
-
-	if (!required)
-		return undefined;
-
-	throw errNoElements();
-}
-
-function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
-function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
-function last(linq: Linq, query: undefined | Predictate, required: boolean) {
-	let iter = linq[Symbol.iterator]();
-	let { done, value } = iter.next();
-	if (!done) {
-		if (query == null) {
-			for (let last = value; ; last = value) {
-				({ done, value } = iter.next());
-				if (done)
-					return last;
-			}
-		} else {
-			if (typeof query !== 'function')
-				query = getter.bind(undefined, query);
-
-			let any = false;
-			let last = undefined;
-	
-			while (true) {
-				({ done, value } = iter.next());
-				if (done)
-					break;
-
-				if (query(value)) {
-					last = value;
-					any = true;
-				}
-			}
-
-			if (any)
-				return last;
+			throw errNoElements();
+		} else if (query == null || query(value)) {
+			return [value];
 		}
-	}
-
-	if (!required)
-		return undefined;
-
-	throw errNoElements();
+	});
 }
 
-LinqInternal.prototype.first = function(query?: Predictate) {
-	return first(this, query, true);
+function lastImpl<T>(linq: Linq<T> | AsyncLinq<T>, query: undefined | Predictate, required: boolean) {
+	let found = false;
+	let last: undefined | T = undefined;
+
+	return forEach(linq instanceof AsyncLinq, linq, ({ done, value }): [T | undefined] | [] | void => {
+		if (done) {
+			if (found)
+				return [last];
+
+			if (!required)
+				return [];
+		
+			throw errNoElements();
+		} else {
+			if (query == null || query(value)) {
+				found = true;
+				last = value;
+			}
+		}
+	});
 }
 
-LinqInternal.prototype.firstOrDefault = function(query?: Predictate) {
-	return first(this, query, false);
+function first(this: Linq | AsyncLinq, query?: Predictate) {
+	return firstImpl(this, query, true);
 }
 
-LinqInternal.prototype.last = function(query?: Predictate) {
-	return last(this, query, true);
+LinqInternal.prototype.first = first;
+AsyncLinq.prototype.first = first;
+
+function firstOrDefault(this: Linq | AsyncLinq, query?: Predictate) {
+	return firstImpl(this, query, false);
 }
 
-LinqInternal.prototype.lastOrDefault = function(query?: Predictate) {
-	return last(this, query, false);
+LinqInternal.prototype.firstOrDefault = firstOrDefault;
+AsyncLinq.prototype.firstOrDefault = firstOrDefault;
+
+function last(this: Linq | AsyncLinq, query?: Predictate) {
+	return lastImpl(this, query, true);
 }
+
+LinqInternal.prototype.last = last;
+AsyncLinq.prototype.last = last;
+
+function lastOrDefault(this: Linq | AsyncLinq, query?: Predictate) {
+	return lastImpl(this, query, false);
+}
+
+LinqInternal.prototype.lastOrDefault = lastOrDefault;
+AsyncLinq.prototype.lastOrDefault = lastOrDefault;
