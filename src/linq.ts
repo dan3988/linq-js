@@ -681,7 +681,7 @@ class LinqRange extends LinqInternal<number> {
 
 		let v = this.#start;
 		if (query == null)
-			return v;
+			return v + (this.#step * (this.#count - 1));
 
 		if (typeof query !== 'function')
 			query = getter.bind(undefined, query);
@@ -733,10 +733,10 @@ class LinqRange extends LinqInternal<number> {
 
 		let v = this.#start + (this.#count * this.#step);
 		if (query == null)
-			return v;
+			return v - this.#step;
 
-		for (let i = 0; i < this.#count; i++, v -= this.#step)
-			if (query(v))
+		for (let i = 0; i < this.#count; i++)
+			if (query(v -= this.#step))
 				return v;
 
 		return undefined;
