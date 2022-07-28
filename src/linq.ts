@@ -634,37 +634,45 @@ export class LinqRange extends LinqInternal<number> {
 	}
 
 	min(query?: SelectType): number {
-		if (this.#count !== 0) {
-			let v = this.#start;
-			if (query == null)
-				return v;
-	
-			if (typeof query !== 'function')
-				query = getter.bind(undefined, query);
-	
-			for (let i = 0; i < this.#count; i++, v -= this.#step)
-				if (query(v))
-					return v;
-		}
+		if (this.#count === 0)
+			return Infinity;
 
-		return Infinity;
+		let v = this.#start;
+		if (query == null)
+			return v;
+
+		if (typeof query !== 'function')
+			query = getter.bind(undefined, query);
+
+		let min = Infinity;
+		for (let i = 0; i < this.#count; i++, v += this.#step) {
+			let val = query(v);
+			if (min > val)
+				min = val;
+		}
+		
+		return min;
 	}
 
 	max(query?: SelectType): number {
-		if (this.#count !== 0) {
-			let v = this.#start + (this.#step * this.#count);
-			if (query == null)
-				return v;
-	
-			if (typeof query !== 'function')
-				query = getter.bind(undefined, query);
-	
-			for (let i = 0; i < this.#count; i++, v += this.#step)
-				if (query(v))
-					return v;
-		}
+		if (this.#count === 0)
+			return -Infinity;
 
-		return -Infinity;
+		let v = this.#start;
+		if (query == null)
+			return v;
+
+		if (typeof query !== 'function')
+			query = getter.bind(undefined, query);
+
+		let max = -Infinity;
+		for (let i = 0; i < this.#count; i++, v += this.#step) {
+			let val = query(v);
+			if (max < val)
+				max = val;
+		}
+		
+		return max;
 	}
 
 	first(query?: Predictate<number>) {
@@ -687,10 +695,10 @@ export class LinqRange extends LinqInternal<number> {
 			if (query(v))
 				return v;
 
-		throw errNoElements();
+		return undefined;
 	}
 
-	last(query?: Predictate<number>): number {
+	last(query?: Predictate<number>) {
 		let v = this.lastOrDefault(query);
 		if (v == null)
 			throw errNoElements();
@@ -698,7 +706,7 @@ export class LinqRange extends LinqInternal<number> {
 		return v;
 	}
 
-	lastOrDefault(query?: Predictate<number>): number {
+	lastOrDefault(query?: Predictate<number>) {
 		if (this.#count === 0)
 			throw errNoElements();
 
@@ -710,7 +718,7 @@ export class LinqRange extends LinqInternal<number> {
 			if (query(v))
 				return v;
 
-		throw errNoElements();
+		return undefined;
 	}
 
 	source(): Iterator<number, any, undefined> {
@@ -745,6 +753,10 @@ export class LinqRepeat<T> extends LinqInternal<T> {
 		throw errNoElements();
 	}
 
+	/**
+	 * Because there is only one value, min(), max() and average() will all return the same value
+	 * @param noVal the value to return if count is zero
+	 */
 	#getMinMaxAvg<V>(noVal: V, query?: SelectType<T, NumberLike>): number | V {
 		if (this.#count === 0)
 			return noVal;
