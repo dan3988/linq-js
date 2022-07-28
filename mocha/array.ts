@@ -8,5 +8,5 @@ const linq = Linq(data);
 describe('array', () => {
 	describe('first', () => testFirst(linq, data, v => v.age < 50));
 	describe('last', () => testLast(linq, data, v => v.age < 50));
-	describe('math', () => testMaths(linq.select(v => v.age), data.map(v => v.age)));
+	describe('math', () => testMaths(linq, data, v => v.age));
 })

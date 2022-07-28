@@ -2,7 +2,14 @@ import type { Predictate, Select } from '../../lib/funcs.js';
 import Linq from '../../lib/linq.js'
 import assert from 'assert';
 
-export function testMaths(linq: Linq<number>, expected: readonly number[]) {
+export function testMaths<T>(linq: Linq<T>, expected: readonly T[], select: Select<T, number>)
+export function testMaths(linq: Linq<number>, expected: readonly number[])
+export function testMaths(linq: Linq, expected: readonly any[], select?: Select) {
+	if (select != null) {
+		linq = linq.select(select);
+		expected = expected.map(select);
+	}
+
 	let sum = expected.reduce((val, cur) => val + cur, 0);
 	it('should return correct value for sum()', () => {
 		let v = linq.sum();
