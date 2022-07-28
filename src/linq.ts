@@ -110,7 +110,7 @@ interface LinqInternalConstructor {
 	new<T>(): LinqInternal<T>;
 }
 
-let linq: Partial<LinqConstructor> = <any>function Linq<T>(value: Iterable<T>): LinqInternal<T> {
+let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): LinqInternal<T> {
 	if (new.target != null)
 		return undefined!;
 
@@ -127,7 +127,7 @@ let linq: Partial<LinqConstructor> = <any>function Linq<T>(value: Iterable<T>): 
 }
 
 linq.empty = function<T>() {
-	return <LinqInternal<T>>LinqInternal.prototype;
+	return LinqInternal.prototype as LinqInternal<T>;
 }
 
 linq.range = function(start, count, step) {
@@ -168,7 +168,7 @@ LinqInternal.prototype[Symbol.iterator] = function() {
 
 function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
 function first<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
-function first(linq: Linq, query: undefined | SelectType, required: boolean) {
+function first(linq: Linq, query: undefined | Predictate, required: boolean) {
 	let iter = linq[Symbol.iterator]();
 	let { done, value } = iter.next();
 	if (!done) {
@@ -194,7 +194,7 @@ function first(linq: Linq, query: undefined | SelectType, required: boolean) {
 
 function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: true): T;
 function last<T>(linq: Linq<T>, query: undefined | Predictate<T>, required: false): T | undefined;
-function last(linq: Linq, query: undefined | SelectType, required: boolean) {
+function last(linq: Linq, query: undefined | Predictate, required: boolean) {
 	let iter = linq[Symbol.iterator]();
 	let { done, value } = iter.next();
 	if (!done) {
@@ -438,8 +438,7 @@ LinqInternal.prototype.join = function(sep) {
 	return this.toArray().join(sep);
 }
 
-/** @internal */
-export class LinqSelect<T, V> extends LinqInternal<V> {
+class LinqSelect<T, V> extends LinqInternal<V> {
 	readonly #source: LinqInternal<T>;
 	readonly #select: Select<T, V>;
 
@@ -458,8 +457,7 @@ export class LinqSelect<T, V> extends LinqInternal<V> {
 	}
 }
 
-/** @internal */
-export class LinqSelectMany<T, V> extends LinqInternal<V> {
+class LinqSelectMany<T, V> extends LinqInternal<V> {
 	readonly #source: LinqInternal<T>;
 	readonly #select: Select<T, Iterable<V>>;
 
@@ -475,8 +473,7 @@ export class LinqSelectMany<T, V> extends LinqInternal<V> {
 	}
 }
 
-/** @internal */
-export class LinqFiltered<T> extends LinqInternal<T> {
+class LinqFiltered<T> extends LinqInternal<T> {
 	readonly #source: LinqInternal<T>;
 	readonly #predictate: Predictate<T>;
 
@@ -496,8 +493,7 @@ export class LinqFiltered<T> extends LinqInternal<T> {
 	}
 }
 
-/** @internal */
-export class LinqIterable<T> extends LinqInternal<T> {
+class LinqIterable<T> extends LinqInternal<T> {
 	readonly #source: Iterable<T>;
 
 	constructor(source: Iterable<T>) {
@@ -510,8 +506,7 @@ export class LinqIterable<T> extends LinqInternal<T> {
 	}
 }
 
-/** @internal */
-export class LinqArray<T> extends LinqInternal<T> {
+class LinqArray<T> extends LinqInternal<T> {
 	readonly #source: readonly T[];
 
 	get length(): number {
@@ -586,8 +581,7 @@ interface MapOrSet<T> extends Iterable<T> {
 	readonly size: number;
 }
 
-/** @internal */
-export class LinqSet<T> extends LinqInternal<T> {
+class LinqSet<T> extends LinqInternal<T> {
 	readonly #source: MapOrSet<T>;
 
 	get length(): number {
@@ -616,8 +610,7 @@ export class LinqSet<T> extends LinqInternal<T> {
 	}
 }
 
-/** @internal */
-export class LinqRange extends LinqInternal<number> {
+class LinqRange extends LinqInternal<number> {
 	readonly #start: number;
 	readonly #count: number;
 	readonly #step: number;
@@ -726,8 +719,7 @@ export class LinqRange extends LinqInternal<number> {
 	}
 }
 
-/** @internal */
-export class LinqRepeat<T> extends LinqInternal<T> {
+class LinqRepeat<T> extends LinqInternal<T> {
 	readonly #value: T;
 	readonly #count: number;
 
@@ -825,8 +817,7 @@ export class LinqRepeat<T> extends LinqInternal<T> {
 	}
 }
 
-/** @internal */
-export class LinqConcat<T> extends LinqInternal<T> {
+class LinqConcat<T> extends LinqInternal<T> {
 	readonly #values: Linq<T>[];
 	readonly #length: number | undefined;
 
@@ -853,8 +844,7 @@ export class LinqConcat<T> extends LinqInternal<T> {
 	}
 }
 
-/** @internal */
-export class LinqOrdered<T> extends LinqInternal<T> {
+class LinqOrdered<T> extends LinqInternal<T> {
 	readonly #source: LinqInternal<T>;
 	readonly #desc: boolean;
 	readonly #comp: undefined | Comparer<T>;
