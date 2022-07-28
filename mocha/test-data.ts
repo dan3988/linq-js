@@ -27,5 +27,5 @@ export interface SampleRow {
 	favoriteFruit: string;
 }
 
-export var data: SampleRow[] = await fs.promises.readFile('./data.json').then(v => v.toString()).then(JSON.parse);
+export var data: readonly SampleRow[] = await fs.promises.readFile('./data.json').then(v => v.toString()).then(JSON.parse);
 export default data;
