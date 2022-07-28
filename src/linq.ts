@@ -518,42 +518,70 @@ class LinqArray<T> extends LinqInternal<T> {
 		this.#source = source;
 	}
 
-	first(query?: Predictate<T> | undefined): T {
+	#first(query: undefined | Predictate<T>, required: true): T;
+	#first(query: undefined | Predictate<T>, required: false): T | undefined;
+	#first(query: undefined | Predictate<T>, required: boolean) {
 		let array = this.#source;
-		if (array.length === 0)
+		if (array.length !== 0) {
+			if (query == null)
+				return array[0];
+	
+			let i = 0;
+			while(true) {
+				let v = array[i];
+				if (query(v))
+					return v;
+	
+				if (++i === array.length)
+					break;
+			}
+		}
+
+		if (required)
 			throw errNoElements();
 
-		if (query == null)
-			return array[0];
-
-		let i = 0;
-		while(true) {
-			let v = array[i];
-			if (query(v))
-				return v;
-
-			if (++i === array.length)
-				throw errNoElements();
-		}
+		return undefined;
 	}
 
-	last(query?: Predictate<T> | undefined): T {
+	#last(query: undefined | Predictate<T>, required: true): T;
+	#last(query: undefined | Predictate<T>, required: false): T | undefined;
+	#last(query: undefined | Predictate<T>, required: boolean) {
 		let array = this.#source;
-		if (array.length === 0)
+		if (array.length !== 0) {
+			let i = array.length - 1;
+			if (query == null)
+				return array[i];
+	
+			while(true) {
+				let v = array[i];
+				if (query(v))
+					return v;
+	
+				if (--i === -1)
+					break;
+			}
+		}
+
+		if (required)
 			throw errNoElements();
 
-		let i = array.length - 1;
-		if (query == null)
-			return array[i];
+		return undefined;
+	}
 
-		while(true) {
-			let v = array[i];
-			if (query(v))
-				return v;
+	first(query?: Predictate<T>) {
+		return this.#first(query, true);
+	}
 
-			if (--i === -1)
-				throw errNoElements();
-		}
+	firstOrDefault(query?: Predictate<T>) {
+		return this.#first(query, false);
+	}
+
+	last(query?: Predictate<T>) {
+		return this.#last(query, true);
+	}
+
+	lastOrDefault(query?: Predictate<T>) {
+		return this.#last(query, false);
 	}
 
 	count() {
