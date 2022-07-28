@@ -7,6 +7,13 @@
 			"request": "launch",
 			"type": "node",
 			"preLaunchTask": "tsc: build (test)"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Mocha Tests",
+			"args": ["lib-mocha"],
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
 		}
 	]
 }
