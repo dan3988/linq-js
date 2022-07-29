@@ -44,9 +44,9 @@ function toSet<T>(this: AsyncLinq<T>): Promise<Set<any>>;
 function toSet(this: Linq | AsyncLinq): any {
 	const result = new Set();
 	if (this instanceof AsyncLinq) {
-		return this.forEach(Set.prototype.add).then(() => result);
+		return this.forEach(result, Set.prototype.add).then(() => result);
 	} else {
-		this.forEach(Set.prototype.add);
+		this.forEach(result, Set.prototype.add);
 		return result;
 	}
 }
