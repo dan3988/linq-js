@@ -1,4 +1,4 @@
-import Linq from '../src/index.js';
+import Linq from '../lib/index.js';
 import fs from 'fs';
 
 interface Friend {
