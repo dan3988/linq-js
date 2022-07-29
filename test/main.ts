@@ -1,34 +1,8 @@
+/// <reference path="../sample-data.d.ts"/>
 import Linq from '../lib/index.js';
 import fs from 'fs';
 
-interface Friend {
-	id: number;
-	name: string;
-}
-
-interface SampleRow {
-	_id: string;
-	index: number;
-	guid: string;
-	balance: string;
-	picture: string;
-	age: number;
-	eyeColor: string;
-	name: string;
-	gender: string;
-	company: string;
-	email: string;
-	phone: string;
-	address: string;
-	about: string;
-	registered: string;
-	tags: string[];
-	friends: Friend[];
-	greeting: string;
-	favoriteFruit: string;
-}
-
-let data: SampleRow[] = await fs.promises.readFile('./data.json').then(v => v.toString()).then(JSON.parse);
+let data: SampleRow[] = await fs.promises.readFile('./sample-data.json').then(v => v.toString()).then(JSON.parse);
 let linq = Linq(data);
 
 let max = new Date(2018, 1, 1);
@@ -38,10 +12,12 @@ let test2 = test1.selectMany('tags').where(v => v.startsWith('a') || v.startsWit
 let array0 = test0.toArray();
 let array1 = test1.toArray();
 let array2 = test2.toArray();
+
+let stream = fs.createReadStream('./sample-data.json');
+let al = Linq<Buffer>(stream).select(v => v.toString()).selectMany(v => v.split('\n'));
+let all = await al.toArray();
+
 debugger;
-
-
-// let stream = fs.createReadStream('./data.json');
 
 // class Test implements AsyncIterableIterator<number> {
 // 	#times;
