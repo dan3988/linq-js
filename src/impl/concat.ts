@@ -24,6 +24,11 @@ export class LinqConcat<T> extends LinqInternal<T> {
 		this.#length = isNaN(l) ? undefined : l;
 	}
 
+	concat<V>(...values: Iterable<V>[]): Linq<T | V>
+	concat(...values: Iterable<any>[]): Linq<any> {
+		return new LinqConcat<any>([...this.#values, ...values]);
+	}
+
 	[Symbol.iterator](): Iterator<T> {
 		return new ConcatIterator(this.#values[Symbol.iterator]());
 	}
