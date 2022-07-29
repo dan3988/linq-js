@@ -2,7 +2,7 @@ import { Linq, AsyncLinq, LinqInternal } from '../linq-base.js';
 import { errNoElements, forEach, Predictate } from "../util.js";
 
 function firstImpl<T>(linq: Linq<T> | AsyncLinq<T>, query: undefined | Predictate, required: boolean) {
-	return forEach(linq instanceof AsyncLinq, linq, ({ done, value }): [T] | [] | void => {
+	return forEach<T, T | undefined>(linq instanceof AsyncLinq, linq, ({ done, value }) => {
 		if (done) {
 			if (!required)
 				return [];
@@ -18,7 +18,7 @@ function lastImpl<T>(linq: Linq<T> | AsyncLinq<T>, query: undefined | Predictate
 	let found = false;
 	let last: undefined | T = undefined;
 
-	return forEach(linq instanceof AsyncLinq, linq, ({ done, value }): [T | undefined] | [] | void => {
+	return forEach<T, T | undefined>(linq instanceof AsyncLinq, linq, ({ done, value }) => {
 		if (done) {
 			if (found)
 				return [last];
