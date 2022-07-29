@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "mocha -t 5000 lib-mocha"
+    "test": "del /S /Q mochawesome-report & mocha -R mochawesome -O reportFilename=out lib-mocha & start mochawesome-report\\out.html"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +13,7 @@
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.6.1",
     "mocha": "^10.0.0",
+    "mochawesome": "^7.1.3",
     "typescript": "^4.7.4"
   }
 }

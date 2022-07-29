@@ -2,3 +2,4 @@ lib
 lib-test
 lib-mocha
 node_modules
+mochawesome-report
