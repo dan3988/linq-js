@@ -120,6 +120,9 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T> {
 	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinq<T>;
 	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinq<T>;
 
+	groupBy<K extends keyof T>(query: K): AsyncLinq<Grouping<T[K], T>>;
+	groupBy<V>(query: Select<T, V>): AsyncLinq<Grouping<V, T>>;
+
 	toObject<K extends PropertyKey>(keySelector: Select<T, K>): Promise<Record<K, any>>;
 	toObject<K extends PropertyKey, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Promise<Record<K, V>>;
 	toArray(): Promise<T[]>;

@@ -79,3 +79,10 @@ LinqInternal.prototype.groupBy = function(query: SelectType) {
 
 	return new LinqGrouped(this, query);
 }
+
+AsyncLinq.prototype.groupBy = function(query: SelectType) {
+	if (typeof query !== 'function')
+		query = getter.bind(undefined, query);
+
+	return new AsyncLinqGrouped(this, query);
+}
