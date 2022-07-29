@@ -30,6 +30,8 @@ export interface Linq<T = any> extends Iterable<T> {
 	count(filter?: Predictate<T>): number;
 	any(filter?: Predictate<T>): boolean;
 
+	zip<V, R>(other: Iterable<V>, selector: BiSelect<T, V, R>): Linq<R>;
+
 	where(filter: Predictate<T>): Linq<T>;
 
 	select<V>(query: Select<T, V>): Linq<V>;
@@ -105,6 +107,8 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T> {
 	any(filter?: Predictate<T>): Promise<boolean>;
 
 	where(filter: Predictate<T>): AsyncLinq<T>;
+
+	zip<V, R>(other: AsyncIterable<V>, selector: BiSelect<T, V, R>): AsyncLinq<R>;
 
 	select<V>(query: Select<T, V>): AsyncLinq<V>;
 	select<K extends keyof T>(query: K): AsyncLinq<T[K]>;
@@ -189,6 +193,7 @@ export interface LinqInternal<T = any> extends Linq<T> {
 interface LinqInternalConstructor {
 	readonly prototype: LinqInternal;
 	<T>(values: Iterable<T>): LinqInternal<T>;
+	<T>(values: AsyncIterable<T>): AsyncLinq<T>;
 	new<T>(): LinqInternal<T>;
 }
 

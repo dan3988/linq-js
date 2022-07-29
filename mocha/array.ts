@@ -11,4 +11,9 @@ describe('array', () => {
 	describe('order', () => t.testOrder(linq, data));
 	describe('orderBy', () => t.testOrderBy(linq, data, v => v.age));
 	describe('groupBy', () => t.testGroupBy(linq, data, v => v.eyeColor));
+	describe('zip', () => {
+		let left = linq.select(v => v.name);
+		let right = linq.select(v => v.age);
+		t.testZip(left, right, left.toArray(), right.toArray(), (x, y) => x + " is " + y + " years old.")
+	});
 })
