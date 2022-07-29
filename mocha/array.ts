@@ -10,4 +10,5 @@ describe('array', () => {
 	describe('math', () => t.testMaths(linq, data, v => v.age));
 	describe('order', () => t.testOrder(linq, data));
 	describe('orderBy', () => t.testOrderBy(linq, data, v => v.age));
+	describe('groupBy', () => t.testGroupBy(linq, data, v => v.eyeColor));
 })

@@ -1,5 +1,9 @@
 import type { BiSelect, Comparer, Constructor, Predictate, Select, NumberLike, ValidKey } from "./util.js";
 
+export interface Grouping<K, V> extends Iterable<V> {
+	readonly key: K;
+}
+
 export interface Linq<T = any> extends Iterable<T> {
 	first(query?: Predictate<T>): T;
 	firstOrDefault(query?: Predictate<T>): T | undefined;
@@ -41,6 +45,9 @@ export interface Linq<T = any> extends Iterable<T> {
 
 	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): Linq<T>;
 	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): Linq<T>;
+
+	groupBy<K extends keyof T>(query: K): Linq<Grouping<T[K], T>>;
+	groupBy<V>(query: Select<T, V>): Linq<Grouping<V, T>>;
 
 	toObject<K extends PropertyKey>(keySelector: Select<T, K>): Record<K, any>;
 	toObject<K extends PropertyKey, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Record<K, V>;
