@@ -2,13 +2,32 @@
   "name": "linq",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "author": "dan3988",
+  "license": "ISC",
+  "main": "lib/index.js",
   "type": "module",
   "scripts": {
+    "prepack": "del /S /Q lib & npx tsc --build tsconfig.json",
     "test": "del /S /Q mochawesome-report & mocha -R mochawesome -O reportFilename=out lib-mocha & start mochawesome-report\\out.html"
   },
-  "author": "",
-  "license": "ISC",
+  "homepage": "https://github.com/dan3988/linq-js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dan3988/linq-js"
+  },
+  "types": "lib/index.d.ts",
+  "files": [
+    "linq",
+    "array",
+    "map",
+    "enumerate",
+    "enumerable",
+    "enumerator",
+    "iterate",
+    "iterable",
+    "iterator",
+    "query"
+  ],
   "devDependencies": {
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.6.1",
