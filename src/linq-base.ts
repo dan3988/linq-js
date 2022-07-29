@@ -194,7 +194,7 @@ export function addFactory(factory: Factory): void {
 	factories.unshift(factory);
 }
 
-addFactory((v) => new LinqIterable(v));
+addFactory(v => Symbol.iterator in v ? new LinqIterable(v as any) : undefined);
 
 let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): LinqInternal<T> {
 	if (new.target != null)
