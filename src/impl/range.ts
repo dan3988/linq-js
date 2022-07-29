@@ -107,7 +107,7 @@ export class LinqRange extends LinqInternal<number> {
 		return undefined;
 	}
 
-	source(): Iterator<number, any, undefined> {
+	[Symbol.iterator](): Iterator<number> {
 		return new RangeIterator(this.#start, this.#count, this.#step);
 	}
 }

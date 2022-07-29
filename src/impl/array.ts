@@ -96,7 +96,7 @@ export class LinqArray<T> extends LinqInternal<T> {
 		return new Set(this.#source);
 	}
 
-	source(): Iterator<T> {
+	[Symbol.iterator](): Iterator<T> {
 		return this.#source[Symbol.iterator]();
 	}
 }

@@ -27,7 +27,6 @@ function average<T>(it: Linq<T> | AsyncLinq<T>, query: undefined | SelectType<T>
 	});
 }
 
-
 function arithmetic<T>(it: Linq<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number): number
 function arithmetic<T>(it: AsyncLinq<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number): Promise<number>
 function arithmetic<T>(it: Linq<T> | AsyncLinq<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number): any {

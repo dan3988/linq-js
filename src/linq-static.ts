@@ -4,7 +4,6 @@ import { LinqRange } from "./impl/range.js";
 import { LinqRepeat } from "./impl/repeat.js";
 import { LinqConcat } from "./impl/concat.js";
 import { LinqSet } from "./impl/set.js";
-import { LinqSelect } from "./prototype/query.js";
 import type { BiSelect, Predictate } from "./util.js";
 import { EmptyIterator, FilteringIterator } from "./iterators.js";
 
@@ -22,9 +21,9 @@ Linq.repeat = function(value, count) {
 
 Linq.fromObject = function(obj: object, select?: BiSelect<string>) {
 	let source = Object.entries(obj);
-	let linq: LinqInternal = new LinqArray(source);
+	let linq: Linq = new LinqArray(source);
 	if (select != null)
-		linq = new LinqSelect(linq, a => select.apply(undefined, a));
+		linq = linq.select(a => select.apply(undefined, a));
 
 	return linq;
 }
@@ -34,13 +33,8 @@ Object.defineProperty(LinqInternal, 'length', {
 	value: null
 })
 
-LinqInternal.prototype.source = function() {
-	return EmptyIterator.INSTANCE;
-}
-
 LinqInternal.prototype[Symbol.iterator] = function() {
-	let iter = this.source();
-	return this.predictate == null ? iter : new FilteringIterator(iter, this, this.predictate);
+	return EmptyIterator.INSTANCE;
 }
 
 LinqInternal.prototype.count = function(filter?: Predictate) {

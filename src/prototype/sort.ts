@@ -35,7 +35,7 @@ export class LinqOrdered<T> extends LinqInternal<T> {
 		this.#desc = desc;
 	}
 
-	source(): Iterator<T> {
+	[Symbol.iterator](): Iterator<T> {
 		let all = this.#source.toArray().sort(this.#comp);
 		let iterator = this.#desc ? new ReverseIterator(all) : all;
 		return iterator[Symbol.iterator]();

@@ -96,7 +96,7 @@ export class LinqRepeat<T> extends LinqInternal<T> {
 		return new Set([this.#value]);
 	}
 
-	source(): Iterator<T> {
+	[Symbol.iterator](): Iterator<T> {
 		return new RepeatIterator(this.#value, this.#count);
 	}
 }

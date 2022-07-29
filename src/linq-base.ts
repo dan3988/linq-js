@@ -174,8 +174,6 @@ export interface LinqConstructor {
 /** @internal */
 export interface LinqInternal<T = any> extends Linq<T> {
 	get length(): number | undefined;
-	source(): Iterator<T>;
-	predictate?(value: T): boolean;
 }
 
 interface LinqInternalConstructor {
@@ -228,7 +226,7 @@ class LinqIterable<T> extends LinqInternal<T> {
 		this.#source = source;
 	}
 
-	source(): Iterator<T> {
+	[Symbol.iterator]() {
 		return this.#source[Symbol.iterator]();
 	}
 }
