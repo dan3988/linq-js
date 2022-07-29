@@ -1,5 +1,5 @@
-import Linq, { AsyncLinq, LinqInternal } from "../linq-base.js";
-import { Constructor, getter, isInstance, isType, Predictate, SelectType } from "../util.js";
+import { AsyncLinq, Linq, LinqInternal } from "../linq-base.js";
+import { getter, isInstance, isType, Predictate, SelectType } from "../util.js";
 
 type Modifier = readonly [type: 'select' | 'selectMany' | 'filter', fn: (arg: any) => any];
 
@@ -32,29 +32,28 @@ function *loop(source: Iterable<any>, mods: readonly Modifier[], start: number):
 async function *loopAsync(source: AsyncIterable<any>, mods: readonly Modifier[], start: number): AsyncGenerator<any> {
 	for await (const value of source) {
 		let v: any = value;
-		let accept = false;
+		let accept = true;
 		for (let i = start; i < mods.length; i++) {
 			let [type, fn] = mods[i];
-			let result = fn(value);
+			let result = fn(v);
 			if (type === 'select') {
-				accept = true;
 				v = result;
+				continue;
 			} else if (type === 'selectMany') {
-				for await (let v of loopAsync(result, mods, i))
+				for (let v of loop(result, mods, i + 1))
 					yield v;
-
-				break;
-			} else if (type === 'filter' && !result) {
-				break;
+			} else if (type === 'filter' && result) {
+				continue;
 			}
+
+			accept = false;
+			break;
 		}
 
 		if (accept)
 			yield v;
 	}
 }
-
-type ExtendConstructor<T, L> = Constructor<T, [L, Modifier[0], Modifier[1]]>;
 
 abstract class ExtendBase<T> {
 	abstract __extend(type: Modifier[0], fn: Modifier[1]): T;
@@ -133,3 +132,7 @@ export class AsyncLinqExtend extends AsyncLinq<any> implements ExtendBase<AsyncL
 		return loopAsync(this.#source, this.#mods, 0);
 	}
 }
+
+let props = Object.getOwnPropertyDescriptors(ExtendBase.prototype);
+Object.defineProperties(LinqExtend.prototype, props);
+Object.defineProperties(AsyncLinqExtend.prototype, props);
