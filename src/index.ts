@@ -5,6 +5,7 @@ import "./prototype/collection.js";
 import "./prototype/find.js";
 import "./prototype/foreach.js";
 import "./prototype/math.js";
+import "./prototype/misc.js";
 import "./prototype/query.js";
 import "./prototype/sort.js";
 

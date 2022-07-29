@@ -1,6 +1,6 @@
-import { LinqConcat } from "../impl/concat";
-import { LinqInternal } from "../linq-base";
-import { Predictate } from "../util";
+import { LinqConcat } from "../impl/concat.js";
+import { LinqInternal } from "../linq-base.js";
+import { Predictate } from "../util.js";
 
 LinqInternal.prototype.count = function(filter?: Predictate) {
 	let len = this.length;
