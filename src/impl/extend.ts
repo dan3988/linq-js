@@ -3,55 +3,153 @@ import { getter, isInstance, isType, Predictate, SelectType } from "../util.js";
 
 type Modifier = readonly [type: 'select' | 'selectMany' | 'filter', fn: (arg: any) => any];
 
-function *loop(source: Iterable<any>, mods: readonly Modifier[], start: number): Generator<any> {
-	for (const value of source) {
-		let v: any = value;
-		let accept = true;
-		for (let i = start; i < mods.length; i++) {
-			let [type, fn] = mods[i];
-			let result = fn(v);
-			if (type === 'select') {
-				v = result;
-				continue;
-			} else if (type === 'selectMany') {
-				for (let v of loop(result, mods, i + 1))
-					yield v;
-			} else if (type === 'filter' && result) {
+function res(done: boolean, value?: any) {
+	return { done, value };
+}
+
+class ExtendIterator implements IterableIterator<any> {
+	readonly #mods: readonly Modifier[];
+	readonly #stack: any[];
+	#currentStart: number;
+	#currentIt: Iterator<any>;
+	#done: boolean;
+
+	constructor(it: Iterator<any>, mods: readonly Modifier[]) {
+		this.#mods = mods;
+		this.#stack = [];
+		this.#currentStart = 0;
+		this.#currentIt = it;
+		this.#done = false;
+	}
+
+	next(): IteratorResult<any> {
+		if (this.#done)
+			return res(true);
+		
+		let stack = this.#stack;
+		let mods = this.#mods;
+		let start = this.#currentStart;
+		let it = this.#currentIt;
+
+		while (true) {
+			let v = it.next();
+			if (v.done) {
+				if (stack.length === 0) {
+					this.#done = true;
+					return res(true);
+				}
+
+				[start, it] = stack.splice(0, 2);
+				this.#currentStart = start;
+				this.#currentIt = it;
 				continue;
 			}
+			
+			let val: any = v.value;
+			let accept = true;
 
-			accept = false;
-			break;
+			for (let i = start; i < mods.length; i++) {
+				let [type, fn] = mods[i];
+				let result = fn(val);
+				if (type === 'select') {
+					val = result;
+					continue;
+				} else if (type === 'selectMany') {
+					stack.unshift(start, it);
+					start = i + 1;
+					it = result[Symbol.iterator]();
+					accept = false;
+					this.#currentIt = it;
+					this.#currentStart = start;
+					break;
+				} else if (type === 'filter' && result) {
+					continue;
+				}
+
+				accept = false;
+				break;
+			}
+
+			if (accept)
+				return res(false, val);
 		}
+	}
 
-		if (accept)
-			yield v;
+	[Symbol.iterator]() {
+		return this;
 	}
 }
 
-async function *loopAsync(source: AsyncIterable<any>, mods: readonly Modifier[], start: number): AsyncGenerator<any> {
-	for await (const value of source) {
-		let v: any = value;
-		let accept = true;
-		for (let i = start; i < mods.length; i++) {
-			let [type, fn] = mods[i];
-			let result = fn(v);
-			if (type === 'select') {
-				v = result;
-				continue;
-			} else if (type === 'selectMany') {
-				for (let v of loop(result, mods, i + 1))
-					yield v;
-			} else if (type === 'filter' && result) {
+class AsyncExtendIterator implements AsyncIterableIterator<any> {
+	readonly #mods: readonly Modifier[];
+	readonly #stack: any[];
+	#currentStart: number;
+	#currentIt: AsyncIterator<any>;
+	#done: boolean;
+
+	constructor(it: AsyncIterator<any>, mods: readonly Modifier[]) {
+		this.#mods = mods;
+		this.#stack = [];
+		this.#currentStart = 0;
+		this.#currentIt = it;
+		this.#done = false;
+	}
+
+	async next(): Promise<IteratorResult<any>> {
+		if (this.#done)
+			return res(true);
+		
+		let stack = this.#stack;
+		let mods = this.#mods;
+		let start = this.#currentStart;
+		let it = this.#currentIt;
+
+		while (true) {
+			let v = await it.next();
+			if (v.done) {
+				if (stack.length === 0) {
+					this.#done = true;
+					return res(true);
+				}
+
+				[start, it] = stack.splice(0, 2);
+				this.#currentStart = start;
+				this.#currentIt = it;
 				continue;
 			}
+			
+			let val: any = v.value;
+			let accept = true;
 
-			accept = false;
-			break;
+			for (let i = start; i < mods.length; i++) {
+				let [type, fn] = mods[i];
+				let result = fn(val);
+				if (type === 'select') {
+					val = result;
+					continue;
+				} else if (type === 'selectMany') {
+					stack.unshift(start, it);
+					start = i + 1;
+					it = result[Symbol.iterator]();
+					accept = false;
+					this.#currentIt = it;
+					this.#currentStart = start;
+					break;
+				} else if (type === 'filter' && result) {
+					continue;
+				}
+
+				accept = false;
+				break;
+			}
+
+			if (accept)
+				return res(false, val);
 		}
+	}
 
-		if (accept)
-			yield v;
+	[Symbol.asyncIterator]() {
+		return this;
 	}
 }
 
@@ -107,7 +205,8 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 	}
 	
 	[Symbol.iterator](): Iterator<any> {
-		return loop(this.#source, this.#mods, 0);
+		const it = this.#source[Symbol.iterator]();
+		return new ExtendIterator(it, this.#mods);
 	}
 }
 
@@ -129,7 +228,8 @@ export class AsyncLinqExtend extends AsyncLinq<any> implements ExtendBase<AsyncL
 	}
 	
 	[Symbol.asyncIterator](): AsyncIterator<any> {
-		return loopAsync(this.#source, this.#mods, 0);
+		const it = this.#source[Symbol.asyncIterator]();
+		return new AsyncExtendIterator(it, this.#mods);
 	}
 }
 
