@@ -1,83 +1,115 @@
 import { AsyncLinq, Linq, LinqInternal } from "../linq-base.js";
 import { getter, isInstance, isType, Predictate, SelectType } from "../util.js";
 
-const enum OperationType {
+/** @internal */
+export const enum OperationType {
 	Select,
 	SelectMany,
 	Filter
 }
 
-type Operation = readonly [type: OperationType, fn: (arg: any) => any];
+/** @internal */
+export type Operation = readonly [type: OperationType, fn: (arg: any) => any];
 
 function res(done: boolean, value?: any) {
 	return { done, value };
 }
 
-class ExtendIterator implements IterableIterator<any> {
+type Result<V> = boolean | [V]
+
+abstract class ExtendIteratorBase<I, R, V> {
+	readonly #symbol: symbol;
 	readonly #ops: readonly Operation[];
 	readonly #stack: any[];
 	#currentStart: number;
-	#currentIt: Iterator<any>;
+	#currentIt: I;
 	#done: boolean;
 
-	constructor(it: Iterator<any>, ops: readonly Operation[]) {
+	protected get __current() {
+		return this.#currentIt;
+	}
+
+	constructor(symbol: symbol, it: I, ops: readonly Operation[]) {
+		this.#symbol = symbol;
 		this.#ops = ops;
 		this.#stack = [];
 		this.#currentStart = 0;
 		this.#currentIt = it;
 		this.#done = false;
 	}
+	
+	protected abstract __execute(callback: (this: this, r: IteratorResult<V>) => Result<V>): R;
+	protected abstract __done(): R;
 
-	next(): IteratorResult<any> {
-		if (this.#done)
-			return res(true);
-		
-		let stack = this.#stack;
-		let ops = this.#ops;
+	next(): R {
+		if (this.#done) {
+			return this.__done();
+		} else {
+			return this.__execute(this.#onNext);
+		}
+	}
+
+	#onNext(v: IteratorResult<V>): Result<V> {
 		let start = this.#currentStart;
 		let it = this.#currentIt;
 
-		while (true) {
-			let v = it.next();
-			if (v.done) {
-				if (stack.length === 0) {
-					this.#done = true;
-					return res(true);
-				}
+		if (v.done) {
+			if (this.#stack.length === 0) {
+				this.#done = true;
+				return true;
+			}
 
-				[start, it] = stack.splice(0, 2);
-				this.#currentStart = start;
+			let [start, it] = this.#stack.splice(0, 2);
+			this.#currentStart = start;
+			this.#currentIt = it;
+			return false;
+		}
+		
+		let val: any = v.value;
+
+		for (let i = start; i < this.#ops.length; i++) {
+			let [type, fn] = this.#ops[i];
+			let result = fn(val);
+			if (type === OperationType.Select) {
+				val = result;
+				continue;
+			} else if (type === OperationType.SelectMany) {
+				this.#stack.unshift(start, it);
+				start = i + 1;
+				it = result[this.#symbol]();
 				this.#currentIt = it;
+				this.#currentStart = start;
+				return false;
+			} else if (type === OperationType.Filter && result) {
 				continue;
 			}
-			
-			let val: any = v.value;
-			let accept = true;
 
-			for (let i = start; i < ops.length; i++) {
-				let [type, fn] = ops[i];
-				let result = fn(val);
-				if (type === OperationType.Select) {
-					val = result;
-					continue;
-				} else if (type === OperationType.SelectMany) {
-					stack.unshift(start, it);
-					start = i + 1;
-					it = result[Symbol.iterator]();
-					accept = false;
-					this.#currentIt = it;
-					this.#currentStart = start;
-					break;
-				} else if (type === OperationType.Filter && result) {
-					continue;
-				}
+			return false;
+		}
 
-				accept = false;
-				break;
+		return [val];
+	}
+}
+
+
+class ExtendIterator extends ExtendIteratorBase<Iterator<any>, IteratorResult<any>, any> implements IterableIterator<any> {
+	constructor(it: Iterator<any>, ops: readonly Operation[]) {
+		super(Symbol.iterator, it, ops);
+	}
+
+	protected __done(): IteratorResult<any, any> {
+		return res(true);
+	}
+
+	protected __execute(callback: (r: IteratorResult<any, any>) => Result<any>): IteratorResult<any, any> {
+		while (true) {
+			let result = this.__current.next();
+			let ret = callback.call(this, result);
+			if (Array.isArray(ret)) {
+				return res(false, ret[0]);
+			} else if (ret) {
+				return res(true);
 			}
-
-			if (accept)
-				return res(false, val);
 		}
 	}
 
@@ -86,71 +118,24 @@ class ExtendIterator implements IterableIterator<any> {
 	}
 }
 
-class AsyncExtendIterator implements AsyncIterableIterator<any> {
-	readonly #ops: readonly Operation[];
-	readonly #stack: any[];
-	#currentStart: number;
-	#currentIt: AsyncIterator<any>;
-	#done: boolean;
-
-	constructor(it: AsyncIterator<any>, ops: readonly Operation[]) {
-		this.#ops = ops;
-		this.#stack = [];
-		this.#currentStart = 0;
-		this.#currentIt = it;
-		this.#done = false;
+class AsyncExtendIterator<T> extends ExtendIteratorBase<AsyncIterator<T>, Promise<IteratorResult<T>>, T> implements AsyncIterableIterator<T> {
+	constructor(it: AsyncIterator<T>, ops: readonly Operation[]) {
+		super(Symbol.asyncIterator, it, ops);
 	}
 
-	async next(): Promise<IteratorResult<any>> {
-		if (this.#done)
-			return res(true);
-		
-		let stack = this.#stack;
-		let ops = this.#ops;
-		let start = this.#currentStart;
-		let it = this.#currentIt;
-
+	protected __done() {
+		return Promise.resolve(res(true));
+	}
+	
+	protected async __execute(callback: (r: IteratorResult<T, any>) => Result<T>) {
 		while (true) {
-			let v = await it.next();
-			if (v.done) {
-				if (stack.length === 0) {
-					this.#done = true;
-					return res(true);
-				}
-
-				[start, it] = stack.splice(0, 2);
-				this.#currentStart = start;
-				this.#currentIt = it;
-				continue;
+			let result = await this.__current.next();
+			let ret = callback.call(this, result);
+			if (Array.isArray(ret)) {
+				return res(false, ret);
+			} else if (ret) {
+				return res(true);
 			}
-			
-			let val: any = v.value;
-			let accept = true;
-
-			for (let i = start; i < ops.length; i++) {
-				let [type, fn] = ops[i];
-				let result = fn(val);
-				if (type === OperationType.Select) {
-					val = result;
-					continue;
-				} else if (type === OperationType.SelectMany) {
-					stack.unshift(start, it);
-					start = i + 1;
-					it = result[Symbol.iterator]();
-					accept = false;
-					this.#currentIt = it;
-					this.#currentStart = start;
-					break;
-				} else if (type === OperationType.Filter && result) {
-					continue;
-				}
-
-				accept = false;
-				break;
-			}
-
-			if (accept)
-				return res(false, val);
 		}
 	}
 
