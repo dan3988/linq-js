@@ -1,27 +1,27 @@
 import { AsyncLinq, Linq, LinqInternal } from "../linq-base.js";
 import { getter, isInstance, isType, Predictate, SelectType } from "../util.js";
 
-const enum ModifierType {
+const enum OperationType {
 	Select,
 	SelectMany,
 	Filter
 }
 
-type Modifier = readonly [type: ModifierType, fn: (arg: any) => any];
+type Operation = readonly [type: OperationType, fn: (arg: any) => any];
 
 function res(done: boolean, value?: any) {
 	return { done, value };
 }
 
 class ExtendIterator implements IterableIterator<any> {
-	readonly #mods: readonly Modifier[];
+	readonly #ops: readonly Operation[];
 	readonly #stack: any[];
 	#currentStart: number;
 	#currentIt: Iterator<any>;
 	#done: boolean;
 
-	constructor(it: Iterator<any>, mods: readonly Modifier[]) {
-		this.#mods = mods;
+	constructor(it: Iterator<any>, ops: readonly Operation[]) {
+		this.#ops = ops;
 		this.#stack = [];
 		this.#currentStart = 0;
 		this.#currentIt = it;
@@ -33,7 +33,7 @@ class ExtendIterator implements IterableIterator<any> {
 			return res(true);
 		
 		let stack = this.#stack;
-		let mods = this.#mods;
+		let ops = this.#ops;
 		let start = this.#currentStart;
 		let it = this.#currentIt;
 
@@ -54,13 +54,13 @@ class ExtendIterator implements IterableIterator<any> {
 			let val: any = v.value;
 			let accept = true;
 
-			for (let i = start; i < mods.length; i++) {
-				let [type, fn] = mods[i];
+			for (let i = start; i < ops.length; i++) {
+				let [type, fn] = ops[i];
 				let result = fn(val);
-				if (type === ModifierType.Select) {
+				if (type === OperationType.Select) {
 					val = result;
 					continue;
-				} else if (type ===  ModifierType.SelectMany) {
+				} else if (type === OperationType.SelectMany) {
 					stack.unshift(start, it);
 					start = i + 1;
 					it = result[Symbol.iterator]();
@@ -68,7 +68,7 @@ class ExtendIterator implements IterableIterator<any> {
 					this.#currentIt = it;
 					this.#currentStart = start;
 					break;
-				} else if (type === ModifierType.Filter && result) {
+				} else if (type === OperationType.Filter && result) {
 					continue;
 				}
 
@@ -87,14 +87,14 @@ class ExtendIterator implements IterableIterator<any> {
 }
 
 class AsyncExtendIterator implements AsyncIterableIterator<any> {
-	readonly #mods: readonly Modifier[];
+	readonly #ops: readonly Operation[];
 	readonly #stack: any[];
 	#currentStart: number;
 	#currentIt: AsyncIterator<any>;
 	#done: boolean;
 
-	constructor(it: AsyncIterator<any>, mods: readonly Modifier[]) {
-		this.#mods = mods;
+	constructor(it: AsyncIterator<any>, ops: readonly Operation[]) {
+		this.#ops = ops;
 		this.#stack = [];
 		this.#currentStart = 0;
 		this.#currentIt = it;
@@ -106,7 +106,7 @@ class AsyncExtendIterator implements AsyncIterableIterator<any> {
 			return res(true);
 		
 		let stack = this.#stack;
-		let mods = this.#mods;
+		let ops = this.#ops;
 		let start = this.#currentStart;
 		let it = this.#currentIt;
 
@@ -127,13 +127,13 @@ class AsyncExtendIterator implements AsyncIterableIterator<any> {
 			let val: any = v.value;
 			let accept = true;
 
-			for (let i = start; i < mods.length; i++) {
-				let [type, fn] = mods[i];
+			for (let i = start; i < ops.length; i++) {
+				let [type, fn] = ops[i];
 				let result = fn(val);
-				if (type ===  ModifierType.Select) {
+				if (type === OperationType.Select) {
 					val = result;
 					continue;
-				} else if (type ===  ModifierType.SelectMany) {
+				} else if (type === OperationType.SelectMany) {
 					stack.unshift(start, it);
 					start = i + 1;
 					it = result[Symbol.iterator]();
@@ -141,7 +141,7 @@ class AsyncExtendIterator implements AsyncIterableIterator<any> {
 					this.#currentIt = it;
 					this.#currentStart = start;
 					break;
-				} else if (type ===  ModifierType.Filter && result) {
+				} else if (type === OperationType.Filter && result) {
 					continue;
 				}
 
@@ -160,50 +160,50 @@ class AsyncExtendIterator implements AsyncIterableIterator<any> {
 }
 
 abstract class ExtendBase<T> {
-	abstract __extend(type: Modifier[0], fn: Modifier[1]): T;
+	abstract __extend(type: Operation[0], fn: Operation[1]): T;
 
 	select(query: SelectType): T {
 		if (typeof query !== 'function')
 			query = getter.bind(undefined, query);
 
-		return this.__extend(ModifierType.Select, query);
+		return this.__extend(OperationType.Select, query);
 	}
 
 	selectMany(query: SelectType): T {
 		if (typeof query !== 'function')
 			query = getter.bind(undefined, query);
 
-		return this.__extend(ModifierType.SelectMany, query);
+		return this.__extend(OperationType.SelectMany, query);
 	}
 
 	where(filter: Predictate): T {
-		return this.__extend(ModifierType.Filter, filter);
+		return this.__extend(OperationType.Filter, filter);
 	}
 
 	ofType(type: any): T {
 		let func = typeof type === 'string' ? isType.bind(undefined, type) : isInstance.bind(undefined, type);
-		return this.__extend(ModifierType.Filter, func);
+		return this.__extend(OperationType.Filter, func);
 	}
 }
 
 /** @internal */
 export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 	readonly #source: LinqInternal;
-	readonly #mods: Modifier[];
+	readonly #mods: Operation[];
 	#useLength: boolean;
 
 	get length(): number | undefined {
 		return this.#useLength ? this.#source.length : undefined;
 	}
 
-	constructor(source: LinqInternal, type: Modifier[0], fn: Modifier[1]) {
+	constructor(source: LinqInternal, type: Operation[0], fn: Operation[1]) {
 		super();
 		this.#source = source;
 		this.#mods = [[type, fn]];
-		this.#useLength = type === ModifierType.Select;
+		this.#useLength = type === OperationType.Select;
 	}
 
-	__extend(type: Modifier[0], fn: Modifier[1]): LinqExtend {
+	__extend(type: Operation[0], fn: Operation[1]): LinqExtend {
 		let linq = new LinqExtend(this.#source, type, fn);
 		linq.#useLength &&= this.#useLength;
 		linq.#mods.unshift(...this.#mods);
@@ -219,15 +219,15 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 /** @internal */
 export class AsyncLinqExtend extends AsyncLinq<any> implements ExtendBase<AsyncLinq> {
 	readonly #source: AsyncLinq;
-	readonly #mods: Modifier[];
+	readonly #mods: Operation[];
 	
-	constructor(source: AsyncLinq, type: Modifier[0], fn: Modifier[1]) {
+	constructor(source: AsyncLinq, type: Operation[0], fn: Operation[1]) {
 		super(source);
 		this.#source = source;
 		this.#mods = [[type, fn]];
 	}
 
-	__extend(type: Modifier[0], fn: Modifier[1]): AsyncLinqExtend {
+	__extend(type: Operation[0], fn: Operation[1]): AsyncLinqExtend {
 		let linq = new AsyncLinqExtend(this.#source, type, fn);
 		linq.#mods.unshift(...this.#mods);
 		return linq;
