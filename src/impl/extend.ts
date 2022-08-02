@@ -1,7 +1,13 @@
 import { AsyncLinq, Linq, LinqInternal } from "../linq-base.js";
 import { getter, isInstance, isType, Predictate, SelectType } from "../util.js";
 
-type Modifier = readonly [type: 'select' | 'selectMany' | 'filter', fn: (arg: any) => any];
+const enum ModifierType {
+	Select,
+	SelectMany,
+	Filter
+}
+
+type Modifier = readonly [type: ModifierType, fn: (arg: any) => any];
 
 function res(done: boolean, value?: any) {
 	return { done, value };
@@ -51,10 +57,10 @@ class ExtendIterator implements IterableIterator<any> {
 			for (let i = start; i < mods.length; i++) {
 				let [type, fn] = mods[i];
 				let result = fn(val);
-				if (type === 'select') {
+				if (type === ModifierType.Select) {
 					val = result;
 					continue;
-				} else if (type === 'selectMany') {
+				} else if (type ===  ModifierType.SelectMany) {
 					stack.unshift(start, it);
 					start = i + 1;
 					it = result[Symbol.iterator]();
@@ -62,7 +68,7 @@ class ExtendIterator implements IterableIterator<any> {
 					this.#currentIt = it;
 					this.#currentStart = start;
 					break;
-				} else if (type === 'filter' && result) {
+				} else if (type === ModifierType.Filter && result) {
 					continue;
 				}
 
@@ -124,10 +130,10 @@ class AsyncExtendIterator implements AsyncIterableIterator<any> {
 			for (let i = start; i < mods.length; i++) {
 				let [type, fn] = mods[i];
 				let result = fn(val);
-				if (type === 'select') {
+				if (type ===  ModifierType.Select) {
 					val = result;
 					continue;
-				} else if (type === 'selectMany') {
+				} else if (type ===  ModifierType.SelectMany) {
 					stack.unshift(start, it);
 					start = i + 1;
 					it = result[Symbol.iterator]();
@@ -135,7 +141,7 @@ class AsyncExtendIterator implements AsyncIterableIterator<any> {
 					this.#currentIt = it;
 					this.#currentStart = start;
 					break;
-				} else if (type === 'filter' && result) {
+				} else if (type ===  ModifierType.Filter && result) {
 					continue;
 				}
 
@@ -160,23 +166,23 @@ abstract class ExtendBase<T> {
 		if (typeof query !== 'function')
 			query = getter.bind(undefined, query);
 
-		return this.__extend('select', query);
+		return this.__extend(ModifierType.Select, query);
 	}
 
 	selectMany(query: SelectType): T {
 		if (typeof query !== 'function')
 			query = getter.bind(undefined, query);
 
-		return this.__extend('selectMany', query);
+		return this.__extend(ModifierType.SelectMany, query);
 	}
 
 	where(filter: Predictate): T {
-		return this.__extend('filter', filter);
+		return this.__extend(ModifierType.Filter, filter);
 	}
 
 	ofType(type: any): T {
 		let func = typeof type === 'string' ? isType.bind(undefined, type) : isInstance.bind(undefined, type);
-		return this.__extend('filter', func);
+		return this.__extend(ModifierType.Filter, func);
 	}
 }
 
@@ -194,7 +200,7 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 		super();
 		this.#source = source;
 		this.#mods = [[type, fn]];
-		this.#useLength = type === 'select';
+		this.#useLength = type === ModifierType.Select;
 	}
 
 	__extend(type: Modifier[0], fn: Modifier[1]): LinqExtend {
