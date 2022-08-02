@@ -2,8 +2,8 @@
 import Linq, { Select } from '../../lib/index.js';
 import assert from 'assert';
 
-export function testMaths<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, select: Select<T, number>)
-export function testMaths(linq: Linq<number>, expected: ReadOnlyArray<number>)
+export function testMaths<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, select: Select<T, number>): void
+export function testMaths(linq: Linq<number>, expected: ReadOnlyArray<number>): void
 export function testMaths(linq: Linq, expected: ReadOnlyArray<any>, select?: Select) {
 	if (select != null) {
 		linq = linq.select(select);
@@ -22,13 +22,13 @@ export function testMaths(linq: Linq, expected: ReadOnlyArray<any>, select?: Sel
 	});
 
 	it('should return correct value for min()', () => {
-		let min = Math.min.apply(undefined, expected);
+		let min = Math.min(...expected);
 		let v = linq.min();
 		assert.strictEqual(v, min);
 	});
 
 	it('should return correct value for max()', () => {
-		let min = Math.max.apply(undefined, expected);
+		let min = Math.max(...expected);
 		let v = linq.max();
 		assert.strictEqual(v, min);
 	});
