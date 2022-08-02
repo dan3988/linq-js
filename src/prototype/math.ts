@@ -1,43 +1,44 @@
-import { errNoElements, forEach, getter, Select, SelectType } from "../util.js";
-import Linq, { AsyncLinq, LinqInternal } from '../linq-base.js';
+import { errNoElements, getter, Select, SelectType } from "../util.js";
+import Linq, { AsyncLinq, LinqCommon, LinqInternal } from '../linq-base.js';
 
 function average<T>(it: Linq<T>, query: undefined | SelectType<T>): number
 function average<T>(it: AsyncLinq<T>, query: undefined | SelectType<T>): Promise<number>
-function average<T>(it: Linq<T> | AsyncLinq<T>, query: undefined | SelectType<T>) {
-	let select: undefined | Select<T> = undefined;
+function average<T>(it: LinqCommon<T>, query: undefined | SelectType<T>) {
+	let select: undefined | Select = undefined;
 	if (query != null)
 		select = typeof query === 'function' ? query : getter.bind(undefined, query);
 
 	let sum = 0;
-	let i = 0;
-	return forEach<T, number>(it instanceof AsyncLinq, it, ({ value, done }) => {
-		if (done) {
-			if (i === 0)
-				throw errNoElements();
+	let count = 0;
 
-			return [sum / i];
+	return it.iterate(undefined, (done, value) => {
+		if (done) {
+			if (count === 0)
+				throw errNoElements();
+			
+			return [sum / count];
 		} else {
 			let v = +(select ? select(value) : value);
 			if (isNaN(v))
 				return [NaN];
-	
-			i++;
+
 			sum += v;
+			count++;
 		}
-	});
+	})
 }
 
 function arithmetic<T>(it: Linq<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number): number
 function arithmetic<T>(it: AsyncLinq<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number): Promise<number>
-function arithmetic<T>(it: Linq<T> | AsyncLinq<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number) {
-	let select: undefined | Select<T> = undefined;
+function arithmetic<T>(it: LinqCommon<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number) {
+	let select: undefined | Select = undefined;
 	if (query != null)
 		select = typeof query === 'function' ? query : getter.bind(undefined, query);
 
-	return forEach<T, number>(it instanceof AsyncLinq, it, ({ value, done }) => {
+	return it.iterate(undefined, (done, value) => {
 		if (done)
 			return [start];
-
+		
 		let v = +(select ? select(value) : value);
 		if (isNaN(v))
 			return [NaN];

@@ -86,25 +86,6 @@ async function asyncForEach<T>(values: AsyncIterable<T>, callback: IterCallback<
 	}
 }
 
-export function forEach<T>(async: true, values: AsyncIterable<T>, callback: IterCallback<T, void>): Promise<void>;
-export function forEach<T>(async: false, values: Iterable<T>, callback: IterCallback<T, void>): void;
-export function forEach<T>(async: boolean, values: AsyncIterable<T> | Iterable<T>, callback: IterCallback<T, void>): void | Promise<void>;
-export function forEach<T, V>(async: true, values: AsyncIterable<T>, callback: IterCallback<T, readonly [V] | readonly []>): Promise<V>;
-export function forEach<T, V>(async: false, values: Iterable<T>, callback: IterCallback<T, readonly [V] | readonly []>): V;
-export function forEach<T, V>(async: boolean, values: AsyncIterable<T> | Iterable<T>, callback: IterCallback<T, readonly [V] | readonly []>): V | Promise<V>;
-export function forEach(async: boolean, values: any, callback: IterCallback): any {
-	if (async) {
-		return asyncForEach(values, callback);
-	} else {
-		const iter: Iterator<any> = values[Symbol.iterator]();
-		while (true) {
-			let result = iter.next();
-			let val = callback(result);
-			if (val != null)
-				return val[0];
-	
-			if (result.done)
-				break;
-		}
-	}
+export function identity<T>(this: T): T {
+	return this;
 }

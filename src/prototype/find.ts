@@ -1,63 +1,56 @@
-import { Linq, AsyncLinq, LinqInternal } from '../linq-base.js';
-import { errNoElements, forEach, Predictate } from "../util.js";
+import { AsyncLinq, LinqInternal, LinqCommon } from '../linq-base.js';
+import { errNoElements, Predictate } from "../util.js";
 
-function firstImpl<T>(linq: Linq<T> | AsyncLinq<T>, query: undefined | Predictate, required: boolean) {
-	return forEach<T, T | undefined>(linq instanceof AsyncLinq, linq, ({ done, value }) => {
+function firstImpl<T>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean) {
+	return linq.iterate(undefined, (done, value) => {
 		if (done) {
-			if (!required)
-				return [];
-
-			throw errNoElements();
+			if (required)
+				throw errNoElements();
 		} else if (query == null || query(value)) {
 			return [value];
 		}
 	});
 }
 
-function lastImpl<T>(linq: Linq<T> | AsyncLinq<T>, query: undefined | Predictate, required: boolean) {
+function lastImpl<T>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean) {
 	let found = false;
 	let last: undefined | T = undefined;
 
-	return forEach<T, T | undefined>(linq instanceof AsyncLinq, linq, ({ done, value }) => {
+	return linq.iterate(undefined, (done, value) => {
 		if (done) {
-			if (found)
-				return [last];
+			if (!found && required)
+				throw errNoElements();
 
-			if (!required)
-				return [];
-		
-			throw errNoElements();
-		} else {
-			if (query == null || query(value)) {
-				found = true;
-				last = value;
-			}
+			return [last];
+		} else if (query == null || query(value)) {
+			found = true;
+			last = value;
 		}
 	});
 }
 
-function first(this: Linq | AsyncLinq, query?: Predictate) {
+function first<T>(this: LinqCommon<T>, query?: Predictate<T>) {
 	return firstImpl(this, query, true);
 }
 
 LinqInternal.prototype.first = first;
 AsyncLinq.prototype.first = first;
 
-function firstOrDefault(this: Linq | AsyncLinq, query?: Predictate) {
+function firstOrDefault<T>(this: LinqCommon<T>, query?: Predictate<T>) {
 	return firstImpl(this, query, false);
 }
 
 LinqInternal.prototype.firstOrDefault = firstOrDefault;
 AsyncLinq.prototype.firstOrDefault = firstOrDefault;
 
-function last(this: Linq | AsyncLinq, query?: Predictate) {
+function last<T>(this: LinqCommon<T>, query?: Predictate<T>) {
 	return lastImpl(this, query, true);
 }
 
 LinqInternal.prototype.last = last;
 AsyncLinq.prototype.last = last;
 
-function lastOrDefault(this: Linq | AsyncLinq, query?: Predictate) {
+function lastOrDefault<T>(this: LinqCommon<T>, query?: Predictate<T>) {
 	return lastImpl(this, query, false);
 }
 

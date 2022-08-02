@@ -1,54 +1,51 @@
-import { LinqInternal, Linq, AsyncLinq } from '../linq-base.js';
+import { LinqInternal, Linq, AsyncLinq, LinqCommon } from '../linq-base.js';
 import { invokeSelect, SelectType } from '../util.js';
 
-function toObjectCallback(this: any, keySelector: SelectType, valueSelector: undefined | SelectType, item: any) {
-	const key = invokeSelect(item, true, keySelector);
-	const value = invokeSelect(item, false, valueSelector);
-	this[key] = value;
+function toObjectCallback(this: any, keySelector: SelectType, valueSelector: undefined | SelectType, done: boolean, value: any) {
+	if (done)
+		return [this];
+
+	const key = invokeSelect(value, true, keySelector);
+	const val = invokeSelect(value, false, valueSelector);
+	this[key] = val;
 }
 
 function toObject<T>(this: Linq<T>, keySelector: SelectType<T>, valueSelector?: SelectType<T>): any
 function toObject<T>(this: AsyncLinq<T>, keySelector: SelectType<T>, valueSelector?: SelectType<T>): Promise<any>;
-function toObject(this: Linq | AsyncLinq, keySelector: SelectType, valueSelector?: SelectType): any {
+function toObject<T>(this: LinqCommon<T>, keySelector: SelectType, valueSelector?: SelectType): any {
 	const result: any = {};
 	const cb = toObjectCallback.bind(result, keySelector, valueSelector);
-	if (this instanceof AsyncLinq) {
-		return this.forEach(cb).then(() => result);
-	} else {
-		this.forEach(cb);
-		return result;
-	}
+	return this.iterate(result, cb);
 }
 
-function toMapCallback(this: Map<any, any>, keySelector: SelectType, valueSelector: undefined | SelectType, item: any) {
-	const key = invokeSelect(item, true, keySelector);
-	const value = invokeSelect(item, false, valueSelector);
-	this.set(key, value);
+function toMapCallback(this: Map<any, any>, keySelector: SelectType, valueSelector: undefined | SelectType, done: boolean, value: any) {
+	if (done)
+		return [this];
+
+	const key = invokeSelect(value, true, keySelector);
+	const val = invokeSelect(value, false, valueSelector);
+	this.set(key, val);
 }
 
 function toMap<T>(this: Linq<T>, keySelector: SelectType<T>, valueSelector?: SelectType<T>): Map<any, any>
 function toMap<T>(this: AsyncLinq<T>, keySelector: SelectType<T>, valueSelector?: SelectType<T>): Promise<Map<any, any>>;
-function toMap(this: Linq | AsyncLinq, keySelector: SelectType, valueSelector?: SelectType): any {
+function toMap<T>(this: LinqCommon<T>, keySelector: SelectType, valueSelector?: SelectType) {
 	const result = new Map();
 	const cb = toMapCallback.bind(result, keySelector, valueSelector);
-	if (this instanceof AsyncLinq) {
-		return this.forEach(cb).then(() => result);
-	} else {
-		this.forEach(cb);
-		return result;
-	}
+	return this.iterate(undefined, cb);
 }
 
-function toSet<T>(this: Linq<T>): Set<any>
-function toSet<T>(this: AsyncLinq<T>): Promise<Set<any>>;
-function toSet(this: Linq | AsyncLinq): any {
-	const result = new Set();
-	if (this instanceof AsyncLinq) {
-		return this.forEach(result, Set.prototype.add).then(() => result);
-	} else {
-		this.forEach(result, Set.prototype.add);
-		return result;
-	}
+function toSetCallback<T>(this: Set<T>, done: boolean, value: T) {
+	if (done)
+		return [this];
+
+	this.add(value);
+}
+
+function toSet<T>(this: Linq<T>): Set<T>
+function toSet<T>(this: AsyncLinq<T>): Promise<Set<T>>;
+function toSet<T>(this: LinqCommon<T>) {
+	return this.iterate(new Set<T>(), toSetCallback);
 }
 
 LinqInternal.prototype.toObject = toObject;

@@ -1,10 +1,10 @@
-import type { BiSelect, Comparer, Constructor, Predictate, Select, NumberLike, ValidKey } from "./util.js";
+import type { BiSelect, Comparer, Constructor, Predictate, Select, NumberLike, ValidKey, Awaitable } from "./util.js";
 
 export interface Grouping<K, V> extends Iterable<V> {
 	readonly key: K;
 }
 
-export interface Linq<T = any> extends Iterable<T> {
+export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	first(query?: Predictate<T>): T;
 	firstOrDefault(query?: Predictate<T>): T | undefined;
 
@@ -26,7 +26,7 @@ export interface Linq<T = any> extends Iterable<T> {
 	average(): number;
 	average(query: ValidKey<T, NumberLike>): number;
 	average(query: Select<T, NumberLike>): number;
-	
+
 	count(filter?: Predictate<T>): number;
 	any(filter?: Predictate<T>): boolean;
 
@@ -76,11 +76,18 @@ export interface Linq<T = any> extends Iterable<T> {
 
 	join(separator?: string): string;
 
-	forEach(fn: (item: T) => void): void;
-	forEach<V>(thisArg: V, fn: (this: V, item: T) => void): void;
+	aggregate<V>(initial: V, aggregate: BiSelect<V, T, V>): V;
+
+	iterate<V>(fn: IterateCallback<undefined, T, V>): V | undefined;
+	iterate<E, V>(thisArg: E, fn: IterateCallback<E, T, V>): V | undefined;
+
+	forEach(fn: (item: T) => void | never[]): void;
+	forEach<E>(thisArg: E, fn: (this: E, item: T) => void | never[]): void;
+	forEach<V>(fn: (item: T) => void | never[] | V[]): V | undefined;
+	forEach<E, V>(thisArg: E, fn: (this: E, item: T) => void | never[] | V[]): V | undefined;
 }
 
-export interface AsyncLinq<T = any> extends AsyncIterable<T> {
+export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	first(query?: Predictate<T>): Promise<T>;
 	firstOrDefault(query?: Predictate<T>): Promise<T | undefined>;
 
@@ -102,7 +109,7 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T> {
 	average(): Promise<number>;
 	average(query: ValidKey<T, NumberLike>): Promise<number>;
 	average(query: Select<T, NumberLike>): Promise<number>;
-	
+
 	count(filter?: Predictate<T>): Promise<number>;
 	any(filter?: Predictate<T>): Promise<boolean>;
 
@@ -152,8 +159,15 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T> {
 
 	join(separator?: string): Promise<string>;
 
-	forEach(fn: (item: T) => void): Promise<void>;
-	forEach<V>(thisArg: V, fn: (this: V, item: T) => void): Promise<void>;
+	aggregate<V>(initial: V, aggregate: BiSelect<V, T, V>): Promise<V>;
+
+	iterate<V>(fn: IterateCallback<undefined, T, V>): Promise<V | undefined>;
+	iterate<E, V>(thisArg: E, fn: IterateCallback<E, T, V>): Promise<V | undefined>;
+
+	forEach(fn: (item: T) => void | never[]): Promise<void>;
+	forEach<E>(thisArg: E, fn: (this: E, item: T) => void | never[]): Promise<void>;
+	forEach<V>(fn: (item: T) => void | never[] | V[]): Promise<V | undefined>;
+	forEach<E, V>(thisArg: E, fn: (this: E, item: T) => void | never[] | V[]): Promise<V | undefined>;
 }
 
 export interface AsyncLinqConstructor {
@@ -171,6 +185,55 @@ export var AsyncLinq: AsyncLinqConstructor = <any>class AsyncLinq<T> {
 	[Symbol.asyncIterator]() {
 		return this.#source[Symbol.asyncIterator]();
 	}
+}
+
+interface IterateCallback<TThis, T, V> {
+	(this: TThis, done: true, value: undefined): void | V[];
+	(this: TThis, done: false, value: T): void | V[];
+}
+
+/** @internal */
+export interface LinqCommon<T> {
+	aggregate<V>(initial: V, aggregate: BiSelect<V, T, V>): Awaitable<V>;
+
+	/**
+	 * Iterate this query and call a function with each result from the iterator.
+	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
+	 * @returns The result from {@link fn}, if any.
+	 */
+	iterate<V>(fn: IterateCallback<undefined, T, V>): Awaitable<V | undefined>;
+	/**
+	 * Iterate this query and call a function with each result from the iterator.
+	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
+	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
+	 * @returns The result from {@link fn}, if any.
+	 */
+	iterate<E, V>(thisArg: E, fn: IterateCallback<E, T, V>): Awaitable<V | undefined>;
+
+	/**
+     * Iterate this query and call a function for each item.
+	 * @param fn - A function that is called once for each item.
+	 */
+	forEach(fn: (item: T) => void | never[]): Awaitable<void>;
+	/**
+     * Iterate this query and call a function for each item.
+	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
+	 * @param fn - A function that is called once for each item.
+	 */
+	forEach<E>(thisArg: E, fn: (this: E, item: T) => void | never[]): Awaitable<void>;
+	/**
+     * Iterate this query and call a function for each item.
+	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
+	 * @returns The result from {@link fn}, if any.
+	 */
+	forEach<V>(fn: (item: T) => void | never[] | V[]): Awaitable<V | undefined>;
+	/**
+     * Iterate this query and call a function for each item.
+	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
+	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
+	 * @returns The result from {@link fn}, if any.
+	 */
+	forEach<E, V>(thisArg: E, fn: (this: E, item: T) => void | never[] | V[]): Awaitable<V | undefined>;
 }
 
 export interface LinqConstructor {

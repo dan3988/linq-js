@@ -2,9 +2,9 @@ import "./util.js";
 import Linq from "./linq-base.js";
 import "./linq-static.js";
 
+import "./prototype/callbacks.js";
 import "./prototype/collection.js";
 import "./prototype/find.js";
-import "./prototype/foreach.js";
 import "./prototype/group.js";
 import "./prototype/math.js";
 import "./prototype/misc.js";
