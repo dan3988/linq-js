@@ -1,15 +1,20 @@
 import { LinqInternal } from "../linq-base.js";
 import { errNoElements, Predictate } from "../util.js";
 
+interface ReadOnlyArray<T> extends Iterable<T> {
+	readonly length: number;
+	readonly [i: number]: T;
+}
+
 /** @internal */
 export class LinqArray<T> extends LinqInternal<T> {
-	readonly #source: readonly T[];
+	readonly #source: ReadOnlyArray<T>;
 
 	get length(): number {
 		return this.#source.length;
 	}
 
-	constructor(source: readonly T[]) {
+	constructor(source: ReadOnlyArray<T>) {
 		super();
 		this.#source = source;
 	}

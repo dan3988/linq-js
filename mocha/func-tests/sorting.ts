@@ -19,7 +19,7 @@ function defaultCompare(x?: any, y?: any): number {
 	}
 }
 
-export function testOrder<T>(linq: Linq<T>, expected: readonly T[]) {
+export function testOrder<T>(linq: Linq<T>, expected: ReadOnlyArray<T>) {
 	let sorted = Array.from(expected).sort();
 
 	it('order() should sort correctly', () => {
@@ -35,7 +35,7 @@ export function testOrder<T>(linq: Linq<T>, expected: readonly T[]) {
 	});
 }
 
-export function testOrderBy<T, V>(linq: Linq<T>, expected: readonly T[], orderBy: Select<T, V>) {
+export function testOrderBy<T, V>(linq: Linq<T>, expected: ReadOnlyArray<T>, orderBy: Select<T, V>) {
 	let sorted = Array.from(expected).sort((x: any, y: any) => {
 		x = orderBy(x);
 		y = orderBy(y);

@@ -38,4 +38,5 @@ LinqInternal.prototype[Symbol.iterator] = function() {
 
 addFactory(v => Symbol.asyncIterator in v ? new AsyncLinq(v as any) : undefined);
 addFactory(v => v instanceof Map || v instanceof Set ? new LinqSet(v) : undefined);
+addFactory(v => ArrayBuffer.isView(v) && 'length' in v ? new LinqArray(v) : undefined);
 addFactory(v => Array.isArray(v) ? new LinqArray(v) : undefined);

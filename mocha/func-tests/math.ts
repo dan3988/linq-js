@@ -1,9 +1,9 @@
 import Linq, { Select } from '../../lib/index.js';
 import assert from 'assert';
 
-export function testMaths<T>(linq: Linq<T>, expected: readonly T[], select: Select<T, number>)
-export function testMaths(linq: Linq<number>, expected: readonly number[])
-export function testMaths(linq: Linq, expected: readonly any[], select?: Select) {
+export function testMaths<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, select: Select<T, number>)
+export function testMaths(linq: Linq<number>, expected: ReadOnlyArray<number>)
+export function testMaths(linq: Linq, expected: ReadOnlyArray<any>, select?: Select) {
 	if (select != null) {
 		linq = linq.select(select);
 		expected = expected.map(select);

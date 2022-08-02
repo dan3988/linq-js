@@ -1,7 +1,8 @@
+/// <reference path="../index.d.ts"/>
 import Linq, { Predictate } from '../../lib/index.js';
 import assert from 'assert';
 
-export function testFirst<T>(linq: Linq<T>, expected: readonly T[], predictate: Predictate<T>) {
+export function testFirst<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, predictate: Predictate<T>) {
 	it('should return the first item', () => {
 		let v = linq.first();
 		assert.deepStrictEqual(v, expected[0]);
@@ -35,7 +36,7 @@ export function testFirst<T>(linq: Linq<T>, expected: readonly T[], predictate: 
 	});
 }
 
-export function testLast<T>(linq: Linq<T>, expected: readonly T[], predictate: Predictate<T>) {
+export function testLast<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, predictate: Predictate<T>) {
 	it('should return the last item', () => {
 		let v = linq.last();
 		assert.deepStrictEqual(v, expected[expected.length - 1]);

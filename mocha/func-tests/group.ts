@@ -1,7 +1,7 @@
 import Linq, { Select } from '../../lib/index.js';
 import assert from 'assert';
 
-export function testGroupBy<K, V>(linq: Linq<V>, expected: readonly V[], select: Select<V, K>) {
+export function testGroupBy<K, V>(linq: Linq<V>, expected: ReadOnlyArray<V>, select: Select<V, K>) {
 	let values = linq.groupBy(select);
 	let map = new Map<K, V[]>();
 	for (let value of expected) {
