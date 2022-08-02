@@ -1,12 +1,10 @@
-import { errNoElements, getter, Select, SelectType } from "../util.js";
+import { compileQuery, errNoElements, Select, SelectType } from "../util.js";
 import Linq, { AsyncLinq, LinqCommon, LinqInternal } from '../linq-base.js';
 
 function average<T>(it: Linq<T>, query: undefined | SelectType<T>): number
 function average<T>(it: AsyncLinq<T>, query: undefined | SelectType<T>): Promise<number>
 function average<T>(it: LinqCommon<T>, query: undefined | SelectType<T>) {
-	let select: undefined | Select = undefined;
-	if (query != null)
-		select = typeof query === 'function' ? query : getter.bind(undefined, query);
+	const select = compileQuery(query, false);
 
 	let sum = 0;
 	let count = 0;
@@ -18,7 +16,7 @@ function average<T>(it: LinqCommon<T>, query: undefined | SelectType<T>) {
 			
 			return [sum / count];
 		} else {
-			let v = +(select ? select(value) : value);
+			let v = +(select ? select(value!) : value);
 			if (isNaN(v))
 				return [NaN];
 
@@ -31,15 +29,12 @@ function average<T>(it: LinqCommon<T>, query: undefined | SelectType<T>) {
 function arithmetic<T>(it: Linq<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number): number
 function arithmetic<T>(it: AsyncLinq<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number): Promise<number>
 function arithmetic<T>(it: LinqCommon<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number) {
-	let select: undefined | Select = undefined;
-	if (query != null)
-		select = typeof query === 'function' ? query : getter.bind(undefined, query);
-
+	const select = compileQuery(query, false);
 	return it.iterate(undefined, (done, value) => {
 		if (done)
 			return [start];
 		
-		let v = +(select ? select(value) : value);
+		let v = +(select ? select(value!) : value);
 		if (isNaN(v))
 			return [NaN];
 

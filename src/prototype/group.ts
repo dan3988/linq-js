@@ -1,5 +1,5 @@
 import { AsyncLinq, Grouping, LinqInternal } from "../linq-base.js";
-import { getter, Select, SelectType } from "../util.js";
+import { compileQuery, Select, SelectType } from "../util.js";
 
 class GroupingImpl<K, V> implements Grouping<K, V> {
 	readonly #key: K;
@@ -74,15 +74,11 @@ export class AsyncLinqGrouped<K, V> extends AsyncLinq<Grouping<K, V>> {
 }
 
 LinqInternal.prototype.groupBy = function(query: SelectType) {
-	if (typeof query !== 'function')
-		query = getter.bind(undefined, query);
-
-	return new LinqGrouped(this, query);
+	const select = compileQuery(query, true);
+	return new LinqGrouped(this, select);
 }
 
 AsyncLinq.prototype.groupBy = function(query: SelectType) {
-	if (typeof query !== 'function')
-		query = getter.bind(undefined, query);
-
-	return new AsyncLinqGrouped(this, query);
+	const select = compileQuery(query, true);
+	return new AsyncLinqGrouped(this, select);
 }

@@ -1,6 +1,6 @@
 import { AsyncLinqExtend, LinqExtend, OperationType } from '../impl/extend.js';
 import { Linq, AsyncLinq, LinqInternal } from '../linq-base.js';
-import { getter, isInstance, isType, Predictate, SelectType } from '../util.js';
+import { compileQuery, isInstance, isType, Predictate, SelectType } from '../util.js';
 
 LinqInternal.prototype.where = function(filter: Predictate) {
 	return new LinqExtend(this, OperationType.Filter, filter);
@@ -11,31 +11,23 @@ AsyncLinq.prototype.where = function(filter: Predictate) {
 }
 
 LinqInternal.prototype.select = function(query: SelectType) {
-	if (typeof query != 'function')
-		query = getter.bind(undefined, query);
-
-	return new LinqExtend(this, OperationType.Select, query);
+	const select = compileQuery(query, true);
+	return new LinqExtend(this, OperationType.Select, select);
 }
 
 AsyncLinq.prototype.select = function(query: SelectType) {
-	if (typeof query != 'function')
-		query = getter.bind(undefined, query);
-
-	return new AsyncLinqExtend(this, OperationType.Select, query);
+	const select = compileQuery(query, true);
+	return new AsyncLinqExtend(this, OperationType.Select, select);
 }
 
 LinqInternal.prototype.selectMany = function(query: SelectType) {
-	if (typeof query != 'function')
-		query = getter.bind(undefined, query);
-
-	return new LinqExtend(this, OperationType.SelectMany, query);
+	const select = compileQuery(query, true);
+	return new LinqExtend(this, OperationType.SelectMany, select);
 }
 
 AsyncLinq.prototype.selectMany = function(query: SelectType) {
-	if (typeof query != 'function')
-		query = getter.bind(undefined, query);
-
-	return new AsyncLinqExtend(this, OperationType.SelectMany, query);
+	const select = compileQuery(query, true);
+	return new AsyncLinqExtend(this, OperationType.SelectMany, select);
 }
 
 LinqInternal.prototype.ofType = function(type: string | Function): Linq<any> {

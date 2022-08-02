@@ -14,7 +14,8 @@ describe('array', () => {
 	describe('orderBy', () => {
 		let select = (v: SampleRow) => v.name + ' ' + v.age;
 		it('should order correctly when using orderBy().thenBy()', () => {
-			let ordered = linq.orderBy('age').thenBy('name').select(select).toArray();
+			let ordered = linq.orderBy('age').thenBy('name').select(select);
+			let array = ordered.toArray();
 			let expexted = [...data].sort((x, y) => {
 				if (x.age !== y.age)
 					return x.age - y.age;
@@ -25,11 +26,12 @@ describe('array', () => {
 				return x.name < y.name ? -1 : 1;
 			}).map(select);
 	
-			assert.deepStrictEqual(ordered, expexted);
+			assert.deepStrictEqual(array, expexted);
 		});
 		
 		it('should order correctly when using orderBy().thenByDesc()', () => {
-			let ordered = linq.orderBy('age').thenByDesc('name').select(select).toArray();
+			let ordered = linq.orderBy('age').thenByDesc('name').select(select);
+			let array = ordered.toArray();
 			let expexted = [...data].sort((x, y) => {
 				if (x.age !== y.age)
 					return x.age - y.age;
@@ -40,7 +42,7 @@ describe('array', () => {
 				return x.name > y.name ? -1 : 1;
 			}).map(select);
 	
-			assert.deepStrictEqual(ordered, expexted);
+			assert.deepStrictEqual(array, expexted);
 		});
 	})
 

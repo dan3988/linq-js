@@ -1,24 +1,13 @@
-import { AsyncArrayIterator, ReverseIterator } from "../iterators.js";
+import { AsyncArrayIterator } from "../iterators.js";
 import { AsyncLinq, AsyncLinqOrdered, LinqInternal, LinqOrdered } from "../linq-base.js";
-import { Comparer, defaultCompare, firstArg, getter, Select, SelectType } from "../util.js";
+import { Comparer, compileQuery, defaultCompare, firstArg, Select, SelectType, TupleArray } from "../util.js";
 
-function orderBy<T>(linq: LinqInternal<T>, query: SelectType, comp: Comparer | undefined, desc: boolean): LinqOrdered<T>;
-function orderBy<T>(linq: AsyncLinq<T>, query: SelectType, comp: Comparer | undefined, desc: boolean): AsyncLinqOrdered<T>;
-function orderBy(linq: any, query: SelectType, comp: Comparer | undefined, desc: boolean): any {
-	if (comp == null)
-		comp = defaultCompare;
+type Ordering = [query: Select, comp: Comparer, desc: boolean];
+type Orderings = TupleArray<Ordering>;
 
-	const select = typeof query === 'function' ? query : getter.bind(undefined, query);
-	const ctor = (linq instanceof AsyncLinq ? AsyncLinqOrderedImpl : LinqOrderedImpl);
-
-	return new ctor(linq, select, comp, desc);
-}
-
-function sort<T>(orderings: any[], x: T, y: T) {
-	for (let i = 0; i < orderings.length; ) {
-		let query: Select = orderings[i++];
-		let comp: Comparer = orderings[i++];
-		let desc: boolean = orderings[i++];
+function sort<T>(orderings: Orderings, x: T, y: T) {
+	for (let i = 0; i < orderings.length; i++) {
+		let [query, comp, desc] = orderings.get(i)!;
 		let left = query(x);
 		let right = query(y);
 		let res = comp(left, right);
@@ -32,12 +21,10 @@ function sort<T>(orderings: any[], x: T, y: T) {
 	return 0;
 }
 
-type Ordering = [query: Select, comp: undefined | Comparer, desc: boolean];
-
 /** @internal */
 export class LinqOrderedImpl<T> extends LinqInternal<T> implements LinqOrdered<T> {
 	readonly #source: LinqInternal<T>;
-	readonly #orderings: [...Ordering, ...any[]];
+	readonly #orderings: Orderings;
 
 	get length(): number | undefined {
 		return this.#source.length;
@@ -46,18 +33,13 @@ export class LinqOrderedImpl<T> extends LinqInternal<T> implements LinqOrdered<T
 	constructor(source: LinqInternal<T>, query: Select, comp: undefined | Comparer<T>, desc: boolean) {
 		super();
 		this.#source = source;
-		this.#orderings = [query, comp, desc];
+		this.#orderings = new TupleArray<Ordering>(3).push(query, comp ?? defaultCompare, desc);
 	}
 
 	#next(query: SelectType, comparer: undefined | Comparer, desc: boolean) {
-		if (typeof query !== 'function')
-			query = getter.bind(undefined, query);
-
-		if (comparer == null)
-			comparer = defaultCompare;
-	
-		let next = new LinqOrderedImpl(this.#source, query, comparer, desc);
-		Array.prototype.unshift.apply(next.#orderings, this.#orderings);
+		const select = compileQuery(query, true);
+		const next = new LinqOrderedImpl(this.#source, select, comparer, desc);
+		next.#orderings.insert(0, this.#orderings);
 		return next;
 	}
 
@@ -87,23 +69,18 @@ export class LinqOrderedImpl<T> extends LinqInternal<T> implements LinqOrdered<T
 /** @internal */
 export class AsyncLinqOrderedImpl<T> extends AsyncLinq<T> implements AsyncLinqOrdered<T> {
 	readonly #source: AsyncLinq<T>;
-	readonly #orderings: [...Ordering, ...any[]];
+	readonly #orderings: Orderings;
 
 	constructor(source: AsyncLinq<T>, query: Select, comp: undefined | Comparer<T>, desc: boolean) {
 		super(undefined!);
 		this.#source = source;
-		this.#orderings = [query, comp, desc];
+		this.#orderings = new TupleArray<Ordering>(3).push(query, comp ?? defaultCompare, desc);
 	}
 
 	#next(query: SelectType, comparer: undefined | Comparer, desc: boolean) {
-		if (typeof query !== 'function')
-			query = getter.bind(undefined, query);
-
-		if (comparer == null)
-			comparer = defaultCompare;
-	
-		let next = new AsyncLinqOrderedImpl(this.#source, query, comparer, desc);
-		next.#orderings.unshift(this.#orderings);
+		const select = compileQuery(query, true);
+		const next = new AsyncLinqOrderedImpl(this.#source, select, comparer, desc);
+		next.#orderings.insert(0, this.#orderings);
 		return next;
 	}
 
@@ -130,45 +107,37 @@ export class AsyncLinqOrderedImpl<T> extends AsyncLinq<T> implements AsyncLinqOr
 }
 
 LinqInternal.prototype.order = function(comp?: Comparer) {
-	if (comp == null)
-		comp = defaultCompare;
-
 	return new LinqOrderedImpl(this, firstArg, comp, false);
 }
 
 LinqInternal.prototype.orderDesc = function(comp?: Comparer) {
-	if (comp == null)
-		comp = defaultCompare;
-
 	return new LinqOrderedImpl(this, firstArg, comp, true);
 }
 
 LinqInternal.prototype.orderBy = function(query: SelectType, comp?: Comparer) {
-	return orderBy(this, query, comp, false);
+	const select = compileQuery(query, true);
+	return new LinqOrderedImpl(this, select, comp, false);
 }
 
 LinqInternal.prototype.orderByDesc = function(query: SelectType, comp?: Comparer) {
-	return orderBy(this, query, comp, true);
+	const select = compileQuery(query, true);
+	return new LinqOrderedImpl(this, select, comp, true);
 }
 
 AsyncLinq.prototype.order = function(comp?: Comparer) {
-	if (comp == null)
-		comp = defaultCompare;
-
 	return new AsyncLinqOrderedImpl(this, firstArg, comp, false);
 }
 
 AsyncLinq.prototype.orderDesc = function(comp?: Comparer) {
-	if (comp == null)
-		comp = defaultCompare;
-
 	return new AsyncLinqOrderedImpl(this, firstArg, comp, true);
 }
 
 AsyncLinq.prototype.orderBy = function(query: SelectType, comp?: Comparer) {
-	return orderBy(this, query, comp, false);
+	const select = compileQuery(query, true);
+	return new AsyncLinqOrderedImpl(this, select, comp, false);
 }
 
 AsyncLinq.prototype.orderByDesc = function(query: SelectType, comp?: Comparer) {
-	return orderBy(this, query, comp, true);
+	const select = compileQuery(query, true);
+	return new AsyncLinqOrderedImpl(this, select, comp, true);
 }

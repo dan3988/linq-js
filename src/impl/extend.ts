@@ -1,5 +1,5 @@
 import { AsyncLinq, Linq, LinqInternal } from "../linq-base.js";
-import { getter, isInstance, isType, Predictate, SelectType } from "../util.js";
+import { compileQuery, isInstance, isType, Predictate, SelectType, TupleArray } from "../util.js";
 
 /** @internal */
 export const enum OperationType {
@@ -8,19 +8,21 @@ export const enum OperationType {
 	Filter
 }
 
-/** @internal */
-export type Operation = readonly [type: OperationType, fn: (arg: any) => any];
+type Operation = readonly [type: OperationType, fn: (arg: any) => any];
+
+type IteratorBase<T = any> = Iterator<T> | AsyncIterator<T>;
+type StackItem<T, I extends IteratorBase<T>> = readonly [start: number, it: I];
 
 function res(done: boolean, value?: any) {
 	return { done, value };
 }
 
-type Result<V> = boolean | [V]
+type Result<V> = boolean | [V];
 
-abstract class ExtendIteratorBase<I, R, V> {
+abstract class ExtendIteratorBase<I extends IteratorBase, R, V> {
 	readonly #symbol: symbol;
-	readonly #ops: readonly Operation[];
-	readonly #stack: any[];
+	readonly #ops: TupleArray<Operation>;
+	readonly #stack: TupleArray<StackItem<any, I>>;
 	#currentStart: number;
 	#currentIt: I;
 	#done: boolean;
@@ -29,10 +31,10 @@ abstract class ExtendIteratorBase<I, R, V> {
 		return this.#currentIt;
 	}
 
-	constructor(symbol: symbol, it: I, ops: readonly Operation[]) {
+	constructor(symbol: symbol, it: I, ops: TupleArray<Operation>) {
 		this.#symbol = symbol;
 		this.#ops = ops;
-		this.#stack = [];
+		this.#stack = new TupleArray(2);
 		this.#currentStart = 0;
 		this.#currentIt = it;
 		this.#done = false;
@@ -54,12 +56,13 @@ abstract class ExtendIteratorBase<I, R, V> {
 		let it = this.#currentIt;
 
 		if (v.done) {
-			if (this.#stack.length === 0) {
+			let next = this.#stack.pop();
+			if (next == null) {
 				this.#done = true;
 				return true;
 			}
 
-			let [start, it] = this.#stack.splice(0, 2);
+			let [start, it] = next;
 			this.#currentStart = start;
 			this.#currentIt = it;
 			return false;
@@ -68,17 +71,15 @@ abstract class ExtendIteratorBase<I, R, V> {
 		let val: any = v.value;
 
 		for (let i = start; i < this.#ops.length; i++) {
-			let [type, fn] = this.#ops[i];
+			let [type, fn] = this.#ops.get(i)!;
 			let result = fn(val);
 			if (type === OperationType.Select) {
 				val = result;
 				continue;
 			} else if (type === OperationType.SelectMany) {
-				this.#stack.unshift(start, it);
-				start = i + 1;
-				it = result[this.#symbol]();
-				this.#currentIt = it;
-				this.#currentStart = start;
+				this.#stack.push(start, it);
+				this.#currentIt = it = result[this.#symbol]();
+				this.#currentStart = start = i + 1;
 				return false;
 			} else if (type === OperationType.Filter && result) {
 				continue;
@@ -93,7 +94,7 @@ abstract class ExtendIteratorBase<I, R, V> {
 
 
 class ExtendIterator extends ExtendIteratorBase<Iterator<any>, IteratorResult<any>, any> implements IterableIterator<any> {
-	constructor(it: Iterator<any>, ops: readonly Operation[]) {
+	constructor(it: Iterator<any>, ops: TupleArray<Operation>) {
 		super(Symbol.iterator, it, ops);
 	}
 
@@ -119,7 +120,7 @@ class ExtendIterator extends ExtendIteratorBase<Iterator<any>, IteratorResult<an
 }
 
 class AsyncExtendIterator<T> extends ExtendIteratorBase<AsyncIterator<T>, Promise<IteratorResult<T>>, T> implements AsyncIterableIterator<T> {
-	constructor(it: AsyncIterator<T>, ops: readonly Operation[]) {
+	constructor(it: AsyncIterator<T>, ops: TupleArray<Operation>) {
 		super(Symbol.asyncIterator, it, ops);
 	}
 
@@ -148,17 +149,13 @@ abstract class ExtendBase<T> {
 	abstract __extend(type: Operation[0], fn: Operation[1]): T;
 
 	select(query: SelectType): T {
-		if (typeof query !== 'function')
-			query = getter.bind(undefined, query);
-
-		return this.__extend(OperationType.Select, query);
+		const select = compileQuery(query, true);
+		return this.__extend(OperationType.Select, select);
 	}
 
 	selectMany(query: SelectType): T {
-		if (typeof query !== 'function')
-			query = getter.bind(undefined, query);
-
-		return this.__extend(OperationType.SelectMany, query);
+		const select = compileQuery(query, true);
+		return this.__extend(OperationType.SelectMany, select);
 	}
 
 	where(filter: Predictate): T {
@@ -174,7 +171,7 @@ abstract class ExtendBase<T> {
 /** @internal */
 export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 	readonly #source: LinqInternal;
-	readonly #ops: Operation[];
+	readonly #ops: TupleArray<Operation>;
 	#useLength: boolean;
 
 	get length(): number | undefined {
@@ -184,14 +181,14 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 	constructor(source: LinqInternal, type: Operation[0], fn: Operation[1]) {
 		super();
 		this.#source = source;
-		this.#ops = [[type, fn]];
+		this.#ops = new TupleArray<Operation>(2).push(type, fn);
 		this.#useLength = type === OperationType.Select;
 	}
 
 	__extend(type: Operation[0], fn: Operation[1]): LinqExtend {
 		let linq = new LinqExtend(this.#source, type, fn);
 		linq.#useLength &&= this.#useLength;
-		linq.#ops.unshift(...this.#ops);
+		linq.#ops.insert(0, this.#ops);
 		return linq;
 	}
 	
@@ -204,17 +201,17 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 /** @internal */
 export class AsyncLinqExtend extends AsyncLinq<any> implements ExtendBase<AsyncLinq> {
 	readonly #source: AsyncLinq;
-	readonly #ops: Operation[];
+	readonly #ops: TupleArray<Operation>;
 	
 	constructor(source: AsyncLinq, type: Operation[0], fn: Operation[1]) {
 		super(source);
 		this.#source = source;
-		this.#ops = [[type, fn]];
+		this.#ops = new TupleArray<Operation>(2).push(type, fn);
 	}
 
 	__extend(type: Operation[0], fn: Operation[1]): AsyncLinqExtend {
 		let linq = new AsyncLinqExtend(this.#source, type, fn);
-		linq.#ops.unshift(...this.#ops);
+		linq.#ops.insert(0, this.#ops);
 		return linq;
 	}
 	

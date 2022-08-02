@@ -29,6 +29,16 @@ export function getter(key: string | symbol | number, value: any): any {
 	return value[key];
 }
 
+export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: true): Select<T, V>;
+export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: false): undefined | Select<T, V>;
+export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: boolean): undefined | Select<T, V> {
+	if (select != null) {
+		return typeof select === 'function' ? select : getter.bind(undefined, select);
+	} else if (required) {
+		throw new TypeError("Select function is null or undefined.");
+	}
+}
+
 export function isType(type: string, value: any): boolean {
 	return typeof value === type;
 }
@@ -73,23 +83,100 @@ export function invokeSelect(value: any, required: boolean, select?: SelectType)
 
 export type IterCallback<V = any, R = any> = (result: IteratorResult<V>) => void | undefined | R;
 
-async function asyncForEach<T>(values: AsyncIterable<T>, callback: IterCallback<T, void | [any]>) {
-	const iter: AsyncIterator<T> = values[Symbol.asyncIterator]();
-	while (true) {
-		let result = await iter.next();
-		let val = callback(result);
-		if (val != null)
-			return val[0];
-
-		if (result.done)
-			break;
-	}
-}
-
+/**
+ * A function that returns the {@link this} parameter
+ * @param this the value to return
+ * @returns the value of {@link this}
+ */
 export function identity<T>(this: T): T {
 	return this;
 }
 
+/**
+ * A function that returns the first parameter
+ * @param arg the value to return
+ * @returns the value of {@link arg}
+ */
 export function firstArg<T>(arg: T): T {
 	return arg;
+}
+
+/**
+ * Wrapper for an array of tuples that uses a single array to hold the values & validates that values added are the correct length.
+ */
+export class TupleArray<T extends readonly any[]> implements Iterable<T> {
+	readonly #tupleSize: number;
+	readonly #values: any[];
+	#count: number;
+
+	get length() {
+		return this.#count;
+	}
+
+	constructor(tupleSize: T['length'])  {
+		this.#tupleSize = tupleSize;
+		this.#values = [];
+		this.#count = 0;
+	}
+
+	*[Symbol.iterator](): Generator<T> {
+		const size = this.#tupleSize;
+		const values = this.#values;
+		for (let i = 0, j = 0; i < this.#count; i++)
+			yield <any>values.slice(j, j += size);
+	}
+
+	get(index: number): T | undefined {
+		if (index < 0 || index >= this.#count)
+			return undefined;
+
+		const size = this.#tupleSize;
+		const start = index * size;
+		return <any>this.#values.slice(start, start + size);
+	}
+
+	insert(start: number, values: TupleArray<T>) {
+		let ts = this.#tupleSize;
+		if (ts != values.#tupleSize)
+			throw new TypeError("Invalid length tuple.");
+
+		this.#count += values.#count;
+		this.#values.splice(start, 0, ...values.#values);
+		return this;
+	}
+
+	shift(): T | undefined {
+		if (this.#count === 0)
+			return undefined;
+		
+		this.#count--;
+		return <any>this.#values.splice(0, this.#tupleSize);
+	}
+
+	unshift(...values: T): this {
+		if (values.length != this.#tupleSize)
+			throw new TypeError("Invalid length tuple.");
+
+		this.#values.unshift(...values);
+		this.#count++;
+		return this;
+	}
+
+	pop(): T | undefined {
+		if (this.#count === 0)
+			return undefined;
+
+		let count = --this.#count;
+		let size = this.#tupleSize;
+		return <any>this.#values.splice(count * size, size);
+	}
+
+	push(...values: T): this {
+		if (values.length != this.#tupleSize)
+			throw new TypeError("Invalid length tuple.");
+
+		this.#values.push(...values);
+		this.#count++;
+		return this;
+	}
 }
