@@ -208,7 +208,6 @@ interface IterateCallback<TThis, T, V> {
 	(this: TThis, done: false, value: T): void | V[];
 }
 
-/** @internal */
 export interface LinqCommon<T> {
 	aggregate<V>(initial: V, aggregate: BiSelect<V, T, V>): Awaitable<V>;
 
