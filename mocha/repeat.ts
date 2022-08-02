@@ -7,7 +7,7 @@ describe('repeat', () => {
 	let linq = Linq.repeat(value, 10);
 	let expected = Array(10).fill(value)
 
-	describe('first', () => t.testFirst(linq, expected, v => v.age < 50));
-	describe('last', () => t.testLast(linq, expected, v => v.age < 50));
+	describe('first', () => t.testFirst(linq, expected, v => v.age > 50));
+	describe('last', () => t.testLast(linq, expected, v => v.age > 50));
 	describe('math', () => t.testMaths(linq, expected, v => v.age));
 })
