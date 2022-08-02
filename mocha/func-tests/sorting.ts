@@ -1,3 +1,4 @@
+/// <reference path="../index.d.ts" />
 import Linq, { Select } from '../../lib/index.js';
 import assert from 'assert';
 
