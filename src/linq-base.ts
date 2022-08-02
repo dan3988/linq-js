@@ -42,11 +42,11 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	order(comparer?: Comparer<T>): Linq<T>;
 	orderDesc(comparer?: Comparer<T>): Linq<T>;
 
-	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): Linq<T>;
-	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): Linq<T>;
+	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqOrdered<T>;
+	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqOrdered<T>;
 
-	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): Linq<T>;
-	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): Linq<T>;
+	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqOrdered<T>;
+	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqOrdered<T>;
 
 	groupBy<K extends keyof T>(query: K): Linq<Grouping<T[K], T>>;
 	groupBy<V>(query: Select<T, V>): Linq<Grouping<V, T>>;
@@ -87,6 +87,14 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	forEach<E, V>(thisArg: E, fn: (this: E, item: T) => void | never[] | V[]): V | undefined;
 }
 
+export interface LinqOrdered<T = any> extends Linq<T> {
+	thenBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqOrdered<T>;
+	thenBy<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqOrdered<T>;
+
+	thenByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqOrdered<T>;
+	thenByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqOrdered<T>;
+}
+
 export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	first(query?: Predictate<T>): Promise<T>;
 	firstOrDefault(query?: Predictate<T>): Promise<T | undefined>;
@@ -125,11 +133,11 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	order(comparer?: Comparer<T>): AsyncLinq<T>;
 	orderDesc(comparer?: Comparer<T>): AsyncLinq<T>;
 
-	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinq<T>;
-	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinq<T>;
+	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinqOrdered<T>;
+	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinqOrdered<T>;
 
-	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinq<T>;
-	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinq<T>;
+	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinqOrdered<T>;
+	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinqOrdered<T>;
 
 	groupBy<K extends keyof T>(query: K): AsyncLinq<Grouping<T[K], T>>;
 	groupBy<V>(query: Select<T, V>): AsyncLinq<Grouping<V, T>>;
@@ -168,6 +176,14 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	forEach<E>(thisArg: E, fn: (this: E, item: T) => void | never[]): Promise<void>;
 	forEach<V>(fn: (item: T) => void | never[] | V[]): Promise<V | undefined>;
 	forEach<E, V>(thisArg: E, fn: (this: E, item: T) => void | never[] | V[]): Promise<V | undefined>;
+}
+
+export interface AsyncLinqOrdered<T> extends AsyncLinq<T> {
+	thenBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinqOrdered<T>;
+	thenBy<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinqOrdered<T>;
+
+	thenByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinqOrdered<T>;
+	thenByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinqOrdered<T>;
 }
 
 export interface AsyncLinqConstructor {

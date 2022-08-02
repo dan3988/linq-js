@@ -1,5 +1,5 @@
 /// <reference path="../index.d.ts" />
-import Linq, { Select } from '../../lib/index.js';
+import Linq, { Comparer, Select } from '../../lib/index.js';
 import assert from 'assert';
 
 function defaultCompare(x?: any, y?: any): number {
@@ -20,38 +20,46 @@ function defaultCompare(x?: any, y?: any): number {
 	}
 }
 
-export function testOrder<T>(linq: Linq<T>, expected: ReadOnlyArray<T>) {
-	let sorted = Array.from(expected).sort();
+export function testOrder<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, comp?: Comparer<T>) {
+	comp ??= defaultCompare;
 
 	it('order() should sort correctly', () => {
+		let sorted = Array.from(expected).sort(comp);
 		let i = 0;
-		for (let value of linq.order())
+		for (let value of linq.order(comp))
 			assert.deepStrictEqual(value, sorted[i++]);
 	});
 
 	it('orderDesc() should sort', () => {
-		let i = expected.length;
-		for (let value of linq.orderDesc())
-			assert.deepStrictEqual(value, sorted[--i]);
+		let sorted = Array.from(expected).sort((x, y) => -comp!(x, y));
+		let i = 0;
+		for (let value of linq.orderDesc(comp))
+			assert.deepStrictEqual(value, sorted[i++]);
 	});
 }
 
 export function testOrderBy<T, V>(linq: Linq<T>, expected: ReadOnlyArray<T>, orderBy: Select<T, V>) {
-	let sorted = Array.from(expected).sort((x: any, y: any) => {
-		x = orderBy(x);
-		y = orderBy(y);
-		return defaultCompare(x, y);
-	});
-
 	it('orderBy() should sort', () => {
 		let i = 0;
+		let sorted = Array.from(expected).sort((x: any, y: any) => {
+			x = orderBy(x);
+			y = orderBy(y);
+			return defaultCompare(x, y);
+		});
+
 		for (let value of linq.orderBy(orderBy))
 			assert.deepStrictEqual(value, sorted[i++]);
 	});
 
 	it('orderByDesc() should sort', () => {
-		let i = expected.length;
+		let i = 0;
+		let sorted = Array.from(expected).sort((x: any, y: any) => {
+			x = orderBy(x);
+			y = orderBy(y);
+			return -defaultCompare(x, y);
+		});
+
 		for (let value of linq.orderByDesc(orderBy))
-			assert.deepStrictEqual(value, sorted[--i]);
+			assert.deepStrictEqual(value, sorted[i++]);
 	});
 }

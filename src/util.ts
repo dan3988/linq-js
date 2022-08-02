@@ -89,3 +89,7 @@ async function asyncForEach<T>(values: AsyncIterable<T>, callback: IterCallback<
 export function identity<T>(this: T): T {
 	return this;
 }
+
+export function firstArg<T>(arg: T): T {
+	return arg;
+}

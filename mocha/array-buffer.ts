@@ -9,5 +9,5 @@ describe('array-buffer', () => {
 	describe('first', () => t.testFirst(linq, buffer, v => v < 50));
 	describe('last', () => t.testLast(linq, buffer, v => v < 50));
 	describe('math', () => t.testMaths(linq, buffer));
-	describe('order', () => t.testOrder(linq, buffer));
+	describe('order', () => t.testOrder(linq, buffer, (x, y) => x - y));
 })
