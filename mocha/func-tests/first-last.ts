@@ -20,19 +20,19 @@ export function testFirst<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, predicta
 	});
 
 	it('first() should throw an error when no matching item is found', () => {
-		assert.throws(() => linq.first(v => false));
+		assert.throws(() => linq.first(() => false));
 	});
 
 	it('where().first() should throw an error when no matching item is found', () => {
-		assert.throws(() => linq.where(v => false).first());
+		assert.throws(() => linq.where(() => false).first());
 	});
 
 	it('firstOrDefault() should return undefined when no matching item is found', () => {
-		assert.strictEqual(undefined, linq.firstOrDefault(v => false));
+		assert.strictEqual(undefined, linq.firstOrDefault(() => false));
 	});
 
 	it('where().firstOrDefault() should return undefined when no matching item is found', () => {
-		assert.strictEqual(undefined, linq.where(v => false).firstOrDefault());
+		assert.strictEqual(undefined, linq.where(() => false).firstOrDefault());
 	});
 }
 

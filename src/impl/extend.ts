@@ -174,7 +174,7 @@ abstract class ExtendBase<T> {
 /** @internal */
 export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 	readonly #source: LinqInternal;
-	readonly #mods: Operation[];
+	readonly #ops: Operation[];
 	#useLength: boolean;
 
 	get length(): number | undefined {
@@ -184,43 +184,43 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 	constructor(source: LinqInternal, type: Operation[0], fn: Operation[1]) {
 		super();
 		this.#source = source;
-		this.#mods = [[type, fn]];
+		this.#ops = [[type, fn]];
 		this.#useLength = type === OperationType.Select;
 	}
 
 	__extend(type: Operation[0], fn: Operation[1]): LinqExtend {
 		let linq = new LinqExtend(this.#source, type, fn);
 		linq.#useLength &&= this.#useLength;
-		linq.#mods.unshift(...this.#mods);
+		linq.#ops.unshift(...this.#ops);
 		return linq;
 	}
 	
 	[Symbol.iterator](): Iterator<any> {
 		const it = this.#source[Symbol.iterator]();
-		return new ExtendIterator(it, this.#mods);
+		return new ExtendIterator(it, this.#ops);
 	}
 }
 
 /** @internal */
 export class AsyncLinqExtend extends AsyncLinq<any> implements ExtendBase<AsyncLinq> {
 	readonly #source: AsyncLinq;
-	readonly #mods: Operation[];
+	readonly #ops: Operation[];
 	
 	constructor(source: AsyncLinq, type: Operation[0], fn: Operation[1]) {
 		super(source);
 		this.#source = source;
-		this.#mods = [[type, fn]];
+		this.#ops = [[type, fn]];
 	}
 
 	__extend(type: Operation[0], fn: Operation[1]): AsyncLinqExtend {
 		let linq = new AsyncLinqExtend(this.#source, type, fn);
-		linq.#mods.unshift(...this.#mods);
+		linq.#ops.unshift(...this.#ops);
 		return linq;
 	}
 	
 	[Symbol.asyncIterator](): AsyncIterator<any> {
 		const it = this.#source[Symbol.asyncIterator]();
-		return new AsyncExtendIterator(it, this.#mods);
+		return new AsyncExtendIterator(it, this.#ops);
 	}
 }
 
