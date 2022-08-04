@@ -1,5 +1,5 @@
 import { AsyncLinq, Linq, LinqInternal } from "../linq-base.js";
-import { compileQuery, isInstance, isType, Predictate, SelectType, TupleArray } from "../util.js";
+import { compileQuery, isInstance, isType, Predictate, SelectType } from "../util.js";
 
 /** @internal */
 export const enum OperationType {
@@ -21,8 +21,8 @@ type Result<V> = boolean | [V];
 
 abstract class ExtendIteratorBase<I extends IteratorBase, R, V> {
 	readonly #symbol: symbol;
-	readonly #ops: TupleArray<Operation>;
-	readonly #stack: TupleArray<StackItem<any, I>>;
+	readonly #ops: readonly Operation[];
+	readonly #stack: StackItem<any, I>[];
 	#currentStart: number;
 	#currentIt: I;
 	#done: boolean;
@@ -31,10 +31,10 @@ abstract class ExtendIteratorBase<I extends IteratorBase, R, V> {
 		return this.#currentIt;
 	}
 
-	constructor(symbol: symbol, it: I, ops: TupleArray<Operation>) {
+	constructor(symbol: symbol, it: I, ops: readonly Operation[]) {
 		this.#symbol = symbol;
 		this.#ops = ops;
-		this.#stack = new TupleArray(2);
+		this.#stack = [];
 		this.#currentStart = 0;
 		this.#currentIt = it;
 		this.#done = false;
@@ -71,13 +71,13 @@ abstract class ExtendIteratorBase<I extends IteratorBase, R, V> {
 		let val: any = v.value;
 
 		for (let i = start; i < this.#ops.length; i++) {
-			let [type, fn] = this.#ops.get(i)!;
+			let [type, fn] = this.#ops[i];
 			let result = fn(val);
 			if (type === OperationType.Select) {
 				val = result;
 				continue;
 			} else if (type === OperationType.SelectMany) {
-				this.#stack.push(start, it);
+				this.#stack.push([start, it]);
 				this.#currentIt = it = result[this.#symbol]();
 				this.#currentStart = start = i + 1;
 				return false;
@@ -94,7 +94,7 @@ abstract class ExtendIteratorBase<I extends IteratorBase, R, V> {
 
 
 class ExtendIterator extends ExtendIteratorBase<Iterator<any>, IteratorResult<any>, any> implements IterableIterator<any> {
-	constructor(it: Iterator<any>, ops: TupleArray<Operation>) {
+	constructor(it: Iterator<any>, ops: readonly Operation[]) {
 		super(Symbol.iterator, it, ops);
 	}
 
@@ -120,7 +120,7 @@ class ExtendIterator extends ExtendIteratorBase<Iterator<any>, IteratorResult<an
 }
 
 class AsyncExtendIterator<T> extends ExtendIteratorBase<AsyncIterator<T>, Promise<IteratorResult<T>>, T> implements AsyncIterableIterator<T> {
-	constructor(it: AsyncIterator<T>, ops: TupleArray<Operation>) {
+	constructor(it: AsyncIterator<T>, ops: readonly Operation[]) {
 		super(Symbol.asyncIterator, it, ops);
 	}
 
@@ -171,7 +171,7 @@ abstract class ExtendBase<T> {
 /** @internal */
 export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 	readonly #source: LinqInternal;
-	readonly #ops: TupleArray<Operation>;
+	readonly #ops: Operation[];
 	#useLength: boolean;
 
 	get length(): number | undefined {
@@ -181,14 +181,14 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 	constructor(source: LinqInternal, type: Operation[0], fn: Operation[1]) {
 		super();
 		this.#source = source;
-		this.#ops = new TupleArray<Operation>(2).push(type, fn);
+		this.#ops = [[type, fn]];
 		this.#useLength = type === OperationType.Select;
 	}
 
 	__extend(type: Operation[0], fn: Operation[1]): LinqExtend {
 		let linq = new LinqExtend(this.#source, type, fn);
 		linq.#useLength &&= this.#useLength;
-		linq.#ops.insert(0, this.#ops);
+		linq.#ops.unshift(...this.#ops);
 		return linq;
 	}
 	
@@ -201,17 +201,17 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 /** @internal */
 export class AsyncLinqExtend extends AsyncLinq<any> implements ExtendBase<AsyncLinq> {
 	readonly #source: AsyncLinq;
-	readonly #ops: TupleArray<Operation>;
+	readonly #ops: Operation[];
 	
 	constructor(source: AsyncLinq, type: Operation[0], fn: Operation[1]) {
 		super(source);
 		this.#source = source;
-		this.#ops = new TupleArray<Operation>(2).push(type, fn);
+		this.#ops = [[type, fn]];
 	}
 
 	__extend(type: Operation[0], fn: Operation[1]): AsyncLinqExtend {
 		let linq = new AsyncLinqExtend(this.#source, type, fn);
-		linq.#ops.insert(0, this.#ops);
+		linq.#ops.unshift(...this.#ops);
 		return linq;
 	}
 	

@@ -1,13 +1,13 @@
 import { AsyncArrayIterator } from "../iterators.js";
 import { AsyncLinq, AsyncLinqOrdered, LinqInternal, LinqOrdered } from "../linq-base.js";
-import { Comparer, compileQuery, defaultCompare, firstArg, Select, SelectType, TupleArray } from "../util.js";
+import { Comparer, compileQuery, defaultCompare, firstArg, Select, SelectType } from "../util.js";
 
 type Ordering = [query: Select, comp: Comparer, desc: boolean];
-type Orderings = TupleArray<Ordering>;
+type Orderings = Ordering[];
 
 function sort<T>(orderings: Orderings, x: T, y: T) {
 	for (let i = 0; i < orderings.length; i++) {
-		let [query, comp, desc] = orderings.get(i)!;
+		let [query, comp, desc] = orderings[i]!;
 		let left = query(x);
 		let right = query(y);
 		let res = comp(left, right);
@@ -33,13 +33,13 @@ export class LinqOrderedImpl<T> extends LinqInternal<T> implements LinqOrdered<T
 	constructor(source: LinqInternal<T>, query: Select, comp: undefined | Comparer<T>, desc: boolean) {
 		super();
 		this.#source = source;
-		this.#orderings = new TupleArray<Ordering>(3).push(query, comp ?? defaultCompare, desc);
+		this.#orderings = [[query, comp ?? defaultCompare, desc]];
 	}
 
 	#next(query: SelectType, comparer: undefined | Comparer, desc: boolean) {
 		const select = compileQuery(query, true);
 		const next = new LinqOrderedImpl(this.#source, select, comparer, desc);
-		next.#orderings.insert(0, this.#orderings);
+		next.#orderings.unshift(...this.#orderings);
 		return next;
 	}
 
@@ -74,13 +74,13 @@ export class AsyncLinqOrderedImpl<T> extends AsyncLinq<T> implements AsyncLinqOr
 	constructor(source: AsyncLinq<T>, query: Select, comp: undefined | Comparer<T>, desc: boolean) {
 		super(undefined!);
 		this.#source = source;
-		this.#orderings = new TupleArray<Ordering>(3).push(query, comp ?? defaultCompare, desc);
+		this.#orderings = [[query, comp ?? defaultCompare, desc]];
 	}
 
 	#next(query: SelectType, comparer: undefined | Comparer, desc: boolean) {
 		const select = compileQuery(query, true);
 		const next = new AsyncLinqOrderedImpl(this.#source, select, comparer, desc);
-		next.#orderings.insert(0, this.#orderings);
+		next.#orderings.unshift(...this.#orderings);
 		return next;
 	}
 
