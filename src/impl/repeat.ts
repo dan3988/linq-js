@@ -76,6 +76,14 @@ export class LinqRepeat<T> extends LinqInternal<T> {
 		return this.#getAny(false, query);
 	}
 
+	any(predictate?: Predictate<T>): boolean {
+		return predictate == null ? this.#count > 0 : predictate(this.#value);
+	}
+
+	all(predictate: Predictate<T>): boolean {
+		return this.#count === 0 || predictate(this.#value);
+	}
+
 	toArray(): T[] {
 		return Array(this.#count).fill(this.#value);
 	}

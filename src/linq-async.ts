@@ -34,7 +34,6 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	average(query: Select<T, NumberLike>): Promise<number>;
 
 	count(filter?: Predictate<T>): Promise<number>;
-	any(filter?: Predictate<T>): Promise<boolean>;
 
 	where(filter: Predictate<T>): AsyncLinq<T>;
 

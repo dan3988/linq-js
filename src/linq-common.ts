@@ -35,7 +35,6 @@ export interface LinqCommon<T = any> {
 	average(query: Select<T, NumberLike>): Awaitable<number>;
 
 	count(filter?: Predictate<T>): Awaitable<number>;
-	any(filter?: Predictate<T>): Awaitable<boolean>;
 
 	where(filter: Predictate<T>): LinqCommon<T>;
 

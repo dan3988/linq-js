@@ -85,12 +85,29 @@ export class LinqArray<T> extends LinqInternal<T> {
 		return this.#last(query, false);
 	}
 
-	count() {
-		return this.#source.length;
+	any(predictate?: Predictate<T>): boolean {
+		const source = this.#source;
+		if (predictate == null)
+			return source.length !== 0;
+
+		for (let i = 0; i < source.length; i++)
+			if (predictate(source[i]))
+				return true;
+
+		return false;
 	}
 
-	any() {
-		return this.#source.length > 0;
+	all(predictate: Predictate<T>): boolean {
+		const source = this.#source;
+		for (let i = 0; i < source.length; i++)
+			if (!predictate(source[i]))
+				return false;
+
+		return true;
+	}
+
+	count() {
+		return this.#source.length;
 	}
 
 	toArray(): T[] {

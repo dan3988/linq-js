@@ -107,6 +107,27 @@ export class LinqRange extends LinqInternal<number> {
 		return undefined;
 	}
 
+	any(predictate?: Predictate<number>): boolean {
+		if (predictate == null)
+			return this.#count > 0;
+
+		let v = this.#start;
+		for (let i = 0; i < this.#count; i++, v += this.#step)
+			if (predictate(v))
+				return true;
+
+		return false;
+	}
+
+	all(predictate: Predictate<number>): boolean {
+		let v = this.#start;
+		for (let i = 0; i < this.#count; i++, v += this.#step)
+			if (!predictate(v))
+				return false;
+
+		return true;
+	}
+
 	[Symbol.iterator](): Iterator<number> {
 		return new RangeIterator(this.#start, this.#count, this.#step);
 	}

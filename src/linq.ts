@@ -42,7 +42,6 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	average(query: Select<T, NumberLike>): number;
 
 	count(filter?: Predictate<T>): number;
-	any(filter?: Predictate<T>): boolean;
 
 	zip<V, R>(other: Iterable<V>, selector: BiSelect<T, V, R>): Linq<R>;
 
