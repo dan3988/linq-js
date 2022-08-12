@@ -9,6 +9,7 @@ describe('range', () => {
 
 	describe('first', () => t.testFirst(linq, expected, v => v > 10));
 	describe('last', () => t.testLast(linq, expected, v => v > 10));
+	describe('distinct', () => t.testDistinct(linq, expected));
 	describe('math', () => t.testMaths(linq, expected));
 	describe('order', () => t.testOrder(linq, expected));
 	describe('orderBy', () => t.testOrderBy(linq, expected, v => ~v));

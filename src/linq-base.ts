@@ -39,6 +39,8 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	selectMany<K extends ValidKey<T, Iterable<any>>>(query: K): Linq<T[K] extends Iterable<infer V> ? V : unknown>;
 	selectMany<V>(query: Select<T, Iterable<V>>): Linq<V>;
 
+	distinct(): Linq<T>;
+
 	order(comparer?: Comparer<T>): Linq<T>;
 	orderDesc(comparer?: Comparer<T>): Linq<T>;
 
@@ -129,6 +131,8 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	select<K extends keyof T>(query: K): AsyncLinq<T[K]>;
 	selectMany<K extends ValidKey<T, Iterable<any>>>(query: K): AsyncLinq<T[K] extends Iterable<infer V> ? V : unknown>;
 	selectMany<V>(query: Select<T, Iterable<V>>): AsyncLinq<V>;
+
+	distinct(): AsyncLinq<T>;
 
 	order(comparer?: Comparer<T>): AsyncLinq<T>;
 	orderDesc(comparer?: Comparer<T>): AsyncLinq<T>;

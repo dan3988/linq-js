@@ -4,6 +4,7 @@ import "./linq-static.js";
 
 import "./prototype/callbacks.js";
 import "./prototype/collection.js";
+import "./prototype/distinct.js";
 import "./prototype/find.js";
 import "./prototype/group.js";
 import "./prototype/math.js";
