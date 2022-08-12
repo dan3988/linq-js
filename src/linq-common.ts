@@ -161,8 +161,6 @@ export interface LinqCommon<T = any> {
 	ofType(type: 'undefined'): LinqCommon<undefined>;
 	ofType<V>(type: Constructor<V>): LinqCommon<V>;
 
-	concat<V>(...values: Iterable<V>[]): LinqCommon<T | V>;
-
 	join(separator?: string): Awaitable<string>;
 
 	aggregate<V>(initial: V, aggregate: BiSelect<V, T, V>): Awaitable<V>;

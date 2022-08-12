@@ -79,7 +79,7 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	ofType(type: 'undefined'): AsyncLinq<undefined>;
 	ofType<V>(type: Constructor<V>): AsyncLinq<V>;
 
-	concat<V>(...values: Iterable<V>[]): AsyncLinq<T | V>;
+	concat<V>(...values: AsyncIterable<V>[]): AsyncLinq<T | V>;
 
 	join(separator?: string): Promise<string>;
 

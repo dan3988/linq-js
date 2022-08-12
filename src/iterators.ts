@@ -194,6 +194,58 @@ export class RepeatIterator<T> implements IterableIterator<T> {
 	}
 }
 
+export class AsyncConcatIterator<T> implements AsyncIterableIterator<T> {
+	readonly #iter: Iterator<AsyncIterable<T>>;
+	#current: null | AsyncIterator<T>;
+	#done: boolean;
+
+	constructor(iter: Iterable<AsyncIterable<T>>) {
+		this.#iter = iter[Symbol.iterator]();
+		this.#current = null;
+		this.#done = false;
+	}
+
+	async next(): Promise<IteratorResult<T, any>> {
+		if (this.#done)
+			return res(true);
+		
+		let current = this.#current;
+		if (current == null) {
+			let v = this.#iter.next();
+			if (v.done) {
+				this.#done = true;
+				return res(true);
+			}
+
+			current = v.value[Symbol.asyncIterator]();
+		}
+
+		while (true) {
+			while (true) {
+				let { done, value } = await current.next();
+				if (done)
+					break;
+
+				this.#current = current;
+				return res(false, value);
+			}
+
+			let v = this.#iter.next();
+			if (v.done) {
+				this.#done = true;
+				this.#current = null;
+				return res(true);
+			} else {
+				current = v.value[Symbol.asyncIterator]();
+			}
+		}
+	}
+
+	[Symbol.asyncIterator](): this {
+		return this;
+	}
+}
+
 export class ConcatIterator<T> implements IterableIterator<T> {
 	readonly #iter: Iterator<Iterable<T>>;
 	#current: null | Iterator<T>;
@@ -239,10 +291,9 @@ export class ConcatIterator<T> implements IterableIterator<T> {
 				current = v.value[Symbol.iterator]();
 			}
 		}
-
 	}
 
-	[Symbol.iterator](): IterableIterator<T> {
+	[Symbol.iterator](): this {
 		return this;
 	}
 }

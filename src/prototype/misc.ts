@@ -1,34 +1,20 @@
 import { LinqConcat } from "../impl/concat.js";
-import { LinqInternal } from "../linq-base.js";
+import { AsyncLinq } from "../linq-async.js";
+import { LinqCommon, LinqInternal } from "../linq-base.js";
 import { Predictate } from "../util.js";
 
-LinqInternal.prototype.count = function(filter?: Predictate) {
-	let len = this.length;
-	if (len != null)
-		return len;
-
-	let i = 0;
-	for (let value of this)
-		if (filter == null || filter(value))
-			i++;
-
-	return i;
-}
-
-LinqInternal.prototype.any = function(filter?: Predictate) {
-	let en = this[Symbol.iterator]();
-	let result = en.next();
-	if (filter == null)
-		return !result.done;
-
-	while (true) {
-		if (filter(result.value))
-			return true;
-
-		if ((result = en.next()).done)
-			return false;
+function count<T>(this: LinqInternal<T>, filter: undefined | Predictate<T>): number;
+function count<T>(this: AsyncLinq<T>, filter: undefined | Predictate<T>): Promise<number>;
+function count(this: LinqCommon, filter: undefined | Predictate) {
+	if (filter == null) {
+		return this.aggregate(0, (count) => count + 1);
+	} else {
+		return this.aggregate(0, (count, value) => filter(value) ? count + 1 : count);
 	}
 }
+
+LinqInternal.prototype.count = count;
+AsyncLinq.prototype.count = count;
 
 LinqInternal.prototype.concat = function(...values) {
 	values.unshift(this);
@@ -37,4 +23,8 @@ LinqInternal.prototype.concat = function(...values) {
 
 LinqInternal.prototype.join = function(sep) {
 	return this.toArray().join(sep);
+}
+
+AsyncLinq.prototype.join = function(sep) {
+	return this.toArray().then(v => v.join(sep));
 }

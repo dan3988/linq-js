@@ -1,4 +1,5 @@
-import { ConcatIterator } from '../iterators.js';
+import { AsyncConcatIterator, ConcatIterator } from '../iterators.js';
+import { AsyncLinq } from '../linq-async.js';
 import { Linq, LinqInternal } from '../linq-base.js';
 
 /** @internal */
@@ -31,5 +32,30 @@ export class LinqConcat<T> extends LinqInternal<T> {
 
 	[Symbol.iterator](): Iterator<T> {
 		return new ConcatIterator(this.#values[Symbol.iterator]());
+	}
+}
+
+/** @internal */
+export class AsyncLinqConcat<T> extends AsyncLinq<T> {
+	readonly #values: AsyncLinq<T>[];
+
+	constructor(values: readonly AsyncIterable<T>[]) {
+		let v: AsyncLinq<T>[] = [];
+		for (let value of values) {
+			let lq: AsyncLinq<T> = value instanceof AsyncLinq ? value : LinqInternal(value);
+			v.push(lq);
+		}
+
+		super(undefined!);
+		this.#values = v;
+	}
+
+	concat<V>(...values: AsyncIterable<V>[]): AsyncLinq<T | V>
+	concat(...values: AsyncIterable<any>[]): AsyncLinq<any> {
+		return new AsyncLinqConcat<any>([...this.#values, ...values]);
+	}
+
+	[Symbol.iterator](): AsyncIterator<T> {
+		return new AsyncConcatIterator(this.#values);
 	}
 }
