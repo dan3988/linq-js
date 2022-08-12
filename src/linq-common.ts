@@ -47,11 +47,11 @@ export interface LinqCommon<T = any> {
 	order(comparer?: Comparer<T>): LinqCommon<T>;
 	orderDesc(comparer?: Comparer<T>): LinqCommon<T>;
 
-	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqCommonOrdered<T>;
-	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqCommonOrdered<T>;
+	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqCommon<T> & LinqCommonOrdered<T>;
+	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqCommon<T> & LinqCommonOrdered<T>;
 
-	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqCommonOrdered<T>;
-	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqCommonOrdered<T>;
+	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqCommon<T> & LinqCommonOrdered<T>;
+	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqCommon<T> & LinqCommonOrdered<T>;
 
 	groupBy<K extends keyof T>(query: K): LinqCommon<Grouping<T[K], T>>;
 	groupBy<V>(query: Select<T, V>): LinqCommon<Grouping<V, T>>;
