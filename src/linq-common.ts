@@ -10,11 +10,13 @@ export interface IterateCallback<TThis, T, V> {
 }
 
 export interface LinqCommon<T = any> {
-	first(query?: Predictate<T>): Awaitable<T>;
+	first(predictate?: Predictate<T>): Awaitable<T>;
 	firstOrDefault(query?: Predictate<T>): Awaitable<T | undefined>;
+	last(predictate?: Predictate<T>): T;
+	lastOrDefault(predictate?: Predictate<T>): Awaitable<T | undefined>;
 
-	last(query?: Predictate<T>): T;
-	lastOrDefault(query?: Predictate<T>): Awaitable<T | undefined>;
+	any(predictate?: Predictate<T>): Awaitable<boolean>;
+	all(predictate: Predictate<T>): Awaitable<boolean>;
 
 	sum(): Awaitable<number>;
 	sum(query: ValidKey<T, NumberLike>): Awaitable<number>;

@@ -14,6 +14,9 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	last(query?: Predictate<T>): T;
 	lastOrDefault(query?: Predictate<T>): Promise<T | undefined>;
 
+	any(predictate?: Predictate<T>): Promise<boolean>;
+	all(predictate?: Predictate<T>): Promise<boolean>;
+
 	sum(): Promise<number>;
 	sum(query: ValidKey<T, NumberLike>): Promise<number>;
 	sum(query: Select<T, NumberLike>): Promise<number>;

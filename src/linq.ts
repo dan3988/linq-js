@@ -16,11 +16,14 @@ export interface LinqConstructor {
 }
 
 export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
-	first(query?: Predictate<T>): T;
-	firstOrDefault(query?: Predictate<T>): T | undefined;
+	first(predictate?: Predictate<T>): T;
+	firstOrDefault(predictate?: Predictate<T>): T | undefined;
 
-	last(query?: Predictate<T>): T;
-	lastOrDefault(query?: Predictate<T>): T | undefined;
+	last(predictate?: Predictate<T>): T;
+	lastOrDefault(predictate?: Predictate<T>): T | undefined;
+
+	any(predictate?: Predictate<T>): boolean;
+	all(predictate?: Predictate<T>): boolean;
 
 	sum(): number;
 	sum(query: ValidKey<T, NumberLike>): number;

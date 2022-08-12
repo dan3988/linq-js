@@ -56,3 +56,37 @@ function lastOrDefault<T>(this: LinqCommon<T>, query?: Predictate<T>) {
 
 LinqInternal.prototype.lastOrDefault = lastOrDefault;
 AsyncLinq.prototype.lastOrDefault = lastOrDefault;
+
+function any<T>(this: LinqInternal<T>, query?: Predictate): boolean;
+function any<T>(this: AsyncLinq<T>, query?: Predictate): Promise<boolean>;
+function any<T>(this: LinqCommon<T>, query?: Predictate) {
+	if (query == null) {
+		return this.iterate((done) => [!done]);
+	} else {
+		return this.iterate((done, value) => {
+			if (done) {
+				return [false];
+			} else if (query(value)) {
+				return [true];
+			}
+		});
+	}
+}
+
+LinqInternal.prototype.any = any;
+AsyncLinq.prototype.any = any;
+
+function all<T>(this: LinqInternal<T>, query: Predictate): boolean;
+function all<T>(this: AsyncLinq<T>, query: Predictate): Promise<boolean>;
+function all<T>(this: LinqCommon<T>, query: Predictate) {
+	return this.iterate((done, value) => {
+		if (done)
+			return [true];
+
+		if (!query(value))
+			return [false];
+	});
+}
+
+LinqInternal.prototype.all = all;
+AsyncLinq.prototype.all = all;
