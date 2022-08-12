@@ -1,4 +1,4 @@
-import { compileQuery, errNoElements, Select, SelectType } from "../util.js";
+import { compileQuery, errNoElements, SelectType } from "../util.js";
 import Linq, { AsyncLinq, LinqCommon, LinqInternal } from '../linq-base.js';
 
 function average<T>(it: Linq<T>, query: undefined | SelectType<T>): number

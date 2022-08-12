@@ -1,4 +1,5 @@
-import { AsyncLinq, Grouping, LinqInternal } from "../linq-base.js";
+import type { Grouping } from "../linq-common.js";
+import { AsyncLinq, LinqInternal } from "../linq-base.js";
 import { compileQuery, Select, SelectType } from "../util.js";
 
 class GroupingImpl<K, V> implements Grouping<K, V> {
