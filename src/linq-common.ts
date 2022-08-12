@@ -10,24 +10,102 @@ export interface IterateCallback<TThis, T, V> {
 }
 
 export interface LinqCommon<T = any> {
+	/**
+	 * Iterates this query, and returns the first matching item, or throws an error if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The first matching item in this query
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
 	first(predictate?: Predictate<T>): Awaitable<T>;
+	/**
+	 * Iterates this query, and returns the first matching item, or `undefined` one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The first matching item in this query, or undefined
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
 	firstOrDefault(query?: Predictate<T>): Awaitable<T | undefined>;
+
+	/**
+	 * Iterates this query, and returns the first matching item, or throws an error if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The first matching item in this query
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
 	last(predictate?: Predictate<T>): T;
+	/**
+	 * Iterates this query, and returns the last matching item, or `undefined` one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The last matching item in this query, or undefined
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
 	lastOrDefault(predictate?: Predictate<T>): Awaitable<T | undefined>;
 
+	/**
+	 * Iterates this query, and returns `true` if a single item is found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns `true` if an item exists in this query, otherwise `false`
+	 */
 	any(predictate?: Predictate<T>): Awaitable<boolean>;
+
+	/**
+	 * Iterates this query, and returns `true` if all items in this query match the predictate.
+	 * @param predictate A function that will called on each element in the query until it returns `false`
+	 * @returns `true` if all items in this query match the predictate, otherwise `false`
+	 */
 	all(predictate: Predictate<T>): Awaitable<boolean>;
 
+	/**
+	 * Calculates the sum of this sequence.
+	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	sum(): Awaitable<number>;
+	/**
+	 * Calculates the sum of this sequence.
+	 * @query A property key that represents a number property in {@link T}
+	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	sum(query: ValidKey<T, NumberLike>): Awaitable<number>;
+	/**
+	 * Calculates the sum of this sequence.
+	 * @query A function that will convert {@link T} to a number.
+	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	sum(query: Select<T, NumberLike>): Awaitable<number>;
 
+	/**
+	 * Finds the smallest value in this sequence
+	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	min(): Awaitable<number>;
+	/**
+	 * Finds the smallest value in this sequence
+	 * @query A property key that represents a number property in {@link T}
+	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	min(query: ValidKey<T, NumberLike>): Awaitable<number>;
+	/**
+	 * Finds the smallest value in this sequence
+	 * @query A function that will convert {@link T} to a number.
+	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	min(query: Select<T, NumberLike>): Awaitable<number>;
 
+	/**
+	 * Finds the largest value in this sequence
+	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	max(): Awaitable<number>;
+	/**
+	 * Finds the largest value in this sequence
+	 * @query A property key that represents a number property in {@link T}
+	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	max(query: ValidKey<T, NumberLike>): Awaitable<number>;
+	/**
+	 * Finds the smallest value in this sequence
+	 * @query A function that will convert {@link T} to a number.
+	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 */
 	max(query: Select<T, NumberLike>): Awaitable<number>;
 
 	average(): Awaitable<number>;
@@ -36,6 +114,11 @@ export interface LinqCommon<T = any> {
 
 	count(filter?: Predictate<T>): Awaitable<number>;
 
+	/**
+	 * Filter this sequence using a predictate function
+	 * @param filter A function that tests each element in this sequence for a condition.
+	 * @returns A new query that contains the element that satisfy the condition.
+	 */
 	where(filter: Predictate<T>): LinqCommon<T>;
 
 	select<V>(query: Select<T, V>): LinqCommon<V>;
