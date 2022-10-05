@@ -77,8 +77,14 @@ abstract class ExtendIteratorBase<I extends IteratorBase, R, V> {
 				val = result;
 				continue;
 			} else if (type === OperationType.SelectMany) {
+				const sym = this.#symbol;
+				const fn = result[sym];
+
+				if (typeof fn !== "function")
+					throw new TypeError("Value does not implement " + sym.description);
+
 				this.#stack.push([start, it]);
-				this.#currentIt = it = result[this.#symbol]();
+				this.#currentIt = it = fn.call(result);
 				this.#currentStart = start = i + 1;
 				return false;
 			} else if (type === OperationType.Filter && result) {
