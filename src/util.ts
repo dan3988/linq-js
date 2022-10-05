@@ -1,11 +1,13 @@
 export type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
+export type ValidKeys<T, R> = (ValidKey<T, R>)[];
 export type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
 
 export type Awaitable<T> = T | Promise<T>;
 
 export type Select<T = any, V = any> = (value: T) => V;
-export type SelectType<T = any, R = any> = ValidKey<T, R> | Select<T, R>;
+export type SelectType<T = any, R = any> = ValidKey<T, R> | ValidKeys<T, R> | Select<T, R>;
 export type BiSelect<X = any, Y = any, V = any> = (x: X, y: Y) => V;
+export type KeysToObject<TSource, TKeys extends (keyof TSource)[]> = { [P in TKeys[number]]: TSource[P] }
 
 export type Predictate<T = any> = (value: T) => boolean;
 export type Comparer<T = any> = (x: T, y: T) => number;
@@ -24,16 +26,30 @@ export function errNoElements() {
 }
 
 export function getter<T = any, K extends keyof T = any>(key: K, value: T): T[K];
-export function getter(key: string | symbol | number, value: any): any;
-export function getter(key: string | symbol | number, value: any): any {
+export function getter(key: PropertyKey, value: any): any;
+export function getter(key: PropertyKey, value: any): any {
 	return value[key];
+}
+
+export function getMultiple(keys: PropertyKey[], value: any): any {
+	const result: any = {};
+	for (const key of keys)
+		result[key] = value[key];
+		
+	return result;
 }
 
 export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: true): Select<T, V>;
 export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: false): undefined | Select<T, V>;
 export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: boolean): undefined | Select<T, V> {
 	if (select != null) {
-		return typeof select === 'function' ? select : getter.bind(undefined, select);
+		if (typeof select === "function")
+			return select;
+
+		if (Array.isArray(select))
+			return getMultiple.bind(undefined, select);
+
+		return getter.bind(undefined, select);
 	} else if (required) {
 		throw new TypeError("Select function is null or undefined.");
 	}
@@ -76,6 +92,8 @@ export function invokeSelect(value: any, required: boolean, select?: SelectType)
 		return value;
 	} else if (typeof select === 'function') {
 		return select(value);
+	} else if (Array.isArray(select)) {
+		return getMultiple(select, value);
 	} else {
 		return value[select];
 	}

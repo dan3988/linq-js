@@ -1,4 +1,4 @@
-import type { Awaitable, BiSelect, Comparer, Constructor, NumberLike, Predictate, Select, ValidKey } from "./util.js";
+import type { Awaitable, BiSelect, Comparer, Constructor, KeysToObject, NumberLike, Predictate, Select, ValidKey } from "./util.js";
 
 export interface Grouping<K, V> extends Iterable<V> {
 	readonly key: K;
@@ -123,6 +123,7 @@ export interface LinqCommon<T = any> {
 
 	select<V>(query: Select<T, V>): LinqCommon<V>;
 	select<K extends keyof T>(query: K): LinqCommon<T[K]>;
+	select<K extends (keyof T)[]>(keys: K): LinqCommon<KeysToObject<T, K>>;
 	selectMany<K extends ValidKey<T, Iterable<any>>>(query: K): LinqCommon<T[K] extends Iterable<infer V> ? V : unknown>;
 	selectMany<V>(query: Select<T, Iterable<V>>): LinqCommon<V>;
 

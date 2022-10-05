@@ -1,7 +1,6 @@
-import type { LinqCommon } from "./linq-common.js";
 import type { AsyncLinq } from "./linq-async.js";
-import type { Grouping, IterateCallback, LinqCommonOrdered } from "./linq-common.js";
-import type { BiSelect, Comparer, Constructor, Predictate, Select, NumberLike, ValidKey } from "./util.js";
+import type { Grouping, IterateCallback, LinqCommon, LinqCommonOrdered } from "./linq-common.js";
+import type { BiSelect, Comparer, Constructor, KeysToObject, NumberLike, Predictate, Select, ValidKey } from "./util.js";
 
 export interface LinqConstructor {
 	readonly prototype: Linq;
@@ -49,6 +48,7 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 
 	select<V>(query: Select<T, V>): Linq<V>;
 	select<K extends keyof T>(query: K): Linq<T[K]>;
+	select<K extends (keyof T)[]>(keys: K): Linq<KeysToObject<T, K>>;
 	selectMany<K extends ValidKey<T, Iterable<any>>>(query: K): Linq<T[K] extends Iterable<infer V> ? V : unknown>;
 	selectMany<V>(query: Select<T, Iterable<V>>): Linq<V>;
 
