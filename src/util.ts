@@ -85,8 +85,9 @@ export function createGetter(key: PropertyKey): GetterFunction {
 	return fn as any;
 }
 
-export function createGetAll(keys: PropertyKey[]): GetAllFunction {
-	let fn = getAll.bind(keys);
+export function createGetAll(keys: Iterable<PropertyKey>): GetAllFunction {
+	let roKeys = Object.freeze([...keys]);
+	let fn = getAll.bind(roKeys);
 
 	Object.defineProperty(fn, 'toString', {
 		writable: true,
@@ -96,7 +97,7 @@ export function createGetAll(keys: PropertyKey[]): GetAllFunction {
 
 	Object.defineProperty(fn, 'keys', {
 		configurable: true,
-		value: keys
+		value: roKeys
 	});
 
 	return fn as any;
