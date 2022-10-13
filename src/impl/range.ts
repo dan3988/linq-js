@@ -1,6 +1,6 @@
 import { RangeIterator } from "../iterators.js";
 import { LinqInternal } from "../linq-base.js";
-import { errNoElements, getter, Predictate, SelectType } from "../util.js";
+import { compileQuery, errNoElements, Predictate, SelectType } from "../util.js";
 
 /** @internal */
 export class LinqRange extends LinqInternal<number> {
@@ -27,8 +27,7 @@ export class LinqRange extends LinqInternal<number> {
 		if (query == null)
 			return v;
 
-		if (typeof query !== 'function')
-			query = getter.bind(undefined, query);
+		query = compileQuery(query, true);
 
 		let min = Infinity;
 		for (let i = 0; i < this.#count; i++, v += this.#step) {
@@ -48,8 +47,7 @@ export class LinqRange extends LinqInternal<number> {
 		if (query == null)
 			return v + (this.#step * (this.#count - 1));
 
-		if (typeof query !== 'function')
-			query = getter.bind(undefined, query);
+		query = compileQuery(query, true);
 
 		let max = -Infinity;
 		for (let i = 0; i < this.#count; i++, v += this.#step) {

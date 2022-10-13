@@ -25,18 +25,81 @@ export function errNoElements() {
 	return new TypeError("Sequence contains no elements.");
 }
 
-export function getter<T = any, K extends keyof T = any>(key: K, value: T): T[K];
-export function getter(key: PropertyKey, value: any): any;
-export function getter(key: PropertyKey, value: any): any {
-	return value[key];
+function keyToString(key: any): string {
+	switch (typeof key) {
+		case "symbol":
+		case "number":
+			return key.toString();
+		default:
+			key = String(key);
+			return JSON.stringify(key);
+	}
 }
 
-export function getMultiple(keys: PropertyKey[], value: any): any {
+export interface GetAllFunction {
+	<T, K extends ValidKeys<T, any>>(this: K, value: T): KeysToObject<T, K>;
+	(this: readonly PropertyKey[], value: any): any;
+	readonly keys: readonly PropertyKey[];
+}
+
+export interface GetterFunction {
+	<T, K extends keyof T>(this: K, value: T): T[K];
+	(this: PropertyKey, value: any): any;
+	readonly key: PropertyKey;
+}
+
+export function getAll(this: readonly PropertyKey[], value: any): any {
 	const result: any = {};
-	for (const key of keys)
+	for (const key of this)
 		result[key] = value[key];
-		
+
 	return result;
+}
+
+const getAllToString = function toString(this: GetAllFunction) {
+	return "getAll([" + this.keys.map(keyToString).join(", ") + "])";
+}
+
+export function getter(this: PropertyKey, value: any): any {
+	return value[this];
+}
+
+const getterToString = function toString(this: GetterFunction) {
+	return "getter(" + keyToString(this.key) + ")";
+}
+
+export function createGetter(key: PropertyKey): GetterFunction {
+	let fn = getter.bind(key);
+
+	Object.defineProperty(fn, 'toString', {
+		writable: true,
+		configurable: true,
+		value: getterToString
+	});
+
+	Object.defineProperty(fn, 'key', {
+		configurable: true,
+		value: key
+	});
+
+	return fn as any;
+}
+
+export function createGetAll(keys: PropertyKey[]): GetAllFunction {
+	let fn = getAll.bind(keys);
+
+	Object.defineProperty(fn, 'toString', {
+		writable: true,
+		configurable: true,
+		value: getAllToString
+	});
+
+	Object.defineProperty(fn, 'keys', {
+		configurable: true,
+		value: keys
+	});
+
+	return fn as any;
 }
 
 export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: true): Select<T, V>;
@@ -46,10 +109,7 @@ export function compileQuery<T, V>(select: undefined | SelectType<T, V>, require
 		if (typeof select === "function")
 			return select;
 
-		if (Array.isArray(select))
-			return getMultiple.bind(undefined, select);
-
-		return getter.bind(undefined, select);
+		return Array.isArray(select) ? createGetAll(select) : createGetter(select);
 	} else if (required) {
 		throw new TypeError("Select function is null or undefined.");
 	}
@@ -93,7 +153,7 @@ export function invokeSelect(value: any, required: boolean, select?: SelectType)
 	} else if (typeof select === 'function') {
 		return select(value);
 	} else if (Array.isArray(select)) {
-		return getMultiple(select, value);
+		return getAll.call(select, value);
 	} else {
 		return value[select];
 	}
