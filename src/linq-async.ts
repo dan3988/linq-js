@@ -1,6 +1,6 @@
 import type { LinqCommon } from "./index.js";
 import type { Grouping, IterateCallback, LinqCommonOrdered } from "./linq-common.js";
-import type { BiSelect, Comparer, Constructor, KeysToObject, NumberLike, Predictate, Select, ValidKey } from "./util.js";
+import type * as util from "./util.js";
 
 export interface AsyncLinqConstructor {
 	readonly prototype: AsyncLinq;
@@ -8,66 +8,66 @@ export interface AsyncLinqConstructor {
 }
 
 export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
-	first(query?: Predictate<T>): Promise<T>;
-	firstOrDefault(query?: Predictate<T>): Promise<T | undefined>;
+	first(query?: util.Predictate<T>): Promise<T>;
+	firstOrDefault(query?: util.Predictate<T>): Promise<T | undefined>;
 
-	last(query?: Predictate<T>): T;
-	lastOrDefault(query?: Predictate<T>): Promise<T | undefined>;
+	last(query?: util.Predictate<T>): T;
+	lastOrDefault(query?: util.Predictate<T>): Promise<T | undefined>;
 
-	any(predictate?: Predictate<T>): Promise<boolean>;
-	all(predictate?: Predictate<T>): Promise<boolean>;
+	any(predictate?: util.Predictate<T>): Promise<boolean>;
+	all(predictate?: util.Predictate<T>): Promise<boolean>;
 
 	sum(): Promise<number>;
-	sum(query: ValidKey<T, NumberLike>): Promise<number>;
-	sum(query: Select<T, NumberLike>): Promise<number>;
+	sum(query: util.ValidKey<T, util.NumberLike>): Promise<number>;
+	sum(query: util.Select<T, util.NumberLike>): Promise<number>;
 
 	min(): Promise<number>;
-	min(query: ValidKey<T, NumberLike>): Promise<number>;
-	min(query: Select<T, NumberLike>): Promise<number>;
+	min(query: util.ValidKey<T, util.NumberLike>): Promise<number>;
+	min(query: util.Select<T, util.NumberLike>): Promise<number>;
 
 	max(): Promise<number>;
-	max(query: ValidKey<T, NumberLike>): Promise<number>;
-	max(query: Select<T, NumberLike>): Promise<number>;
+	max(query: util.ValidKey<T, util.NumberLike>): Promise<number>;
+	max(query: util.Select<T, util.NumberLike>): Promise<number>;
 
 	average(): Promise<number>;
-	average(query: ValidKey<T, NumberLike>): Promise<number>;
-	average(query: Select<T, NumberLike>): Promise<number>;
+	average(query: util.ValidKey<T, util.NumberLike>): Promise<number>;
+	average(query: util.Select<T, util.NumberLike>): Promise<number>;
 
-	count(filter?: Predictate<T>): Promise<number>;
+	count(filter?: util.Predictate<T>): Promise<number>;
 
-	where(filter: Predictate<T>): AsyncLinq<T>;
+	where(filter: util.Predictate<T>): AsyncLinq<T>;
 
-	zip<V, R>(other: AsyncIterable<V>, selector: BiSelect<T, V, R>): AsyncLinq<R>;
+	zip<V, R>(other: AsyncIterable<V>, selector: util.BiSelect<T, V, R>): AsyncLinq<R>;
 
-	select<V>(query: Select<T, V>): AsyncLinq<V>;
+	select<V>(query: util.Select<T, V>): AsyncLinq<V>;
 	select<K extends keyof T>(query: K): AsyncLinq<T[K]>;
-	select<K extends (keyof T)[]>(keys: K): LinqCommon<KeysToObject<T, K>>;
-	selectMany<K extends ValidKey<T, Iterable<any>>>(query: K): AsyncLinq<T[K] extends Iterable<infer V> ? V : unknown>;
-	selectMany<V>(query: Select<T, Iterable<V>>): AsyncLinq<V>;
+	select<K extends (keyof T)[]>(keys: K): LinqCommon<util.KeysToObject<T, K>>;
+	selectMany<K extends util.ValidKey<T, Iterable<any>>>(query: K): AsyncLinq<T[K] extends Iterable<infer V> ? V : unknown>;
+	selectMany<V>(query: util.Select<T, Iterable<V>>): AsyncLinq<V>;
 
 	distinct(): AsyncLinq<T>;
 
-	order(comparer?: Comparer<T>): AsyncLinq<T>;
-	orderDesc(comparer?: Comparer<T>): AsyncLinq<T>;
+	order(comparer?: util.Comparer<T>): AsyncLinq<T>;
+	orderDesc(comparer?: util.Comparer<T>): AsyncLinq<T>;
 
-	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinqOrdered<T>;
-	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinqOrdered<T>;
+	orderBy<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): AsyncLinqOrdered<T>;
+	orderBy<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): AsyncLinqOrdered<T>;
 
-	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinqOrdered<T>;
-	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinqOrdered<T>;
+	orderByDesc<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): AsyncLinqOrdered<T>;
+	orderByDesc<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): AsyncLinqOrdered<T>;
 
 	groupBy<K extends keyof T>(query: K): AsyncLinq<Grouping<T[K], T>>;
-	groupBy<V>(query: Select<T, V>): AsyncLinq<Grouping<V, T>>;
+	groupBy<V>(query: util.Select<T, V>): AsyncLinq<Grouping<V, T>>;
 
-	toObject<K extends PropertyKey>(keySelector: Select<T, K>): Promise<Record<K, any>>;
-	toObject<K extends PropertyKey, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Promise<Record<K, V>>;
+	toObject<K extends PropertyKey>(keySelector: util.Select<T, K>): Promise<Record<K, any>>;
+	toObject<K extends PropertyKey, V>(keySelector: util.Select<T, K>, valueSelector: util.Select<T, V>): Promise<Record<K, V>>;
 	toArray(): Promise<T[]>;
 	toSet(): Promise<Set<T>>;
-	toMap<K>(keySelector: Select<T, K>): Promise<Map<K, T>>;
-	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Promise<Map<K, V>>;
-	toMap<K, V extends keyof T>(keySelector: Select<T, K>, valueSelector: V): Promise<Map<K, T[V]>>;
+	toMap<K>(keySelector: util.Select<T, K>): Promise<Map<K, T>>;
+	toMap<K, V>(keySelector: util.Select<T, K>, valueSelector: util.Select<T, V>): Promise<Map<K, V>>;
+	toMap<K, V extends keyof T>(keySelector: util.Select<T, K>, valueSelector: V): Promise<Map<K, T[V]>>;
 	toMap<K extends keyof T>(keySelector: K): Promise<Map<T[K], T>>;
-	toMap<K extends keyof T, V>(keySelector: K, valueSelector: Select<T, V>): Promise<Map<T[K], V>>;
+	toMap<K extends keyof T, V>(keySelector: K, valueSelector: util.Select<T, V>): Promise<Map<T[K], V>>;
 	toMap<K extends keyof T, V extends keyof T>(keySelector: K, valueSelector: V): Promise<Map<T[K], T[V]>>;
 
 	ofType(type: 'string'): AsyncLinq<string>;
@@ -78,13 +78,13 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	ofType(type: 'object'): AsyncLinq<object>;
 	ofType(type: 'function'): AsyncLinq<Function>;
 	ofType(type: 'undefined'): AsyncLinq<undefined>;
-	ofType<V>(type: Constructor<V>): AsyncLinq<V>;
+	ofType<V>(type: util.Constructor<V>): AsyncLinq<V>;
 
 	concat<V>(...values: AsyncIterable<V>[]): AsyncLinq<T | V>;
 
 	join(separator?: string): Promise<string>;
 
-	aggregate<V>(initial: V, aggregate: BiSelect<V, T, V>): Promise<V>;
+	aggregate<V>(initial: V, aggregate: util.BiSelect<V, T, V>): Promise<V>;
 
 	iterate<V>(fn: IterateCallback<undefined, T, V>): Promise<V | undefined>;
 	iterate<E, V>(thisArg: E, fn: IterateCallback<E, T, V>): Promise<V | undefined>;
@@ -96,11 +96,11 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 }
 
 export interface AsyncLinqOrdered<T> extends AsyncLinq<T>, LinqCommonOrdered<T> {
-	thenBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinqOrdered<T>;
-	thenBy<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinqOrdered<T>;
+	thenBy<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): AsyncLinqOrdered<T>;
+	thenBy<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): AsyncLinqOrdered<T>;
 
-	thenByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): AsyncLinqOrdered<T>;
-	thenByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): AsyncLinqOrdered<T>;
+	thenByDesc<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): AsyncLinqOrdered<T>;
+	thenByDesc<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): AsyncLinqOrdered<T>;
 }
 
 export var AsyncLinq: AsyncLinqConstructor = <any>class AsyncLinq<T> {

@@ -1,6 +1,6 @@
 import type { AsyncLinq } from "./linq-async.js";
 import type { Grouping, IterateCallback, LinqCommon, LinqCommonOrdered } from "./linq-common.js";
-import type { BiSelect, Comparer, Constructor, KeysToObject, NumberLike, Predictate, Select, ValidKey } from "./util.js";
+import type * as util from "./util.js";
 
 export interface LinqConstructor {
 	readonly create: unique symbol;
@@ -12,70 +12,70 @@ export interface LinqConstructor {
 	range(start: number, count: number, step?: number): Linq<number>;
 	repeat<T>(value: T, count: number): Linq<T>;
 	fromObject(obj: object): Linq<[string, any]>;
-	fromObject<V>(obj: object, select: BiSelect<string, any, V>): Linq<V>;
+	fromObject<V>(obj: object, select: util.BiSelect<string, any, V>): Linq<V>;
 }
 
 export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
-	first(predictate?: Predictate<T>): T;
-	firstOrDefault(predictate?: Predictate<T>): T | undefined;
+	first(predictate?: util.Predictate<T>): T;
+	firstOrDefault(predictate?: util.Predictate<T>): T | undefined;
 
-	last(predictate?: Predictate<T>): T;
-	lastOrDefault(predictate?: Predictate<T>): T | undefined;
+	last(predictate?: util.Predictate<T>): T;
+	lastOrDefault(predictate?: util.Predictate<T>): T | undefined;
 
-	any(predictate?: Predictate<T>): boolean;
-	all(predictate?: Predictate<T>): boolean;
+	any(predictate?: util.Predictate<T>): boolean;
+	all(predictate?: util.Predictate<T>): boolean;
 
 	sum(): number;
-	sum(query: ValidKey<T, NumberLike>): number;
-	sum(query: Select<T, NumberLike>): number;
+	sum(query: util.ValidKey<T, util.NumberLike>): number;
+	sum(query: util.Select<T, util.NumberLike>): number;
 
 	min(): number;
-	min(query: ValidKey<T, NumberLike>): number;
-	min(query: Select<T, NumberLike>): number;
+	min(query: util.ValidKey<T, util.NumberLike>): number;
+	min(query: util.Select<T, util.NumberLike>): number;
 
 	max(): number;
-	max(query: ValidKey<T, NumberLike>): number;
-	max(query: Select<T, NumberLike>): number;
+	max(query: util.ValidKey<T, util.NumberLike>): number;
+	max(query: util.Select<T, util.NumberLike>): number;
 
 	average(): number;
-	average(query: ValidKey<T, NumberLike>): number;
-	average(query: Select<T, NumberLike>): number;
+	average(query: util.ValidKey<T, util.NumberLike>): number;
+	average(query: util.Select<T, util.NumberLike>): number;
 
-	count(filter?: Predictate<T>): number;
+	count(filter?: util.Predictate<T>): number;
 
-	zip<V, R>(other: Iterable<V>, selector: BiSelect<T, V, R>): Linq<R>;
+	zip<V, R>(other: Iterable<V>, selector: util.BiSelect<T, V, R>): Linq<R>;
 
-	where(filter: Predictate<T>): Linq<T>;
+	where(filter: util.Predictate<T>): Linq<T>;
 
-	select<V>(query: Select<T, V>): Linq<V>;
+	select<V>(query: util.Select<T, V>): Linq<V>;
 	select<K extends keyof T>(query: K): Linq<T[K]>;
-	select<K extends (keyof T)[]>(keys: K): Linq<KeysToObject<T, K>>;
-	selectMany<K extends ValidKey<T, Iterable<any>>>(query: K): Linq<T[K] extends Iterable<infer V> ? V : unknown>;
-	selectMany<V>(query: Select<T, Iterable<V>>): Linq<V>;
+	select<K extends (keyof T)[]>(keys: K): Linq<util.KeysToObject<T, K>>;
+	selectMany<K extends util.ValidKey<T, Iterable<any>>>(query: K): Linq<T[K] extends Iterable<infer V> ? V : unknown>;
+	selectMany<V>(query: util.Select<T, Iterable<V>>): Linq<V>;
 
 	distinct(): Linq<T>;
 
-	order(comparer?: Comparer<T>): Linq<T>;
-	orderDesc(comparer?: Comparer<T>): Linq<T>;
+	order(comparer?: util.Comparer<T>): Linq<T>;
+	orderDesc(comparer?: util.Comparer<T>): Linq<T>;
 
-	orderBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqOrdered<T>;
-	orderBy<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqOrdered<T>;
+	orderBy<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): LinqOrdered<T>;
+	orderBy<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): LinqOrdered<T>;
 
-	orderByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqOrdered<T>;
-	orderByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqOrdered<T>;
+	orderByDesc<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): LinqOrdered<T>;
+	orderByDesc<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): LinqOrdered<T>;
 
 	groupBy<K extends keyof T>(query: K): Linq<Grouping<T[K], T>>;
-	groupBy<V>(query: Select<T, V>): Linq<Grouping<V, T>>;
+	groupBy<V>(query: util.Select<T, V>): Linq<Grouping<V, T>>;
 
-	toObject<K extends PropertyKey>(keySelector: Select<T, K>): Record<K, any>;
-	toObject<K extends PropertyKey, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Record<K, V>;
+	toObject<K extends PropertyKey>(keySelector: util.Select<T, K>): Record<K, any>;
+	toObject<K extends PropertyKey, V>(keySelector: util.Select<T, K>, valueSelector: util.Select<T, V>): Record<K, V>;
 	toArray(): T[];
 	toSet(): Set<T>;
-	toMap<K>(keySelector: Select<T, K>): Map<K, T>;
-	toMap<K, V>(keySelector: Select<T, K>, valueSelector: Select<T, V>): Map<K, V>;
-	toMap<K, V extends keyof T>(keySelector: Select<T, K>, valueSelector: V): Map<K, T[V]>;
+	toMap<K>(keySelector: util.Select<T, K>): Map<K, T>;
+	toMap<K, V>(keySelector: util.Select<T, K>, valueSelector: util.Select<T, V>): Map<K, V>;
+	toMap<K, V extends keyof T>(keySelector: util.Select<T, K>, valueSelector: V): Map<K, T[V]>;
 	toMap<K extends keyof T>(keySelector: K): Map<T[K], T>;
-	toMap<K extends keyof T, V>(keySelector: K, valueSelector: Select<T, V>): Map<T[K], V>;
+	toMap<K extends keyof T, V>(keySelector: K, valueSelector: util.Select<T, V>): Map<T[K], V>;
 	toMap<K extends keyof T, V extends keyof T>(keySelector: K, valueSelector: V): Map<T[K], T[V]>;
 
 	ofType(type: 'string'): Linq<string>;
@@ -86,13 +86,13 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	ofType(type: 'object'): Linq<object>;
 	ofType(type: 'function'): Linq<Function>;
 	ofType(type: 'undefined'): Linq<undefined>;
-	ofType<V>(type: Constructor<V>): Linq<V>;
+	ofType<V>(type: util.Constructor<V>): Linq<V>;
 
 	concat<V>(...values: Iterable<V>[]): Linq<T | V>;
 
 	join(separator?: string): string;
 
-	aggregate<V>(initial: V, aggregate: BiSelect<V, T, V>): V;
+	aggregate<V>(initial: V, aggregate: util.BiSelect<V, T, V>): V;
 
 	iterate<V>(fn: IterateCallback<undefined, T, V>): V | undefined;
 	iterate<E, V>(thisArg: E, fn: IterateCallback<E, T, V>): V | undefined;
@@ -104,9 +104,9 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 }
 
 export interface LinqOrdered<T = any> extends Linq<T>, LinqCommonOrdered<T> {
-	thenBy<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqOrdered<T>;
-	thenBy<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqOrdered<T>;
+	thenBy<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): LinqOrdered<T>;
+	thenBy<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): LinqOrdered<T>;
 
-	thenByDesc<K extends keyof T>(query: K, comparer?: Comparer<T[K]>): LinqOrdered<T>;
-	thenByDesc<V>(query: Select<T, V>, comparer?: Comparer<V>): LinqOrdered<T>;
+	thenByDesc<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): LinqOrdered<T>;
+	thenByDesc<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): LinqOrdered<T>;
 }
