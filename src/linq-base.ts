@@ -42,7 +42,7 @@ export interface Factory {
 	(value: any): any;
 }
 
-let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): LinqCommon<T> {
+let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T> | AsyncIterable<T>): LinqCommon<T> {
 	if (new.target != null)
 		return undefined!;
 
@@ -57,7 +57,7 @@ let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): LinqCommo
 		return new LinqIterable(value);
 
 	if (Symbol.asyncIterator in value)
-		return new AsyncLinq(<any>value);
+		return new AsyncLinq(value);
 	
 	throw new TypeError('Cannot convert ' + value + ' to a Linq object.');
 }
