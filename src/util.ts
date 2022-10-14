@@ -36,6 +36,10 @@ function keyToString(key: any): string {
 	}
 }
 
+export function returnSelf<T>(this: T): T {
+	return this;
+}
+
 export interface GetAllFunction {
 	<T, K extends ValidKeys<T, any>>(this: K, value: T): KeysToObject<T, K>;
 	(this: readonly PropertyKey[], value: any): any;

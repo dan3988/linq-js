@@ -1,6 +1,7 @@
 import type * as l from './linq.js';
 import type * as lc from './linq-common.js';
 import type * as la from './linq-async.js';
+import { returnSelf } from './util.js';
 
 export type LinqCommon<T = any> = lc.LinqCommon<T>;
 export type LinqCommonOrdered<T = any> = lc.LinqCommonOrdered<T>;
@@ -49,7 +50,7 @@ let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T> | AsyncIter
 	if (value == null)
 		throw new TypeError("'values' is required.");
 
-	let fn = (<any>value)[linq.create];
+	let fn = (<any>value)[LinqCreateSymbol];
 	if (fn != null)
 		return fn.call(value);
 
@@ -63,10 +64,28 @@ let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T> | AsyncIter
 }
 
 /** @internal */
-export var LinqInternal: LinqInternalConstructor = <any>linq;
+export const LinqCreateSymbol: unique symbol = Symbol("Linq.create");
+/** @internal */
+export const LinqInternal: LinqInternalConstructor = <any>linq;
 
-export var Linq: LinqConstructor = linq as any;
+export const Linq: LinqConstructor = linq as any;
 export default Linq;
+
+Object.defineProperty(LinqInternal, "create", {
+	value: LinqCreateSymbol
+});
+
+Object.defineProperty(LinqInternal.prototype, LinqCreateSymbol, {
+	configurable: true,
+	writable: true,
+	value: returnSelf
+});
+
+Object.defineProperty(AsyncLinq.prototype, LinqCreateSymbol, {
+	configurable: true,
+	writable: true,
+	value: returnSelf
+});
 
 class LinqIterable<T> extends LinqInternal<T> {
 	readonly #source: Iterable<T>;

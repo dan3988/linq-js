@@ -6,10 +6,6 @@ import { LinqSet } from "./impl/set.js";
 import { BiSelect, getSharedPrototypes, TypedArray, typedArrayViews } from "./util.js";
 import { EmptyIterator } from "./iterators.js";
 
-Object.defineProperty(Linq, 'convert', {
-	value: Symbol("Linq.convert")
-});
-
 Linq.empty = function<T>() {
 	return LinqInternal.prototype as LinqInternal<T>;
 }
@@ -34,7 +30,7 @@ Linq.fromObject = function(obj: object, select?: BiSelect<string>) {
 Object.defineProperty(LinqInternal, 'length', {
 	configurable: true,
 	value: null
-})
+});
 
 LinqInternal.prototype[Symbol.iterator] = function() {
 	return EmptyIterator.INSTANCE;

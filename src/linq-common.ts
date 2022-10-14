@@ -1,3 +1,4 @@
+import type { Linq as LinqFunction } from "./linq-base.js";
 import type * as util from "./util.js";
 
 export interface Grouping<K, V> extends Iterable<V> {
@@ -10,6 +11,8 @@ export interface IterateCallback<TThis, T, V> {
 }
 
 export interface LinqCommon<T = any> {
+	[LinqFunction.create](): this;
+
 	/**
 	 * Iterates this query, and returns the first matching item, or throws an error if one is not found.
 	 * @param predictate A function that will called on each element in the query until it returns `true`
