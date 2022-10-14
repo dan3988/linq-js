@@ -42,27 +42,22 @@ export interface Factory {
 	(value: any): any;
 }
 
-const factories: Factory[] = [];
-
-/** @internal */
-export function addFactory(factory: Factory): void {
-	factories.unshift(factory);
-}
-
-addFactory(v => Symbol.iterator in v ? new LinqIterable(v as any) : undefined);
-
-let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): LinqInternal<T> {
+let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T>): LinqCommon<T> {
 	if (new.target != null)
 		return undefined!;
 
 	if (value == null)
 		throw new TypeError("'values' is required.");
 
-	for (let factory of factories) {
-		let v = factory(value);
-		if (v != null)
-			return v;
-	}
+	let fn = (<any>value)[linq.create];
+	if (fn != null)
+		return fn.call(value);
+
+	if (Symbol.iterator in value)
+		return new LinqIterable(value);
+
+	if (Symbol.asyncIterator in value)
+		return new AsyncLinq(<any>value);
 	
 	throw new TypeError('Cannot convert ' + value + ' to a Linq object.');
 }

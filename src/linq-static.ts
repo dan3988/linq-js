@@ -1,10 +1,14 @@
-import { addFactory, Linq, AsyncLinq, LinqInternal } from "./linq-base.js";
+import { Linq, LinqInternal } from "./linq-base.js";
 import { LinqArray } from "./impl/array.js";
 import { LinqRange } from "./impl/range.js";
 import { LinqRepeat } from "./impl/repeat.js";
 import { LinqSet } from "./impl/set.js";
-import type { BiSelect } from "./util.js";
+import { BiSelect, getSharedPrototypes, TypedArray, typedArrayViews } from "./util.js";
 import { EmptyIterator } from "./iterators.js";
+
+Object.defineProperty(Linq, 'convert', {
+	value: Symbol("Linq.convert")
+});
 
 Linq.empty = function<T>() {
 	return LinqInternal.prototype as LinqInternal<T>;
@@ -36,7 +40,32 @@ LinqInternal.prototype[Symbol.iterator] = function() {
 	return EmptyIterator.INSTANCE;
 }
 
-addFactory(v => Symbol.asyncIterator in v ? new AsyncLinq(v as any) : undefined);
-addFactory(v => v instanceof Map || v instanceof Set ? new LinqSet(v) : undefined);
-addFactory(v => ArrayBuffer.isView(v) && 'length' in v ? new LinqArray(v) : undefined);
-addFactory(v => Array.isArray(v) ? new LinqArray(v) : undefined);
+function linqCreateArray<T>(this: Array<T>): Linq<T> {
+	return new LinqArray(this);
+}
+
+function linqCreateSet<T>(this: Set<T>): Linq<T> {
+	return new LinqSet(this);
+}
+
+function linqCreateTypedArray<N extends number | bigint>(this: TypedArray<N>): Linq<N> {
+	return new LinqArray(this);
+}
+
+Object.defineProperty(Array.prototype, Linq.create, {
+	value: linqCreateArray
+});
+
+Object.defineProperty(Map.prototype, Linq.create, {
+	value: linqCreateSet
+});
+
+Object.defineProperty(Set.prototype, Linq.create, {
+	value: linqCreateSet
+});
+
+getSharedPrototypes(Function.prototype, typedArrayViews).forEach(v => {
+	Object.defineProperty(v.prototype, Linq.create, {
+		value: linqCreateTypedArray
+	});
+})

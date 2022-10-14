@@ -3,6 +3,7 @@ import type { Grouping, IterateCallback, LinqCommon, LinqCommonOrdered } from ".
 import type { BiSelect, Comparer, Constructor, KeysToObject, NumberLike, Predictate, Select, ValidKey } from "./util.js";
 
 export interface LinqConstructor {
+	readonly create: unique symbol;
 	readonly prototype: Linq;
 	<T>(values: Iterable<T>): Linq<T>;
 	<T>(values: AsyncIterable<T>): AsyncLinq<T>;

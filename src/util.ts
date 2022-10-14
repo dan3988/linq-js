@@ -179,3 +179,52 @@ export function identity<T>(this: T): T {
 export function firstArg<T>(arg: T): T {
 	return arg;
 }
+
+export interface TypedArray<N extends number | bigint> extends ArrayLike<N>, Iterable<N>, ArrayBufferView {
+	readonly BYTES_PER_ELEMENT: number;
+}
+
+export interface TypedArrayConstructor<N extends number | bigint = any> {
+	readonly prototype: TypedArray<N>;
+	readonly BYTES_PER_ELEMENT: number;
+    new(length: number): TypedArray<N>;
+    new(array: Iterable<N>): TypedArray<N>;
+    new(buffer: ArrayBufferLike, byteOffset?: number, length?: number): TypedArray<N>;
+}
+
+export const typedArrayViews: readonly TypedArrayConstructor[] = [
+	Int8Array,
+	Uint8Array,
+	Uint8ClampedArray,
+	Int16Array,
+	Uint16Array,
+	Int32Array,
+	Uint32Array,
+	Float32Array,
+	Float64Array,
+	BigInt64Array,
+	BigUint64Array
+];
+
+export function getSharedPrototypes<TBase, TValues extends TBase>(base: TBase, values: readonly TValues[]): TValues[] {
+	let set = new Set<TValues>();
+	for (let value of values) {
+		let last = value;
+		let next = Object.getPrototypeOf(value);
+		while (true) {
+			if (next == base) {
+				next = last;
+				set.add(next);
+				break;
+			}
+
+			if (next == null)
+				break;
+
+			last = next;
+			next = Object.getPrototypeOf(next);
+		}
+	}
+
+	return Array.from(set);
+}
