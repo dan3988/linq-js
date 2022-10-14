@@ -46,6 +46,9 @@
 			"problemMatcher": [
 				"$tsc-watch"
 			],
+			"runOptions": {
+				"runOn": "folderOpen"
+			},
 			"group": "build"
 		}
 	]
