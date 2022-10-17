@@ -22,6 +22,7 @@ export class GroupingImpl<K, V> implements Grouping<K, V> {
 }
 
 /** @internal  */
+// @ts-ignore - ignore invalid build error caused by the signature of the join() function
 export class LinqGrouped<K, V> extends LinqInternal<Grouping<K, V>> {
 	readonly #source: LinqInternal<V>;
 	readonly #query: Select<V, K>;
@@ -41,6 +42,7 @@ export class LinqGrouped<K, V> extends LinqInternal<Grouping<K, V>> {
 }
 
 /** @internal */
+// @ts-ignore - ignore invalid build error caused by the signature of the join() function
 export class AsyncLinqGrouped<K, V> extends AsyncLinq<Grouping<K, V>> {
 	readonly #source: AsyncLinq<V>;
 	readonly #query: Select<V, K>;
