@@ -1,19 +1,21 @@
 import type { LinqCommon } from "./linq-common";
 
+export type Fn<TArgs extends any[] = any[], TResult = any, TThis = void> = (this: TThis, ...args: TArgs) => TResult;
+
 export type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
 export type ValidKeys<T, R> = (ValidKey<T, R>)[];
 export type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
 
 export type Awaitable<T> = T | Promise<T>;
 
-export type Select<T = any, V = any> = (value: T) => V;
+export type Select<T = any, V = any> = Fn<[value: T], V>;
 export type SelectKeyType<T = any, R = any> = ValidKey<T, R> | Select<T, R>;
 export type SelectType<T = any, R = any> = ValidKey<T, R> | ValidKeys<T, R> | Select<T, R>;
-export type BiSelect<X = any, Y = any, V = any> = (x: X, y: Y) => V;
+export type BiSelect<X = any, Y = any, V = any> = Fn<[x: X, y: Y], V>;
 export type KeysToObject<TSource, TKeys extends (keyof TSource)[]> = { [P in TKeys[number]]: TSource[P] }
 
-export type Predictate<T = any> = (value: T) => boolean;
-export type Comparer<T = any> = (x: T, y: T) => number;
+export type Predictate<T = any> = Fn<[value: T], boolean>;
+export type Comparer<T = any> = Fn<[x: T, y: T], number>;
 
 export interface MapOrSet<T> extends Iterable<T> {
 	readonly size: number;
@@ -39,8 +41,7 @@ function keyToString(key: any): string {
 	}
 }
 
-export function defineCommonFunction<T, K extends keyof LinqCommon>(self: LinqCommon<T>, key: K, func: LinqCommon<T>[K] extends (...args: infer A) => Awaitable<infer V> ? (this: LinqCommon<T>, ...args: A) => Awaitable<V | undefined> : never): void {
-//export function defineFunction<T extends object, K extends keyof T>(self: T, key: K, func: T[K] extends (...args: infer A) => infer V ? (this: T, ...args: A) => V : never): void {
+export function defineFunction<T, K extends keyof T>(self: T, key: K, func: T[K] extends Fn<infer A, infer V> ? Fn<A, V, T> : never): void {
 	if (typeof func !== 'function')
 		throw new TypeError("Parameter 'func' is not a function.");
 
@@ -54,6 +55,10 @@ export function defineCommonFunction<T, K extends keyof LinqCommon>(self: LinqCo
 		writable: true,
 		value: func
 	});
+}
+
+export function defineCommonFunction<T, K extends keyof LinqCommon>(self: LinqCommon<T>, key: K, func: LinqCommon<T>[K] extends (...args: infer A) => Awaitable<infer V> ? (this: LinqCommon<T>, ...args: A) => Awaitable<V | undefined> : never): void {
+	defineFunction(self, key, func as any);
 }
 
 export function returnSelf<T>(this: T): T {

@@ -7,6 +7,7 @@ import "./prototype/collection.js";
 import "./prototype/distinct.js";
 import "./prototype/find.js";
 import "./prototype/group.js";
+import "./prototype/join.js";
 import "./prototype/math.js";
 import "./prototype/misc.js";
 import "./prototype/query.js";

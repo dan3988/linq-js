@@ -28,7 +28,7 @@ Linq.repeat = function(value, count) {
 
 Linq.fromObject = function(obj: object, select?: BiSelect<string>) {
 	let source = Object.entries(obj);
-	let linq: Linq = new LinqArray(source);
+	let linq: Linq<[string, any]> = new LinqArray(source);
 	if (select != null)
 		linq = linq.select(a => select.apply(undefined, a));
 

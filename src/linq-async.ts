@@ -81,7 +81,8 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 
 	concat<V>(...values: AsyncIterable<V>[]): AsyncLinq<T | V>;
 
-	join(separator?: string): Promise<string>;
+	join<V, K>(other: AsyncLinq<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>): AsyncLinq<[outer: T, inner: V]>;
+	join<V, K, R>(other: AsyncLinq<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>, resultSelector: util.Fn<[outer: T, inner: V], R>): AsyncLinq<R>;
 
 	aggregate<V>(initial: V, aggregate: util.BiSelect<V, T, V>): Promise<V>;
 

@@ -1,8 +1,9 @@
 import type { Grouping } from "../linq-common.js";
-import { AsyncLinq, LinqInternal } from "../linq-base.js";
+import { Linq, LinqInternal, LinqCommon, AsyncLinq } from "../linq-base.js";
 import { compileQuery, Select, SelectType } from "../util.js";
 
-class GroupingImpl<K, V> implements Grouping<K, V> {
+/** @internal */
+export class GroupingImpl<K, V> implements Grouping<K, V> {
 	readonly #key: K;
 	readonly #values: readonly V[];
 
@@ -20,7 +21,7 @@ class GroupingImpl<K, V> implements Grouping<K, V> {
 	}
 }
 
-/** @internal */
+/** @internal  */
 export class LinqGrouped<K, V> extends LinqInternal<Grouping<K, V>> {
 	readonly #source: LinqInternal<V>;
 	readonly #query: Select<V, K>;
@@ -32,17 +33,9 @@ export class LinqGrouped<K, V> extends LinqInternal<Grouping<K, V>> {
 	}
 
 	*[Symbol.iterator]() {
-		let map = new Map<K, V[]>();
-		for (let value of this.#source) {
-			let key = this.#query(value);
-			let array = map.get(key);
-			if (array == null)
-				map.set(key, array = []);
+		const map = buildGrouping(this.#source, this.#query);
 
-			array.push(value);
-		}
-
-		for (let [key, values] of map)
+		for (const [key, values] of map)
 			yield new GroupingImpl(key, values);
 	}
 }
@@ -59,19 +52,26 @@ export class AsyncLinqGrouped<K, V> extends AsyncLinq<Grouping<K, V>> {
 	}
 
 	async *[Symbol.asyncIterator]() {
-		let map = new Map<K, V[]>();
-		for await (let value of this.#source) {
-			let key = this.#query(value);
-			let array = map.get(key);
-			if (array == null)
-				map.set(key, array = []);
+		const map = await buildGrouping(this.#source, this.#query);
 
-			array.push(value);
-		}
-
-		for (let [key, values] of map)
+		for (const [key, values] of map)
 			yield new GroupingImpl(key, values);
 	}
+}
+
+/** @internal */
+export function buildGrouping<K, V>(linq: Linq<V>, query: Select<V, K>): Map<K, V[]>;
+export function buildGrouping<K, V>(linq: AsyncLinq<V>, query: Select<V, K>): Promise<Map<K, V[]>>;
+export function buildGrouping<K, V>(linq: LinqCommon<V>, query: Select<V, K>) {
+	return linq.aggregate(new Map(), (map, value) => {
+		let key = query(value);
+		let array = map.get(key);
+		if (array == null)
+			map.set(key, array = []);
+
+		array.push(value);
+		return map;
+	});
 }
 
 LinqInternal.prototype.groupBy = function(query: SelectType) {
