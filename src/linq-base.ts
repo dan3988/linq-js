@@ -88,7 +88,7 @@ export const LinqCreateSymbol: unique symbol = Symbol("Linq.create");
 export const Linq: lc.LinqFunction = linq;
 export default Linq;
 
-Object.defineProperty(LinqInternal, "create", {
+Object.defineProperty(linq, "create", {
 	value: LinqCreateSymbol
 });
 
