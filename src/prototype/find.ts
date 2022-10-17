@@ -1,5 +1,5 @@
-import { AsyncLinq, LinqInternal, LinqCommon } from '../linq-base.js';
-import { errNoElements, Predictate } from "../util.js";
+import { Linq, LinqCommon } from '../linq-base.js';
+import { defineCommonFunction, errNoElements, Predictate } from "../util.js";
 
 function firstImpl<T>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean) {
 	return linq.iterate(undefined, (done, value) => {
@@ -29,37 +29,23 @@ function lastImpl<T>(linq: LinqCommon<T>, query: undefined | Predictate, require
 	});
 }
 
-function first<T>(this: LinqCommon<T>, query?: Predictate<T>) {
+defineCommonFunction(Linq.prototype, 'first', function(query) {
 	return firstImpl(this, query, true);
-}
+})
 
-LinqInternal.prototype.first = first;
-AsyncLinq.prototype.first = first;
-
-function firstOrDefault<T>(this: LinqCommon<T>, query?: Predictate<T>) {
+defineCommonFunction(Linq.prototype, 'firstOrDefault', function(query) {
 	return firstImpl(this, query, false);
-}
+})
 
-LinqInternal.prototype.firstOrDefault = firstOrDefault;
-AsyncLinq.prototype.firstOrDefault = firstOrDefault;
-
-function last<T>(this: LinqCommon<T>, query?: Predictate<T>) {
+defineCommonFunction(Linq.prototype, 'last', function(query) {
 	return lastImpl(this, query, true);
-}
+})
 
-LinqInternal.prototype.last = last;
-AsyncLinq.prototype.last = last;
-
-function lastOrDefault<T>(this: LinqCommon<T>, query?: Predictate<T>) {
+defineCommonFunction(Linq.prototype, 'lastOrDefault', function(query) {
 	return lastImpl(this, query, false);
-}
+})
 
-LinqInternal.prototype.lastOrDefault = lastOrDefault;
-AsyncLinq.prototype.lastOrDefault = lastOrDefault;
-
-function any<T>(this: LinqInternal<T>, query?: Predictate): boolean;
-function any<T>(this: AsyncLinq<T>, query?: Predictate): Promise<boolean>;
-function any<T>(this: LinqCommon<T>, query?: Predictate) {
+defineCommonFunction(Linq.prototype, 'any', function(query) {
 	if (query == null) {
 		return this.iterate((done) => [!done]);
 	} else {
@@ -71,14 +57,9 @@ function any<T>(this: LinqCommon<T>, query?: Predictate) {
 			}
 		});
 	}
-}
+})
 
-LinqInternal.prototype.any = any;
-AsyncLinq.prototype.any = any;
-
-function all<T>(this: LinqInternal<T>, query: Predictate): boolean;
-function all<T>(this: AsyncLinq<T>, query: Predictate): Promise<boolean>;
-function all<T>(this: LinqCommon<T>, query: Predictate) {
+defineCommonFunction(Linq.prototype, 'all', function(query) {
 	return this.iterate((done, value) => {
 		if (done)
 			return [true];
@@ -86,7 +67,4 @@ function all<T>(this: LinqCommon<T>, query: Predictate) {
 		if (!query(value))
 			return [false];
 	});
-}
-
-LinqInternal.prototype.all = all;
-AsyncLinq.prototype.all = all;
+})

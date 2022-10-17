@@ -15,7 +15,7 @@ export class LinqArray<T> extends LinqInternal<T> {
 	}
 
 	constructor(source: ReadOnlyArray<T>) {
-		super();
+		super(source);
 		this.#source = source;
 	}
 
@@ -116,9 +116,5 @@ export class LinqArray<T> extends LinqInternal<T> {
 
 	toSet(): Set<T> {
 		return new Set(this.#source);
-	}
-
-	[Symbol.iterator](): Iterator<T> {
-		return this.#source[Symbol.iterator]();
 	}
 }

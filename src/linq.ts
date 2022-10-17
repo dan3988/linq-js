@@ -1,18 +1,9 @@
-import type { AsyncLinq } from "./linq-async.js";
-import type { Grouping, IterateCallback, LinqCommon, LinqCommonOrdered } from "./linq-common.js";
+import type { Grouping, IterateCallback, LinqCommon, LinqCommonOrdered, LinqFunction } from "./linq-common.js";
 import type * as util from "./util.js";
 
-export interface LinqConstructor {
-	readonly create: unique symbol;
+export interface LinqConstructor extends LinqFunction {
 	readonly prototype: Linq;
-	<T>(values: Iterable<T>): Linq<T>;
-	<T>(values: AsyncIterable<T>): AsyncLinq<T>;
-
-	empty<T = any>(): Linq<T>;
-	range(start: number, count: number, step?: number): Linq<number>;
-	repeat<T>(value: T, count: number): Linq<T>;
-	fromObject(obj: object): Linq<[string, any]>;
-	fromObject<V>(obj: object, select: util.BiSelect<string, any, V>): Linq<V>;
+	new<T>(values?: Iterable<T>): Linq<T>;
 }
 
 export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {

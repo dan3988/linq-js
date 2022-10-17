@@ -1,3 +1,5 @@
+import type { LinqCommon } from "./linq-common";
+
 export type ValidKey<T, R> = keyof { [K in keyof T as T[K] extends R ? K : never]: any };
 export type ValidKeys<T, R> = (ValidKey<T, R>)[];
 export type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number };
@@ -5,6 +7,7 @@ export type NumberLike = number | { [Symbol.toPrimitive](hint: "number"): number
 export type Awaitable<T> = T | Promise<T>;
 
 export type Select<T = any, V = any> = (value: T) => V;
+export type SelectKeyType<T = any, R = any> = ValidKey<T, R> | Select<T, R>;
 export type SelectType<T = any, R = any> = ValidKey<T, R> | ValidKeys<T, R> | Select<T, R>;
 export type BiSelect<X = any, Y = any, V = any> = (x: X, y: Y) => V;
 export type KeysToObject<TSource, TKeys extends (keyof TSource)[]> = { [P in TKeys[number]]: TSource[P] }
@@ -34,6 +37,23 @@ function keyToString(key: any): string {
 			key = String(key);
 			return JSON.stringify(key);
 	}
+}
+
+export function defineCommonFunction<T, K extends keyof LinqCommon>(self: LinqCommon<T>, key: K, func: LinqCommon<T>[K] extends (...args: infer A) => Awaitable<infer V> ? (this: LinqCommon<T>, ...args: A) => Awaitable<V | undefined> : never): void {
+//export function defineFunction<T extends object, K extends keyof T>(self: T, key: K, func: T[K] extends (...args: infer A) => infer V ? (this: T, ...args: A) => V : never): void {
+	if (typeof func !== 'function')
+		throw new TypeError("Parameter 'func' is not a function.");
+
+	Object.defineProperty(func, "name", {
+		configurable: true,
+		value: String(key)
+	});
+
+	Object.defineProperty(self, key, {
+		configurable: true,
+		writable: true,
+		value: func
+	});
 }
 
 export function returnSelf<T>(this: T): T {
@@ -149,7 +169,8 @@ export function defaultCompare(x?: any, y?: any): number {
 export function invokeSelect<T, V>(value: T, required: boolean, select: SelectType<T, V>): V
 export function invokeSelect<T, V>(value: T, required: false, select?: undefined): T
 export function invokeSelect<T, V>(value: T, required: false, select: undefined | SelectType<T, V>): V | T
-export function invokeSelect(value: any, required: boolean, select?: SelectType) {
+export function invokeSelect(value: any, required: boolean, select?: PropertyKey | PropertyKey[] | Select): any
+export function invokeSelect(value: any, required: boolean, select?: PropertyKey | PropertyKey[] | Select) {
 	if (select == null) {
 		if (required)
 			throw new TypeError('A value for the select parameter is required');

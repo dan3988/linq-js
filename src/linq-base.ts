@@ -2,6 +2,7 @@ import type * as l from './linq.js';
 import type * as lc from './linq-common.js';
 import type * as la from './linq-async.js';
 import { returnSelf } from './util.js';
+import { EmptyIterator } from './iterators.js';
 
 export type LinqCommon<T = any> = lc.LinqCommon<T>;
 export type LinqCommonOrdered<T = any> = lc.LinqCommonOrdered<T>;
@@ -31,19 +32,32 @@ export interface LinqInternal<T = any> extends Linq<T> {
 	get length(): number | undefined;
 }
 
-interface LinqInternalConstructor {
+/** @internal */
+export interface LinqInternalConstructor extends lc.LinqFunction {
 	readonly prototype: LinqInternal;
 	<T>(values: Iterable<T>): LinqInternal<T>;
 	<T>(values: AsyncIterable<T>): AsyncLinq<T>;
-	new<T>(): LinqInternal<T>;
+	new<T>(values?: Iterable<T>): LinqInternal<T>;
 }
 
 /** @internal */
-export interface Factory {
-	(value: any): any;
+export var LinqInternal: LinqInternalConstructor = <any>class Linq<T> {
+	get length(): number | undefined {
+		return undefined;
+	}
+
+	readonly #source: Iterable<T>;
+
+	constructor(source: Iterable<T>) {
+		this.#source = source ?? EmptyIterator.INSTANCE;
+	}
+
+	[Symbol.iterator]() {
+		return this.#source[Symbol.iterator]();
+	}
 }
 
-let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T> | AsyncIterable<T>): LinqCommon<T> {
+let linq: lc.LinqFunction = <any>function Linq<T>(value: Iterable<T> | AsyncIterable<T>): LinqCommon<T> {
 	if (new.target != null)
 		return undefined!;
 
@@ -55,7 +69,7 @@ let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T> | AsyncIter
 		return fn.call(value);
 
 	if (Symbol.iterator in value)
-		return new LinqIterable(value);
+		return new LinqInternal(value);
 
 	if (Symbol.asyncIterator in value)
 		return new AsyncLinq(value);
@@ -63,12 +77,15 @@ let linq: LinqConstructor = <any>function Linq<T>(value: Iterable<T> | AsyncIter
 	throw new TypeError('Cannot convert ' + value + ' to a Linq object.');
 }
 
+Object.setPrototypeOf(LinqInternal, linq);
+Object.setPrototypeOf(LinqInternal.prototype, linq.prototype);
+Object.setPrototypeOf(AsyncLinq, linq);
+Object.setPrototypeOf(AsyncLinq.prototype, linq.prototype);
+
 /** @internal */
 export const LinqCreateSymbol: unique symbol = Symbol("Linq.create");
-/** @internal */
-export const LinqInternal: LinqInternalConstructor = <any>linq;
 
-export const Linq: LinqConstructor = linq as any;
+export const Linq: lc.LinqFunction = linq;
 export default Linq;
 
 Object.defineProperty(LinqInternal, "create", {
@@ -86,16 +103,3 @@ Object.defineProperty(AsyncLinq.prototype, LinqCreateSymbol, {
 	writable: true,
 	value: returnSelf
 });
-
-class LinqIterable<T> extends LinqInternal<T> {
-	readonly #source: Iterable<T>;
-
-	constructor(source: Iterable<T>) {
-		super();
-		this.#source = source;
-	}
-
-	[Symbol.iterator]() {
-		return this.#source[Symbol.iterator]();
-	}
-}

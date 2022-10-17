@@ -1,4 +1,5 @@
-import type { Linq as LinqFunction } from "./linq-base.js";
+import type { Linq } from "./linq-base.js";
+import type { AsyncLinq } from "./linq-async.js";
 import type * as util from "./util.js";
 
 export interface Grouping<K, V> extends Iterable<V> {
@@ -10,8 +11,21 @@ export interface IterateCallback<TThis, T, V> {
 	(this: TThis, done: false, value: T): void | V[];
 }
 
+export interface LinqFunction {
+	readonly create: unique symbol;
+	readonly prototype: LinqCommon;
+	<T>(values: Iterable<T>): Linq<T>;
+	<T>(values: AsyncIterable<T>): AsyncLinq<T>;
+
+	empty<T = any>(): Linq<T>;
+	range(start: number, count: number, step?: number): Linq<number>;
+	repeat<T>(value: T, count: number): Linq<T>;
+	fromObject(obj: object): Linq<[string, any]>;
+	fromObject<V>(obj: object, select: util.BiSelect<string, any, V>): Linq<V>;
+}
+
 export interface LinqCommon<T = any> {
-	[LinqFunction.create](): this;
+	[Linq.create](): this;
 
 	/**
 	 * Iterates this query, and returns the first matching item, or throws an error if one is not found.

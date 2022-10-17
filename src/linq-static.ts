@@ -27,15 +27,6 @@ Linq.fromObject = function(obj: object, select?: BiSelect<string>) {
 	return linq;
 }
 
-Object.defineProperty(LinqInternal, 'length', {
-	configurable: true,
-	value: null
-});
-
-LinqInternal.prototype[Symbol.iterator] = function() {
-	return EmptyIterator.INSTANCE;
-}
-
 function linqCreateArray<T>(this: Array<T>): Linq<T> {
 	return new LinqArray(this);
 }

@@ -1,7 +1,7 @@
-import type { LinqCommon, Grouping, IterateCallback, LinqCommonOrdered } from "./linq-common.js";
+import type { LinqCommon, Grouping, IterateCallback, LinqCommonOrdered, LinqFunction } from "./linq-common.js";
 import type * as util from "./util.js";
 
-export interface AsyncLinqConstructor {
+export interface AsyncLinqConstructor extends LinqFunction {
 	readonly prototype: AsyncLinq;
 	new<T>(value: AsyncIterable<T>): AsyncLinq<T>;
 }
