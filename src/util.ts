@@ -61,6 +61,10 @@ export function defineCommonFunction<T, K extends keyof LinqCommon>(self: LinqCo
 	defineFunction(self, key, func as any);
 }
 
+export function returnArgs<T extends any[]>(...args: T): T {
+	return args;
+}
+
 export function returnSelf<T>(this: T): T {
 	return this;
 }

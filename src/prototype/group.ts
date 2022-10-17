@@ -21,7 +21,7 @@ export class GroupingImpl<K, V> implements Grouping<K, V> {
 	}
 }
 
-/** @internal  */
+/** @internal */
 // @ts-ignore - ignore invalid build error caused by the signature of the join() function
 export class LinqGrouped<K, V> extends LinqInternal<Grouping<K, V>> {
 	readonly #source: LinqInternal<V>;

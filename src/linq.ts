@@ -84,6 +84,9 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	join<V, K>(other: Linq<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>): Linq<[outer: T, inner: V]>;
 	join<V, K, R>(other: Linq<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>, resultSelector: util.Fn<[outer: T, inner: V], R>): Linq<R>;
 
+	groupJoin<V, K>(other: Linq<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>): Linq<[outer: T, inner: Iterable<V>]>;
+	groupJoin<V, K, R>(other: Linq<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>, resultSelector: util.Fn<[outer: T, inner: Iterable<V>], R>): Linq<R>;
+
 	aggregate<V>(initial: V, aggregate: util.BiSelect<V, T, V>): V;
 
 	iterate<V>(fn: IterateCallback<undefined, T, V>): V | undefined;
