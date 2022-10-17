@@ -4,7 +4,15 @@ import { LinqRange } from "./impl/range.js";
 import { LinqRepeat } from "./impl/repeat.js";
 import { LinqSet } from "./impl/set.js";
 import { BiSelect, getSharedPrototypes, TypedArray, typedArrayViews } from "./util.js";
-import { EmptyIterator } from "./iterators.js";
+import { AsyncLinq } from "./linq-async.js";
+
+Linq.isLinq = function(v): v is LinqInternal {
+	return v instanceof LinqInternal;
+}
+
+Linq.isAsyncLinq = function(v): v is AsyncLinq {
+	return v instanceof AsyncLinq;
+}
 
 Linq.empty = function<T>() {
 	return LinqInternal.prototype as LinqInternal<T>;
