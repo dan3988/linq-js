@@ -40,7 +40,7 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 
 	select<V>(query: util.Select<T, V>): AsyncLinq<V>;
 	select<K extends keyof T>(query: K): AsyncLinq<T[K]>;
-	select<K extends (keyof T)[]>(keys: K): LinqCommon<util.KeysToObject<T, K>>;
+	select<K extends readonly (keyof T)[]>(keys: K): LinqCommon<util.KeysToObject<T, K>>;
 	selectMany<K extends util.ValidKey<T, Iterable<any>>>(query: K): AsyncLinq<T[K] extends Iterable<infer V> ? V : unknown>;
 	selectMany<V>(query: util.Select<T, Iterable<V>>): AsyncLinq<V>;
 

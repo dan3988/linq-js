@@ -12,7 +12,7 @@ export type Select<T = any, V = any> = Fn<[value: T], V>;
 export type SelectKeyType<T = any, R = any> = ValidKey<T, R> | Select<T, R>;
 export type SelectType<T = any, R = any> = ValidKey<T, R> | ValidKeys<T, R> | Select<T, R>;
 export type BiSelect<X = any, Y = any, V = any> = Fn<[x: X, y: Y], V>;
-export type KeysToObject<TSource, TKeys extends (keyof TSource)[]> = { [P in TKeys[number]]: TSource[P] }
+export type KeysToObject<TSource, TKeys extends readonly (keyof TSource)[]> = { [P in TKeys[number]]: TSource[P] }
 
 export type Predictate<T = any> = Fn<[value: T], boolean>;
 export type Comparer<T = any> = Fn<[x: T, y: T], number>;

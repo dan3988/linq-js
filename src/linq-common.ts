@@ -76,55 +76,55 @@ export interface LinqCommon<T = any> {
 
 	/**
 	 * Calculates the sum of this sequence.
-	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	sum(): util.Awaitable<number>;
 	/**
 	 * Calculates the sum of this sequence.
 	 * @query A property key that represents a number property in {@link T}
-	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	sum(query: util.ValidKey<T, util.NumberLike>): util.Awaitable<number>;
 	/**
 	 * Calculates the sum of this sequence.
 	 * @query A function that will convert {@link T} to a number.
-	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The sum of this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	sum(query: util.Select<T, util.NumberLike>): util.Awaitable<number>;
 
 	/**
 	 * Finds the smallest value in this sequence
-	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	min(): util.Awaitable<number>;
 	/**
 	 * Finds the smallest value in this sequence
 	 * @query A property key that represents a number property in {@link T}
-	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	min(query: util.ValidKey<T, util.NumberLike>): util.Awaitable<number>;
 	/**
 	 * Finds the smallest value in this sequence
 	 * @query A function that will convert {@link T} to a number.
-	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The smallest value in this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	min(query: util.Select<T, util.NumberLike>): util.Awaitable<number>;
 
 	/**
 	 * Finds the largest value in this sequence
-	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	max(): util.Awaitable<number>;
 	/**
 	 * Finds the largest value in this sequence
 	 * @query A property key that represents a number property in {@link T}
-	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	max(query: util.ValidKey<T, util.NumberLike>): util.Awaitable<number>;
 	/**
 	 * Finds the smallest value in this sequence
 	 * @query A function that will convert {@link T} to a number.
-	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converter to a number is present.
+	 * @returns The largest value in this sequence, or `NaN` if an item that cannot be converted to a number is present.
 	 */
 	max(query: util.Select<T, util.NumberLike>): util.Awaitable<number>;
 
@@ -137,14 +137,39 @@ export interface LinqCommon<T = any> {
 	/**
 	 * Filter this sequence using a predictate function
 	 * @param filter A function that tests each element in this sequence for a condition.
-	 * @returns A new query that contains the element that satisfy the condition.
+	 * @returns A new query that contains the elements that satisfy the condition.
 	 */
 	where(filter: util.Predictate<T>): LinqCommon<T>;
 
+	/**
+	 * Transform each element of this collection by calling a function on each element
+	 * @param query A function to apply to each element.
+	 * @returns A new query that contains the transformed elements.
+	 */
 	select<V>(query: util.Select<T, V>): LinqCommon<V>;
-	select<K extends keyof T>(query: K): LinqCommon<T[K]>;
-	select<K extends (keyof T)[]>(keys: K): LinqCommon<util.KeysToObject<T, K>>;
-	selectMany<K extends util.ValidKey<T, Iterable<any>>>(query: K): LinqCommon<T[K] extends Iterable<infer V> ? V : unknown>;
+	/**
+	 * Transform each element of this collection by reading a property on each element
+	 * @param key The property key to access on each element.
+	 * @returns A new query that contains the transformed elements.
+	 */
+	select<K extends keyof T>(key: K): LinqCommon<T[K]>;
+	/**
+	 * Transform each element of this collection by copying a set of properties on each element to a new object.
+	 * @param query An array of property keys to access on each element.
+	 * @returns A new query that contains the transformed elements.
+	 */
+	select<K extends readonly (keyof T)[]>(keys: K): LinqCommon<util.KeysToObject<T, K>>;
+	/**
+	 * Selects an iterable property on each element of this collection and returns a query containing the flattened results
+	 * @param key The property key to access on each element.
+	 * @returns A new query that contains the results.
+	 */
+	selectMany<K extends util.ValidKey<T, Iterable<any>>>(key: K): LinqCommon<T[K] extends Iterable<infer V> ? V : unknown>;
+	/**
+	 * Projects each element of this collection into an iterable and returns a flattened sequence
+	 * @param query A function to apply to each element.
+	 * @returns A new query that contains the results.
+	 */
 	selectMany<V>(query: util.Select<T, Iterable<V>>): LinqCommon<V>;
 
 	distinct(): LinqCommon<T>;
@@ -186,7 +211,7 @@ export interface LinqCommon<T = any> {
 
 	/**
 	 * Iterate this query and call a function with each result from the iterator.
-	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
+	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
 	 * @returns The result from {@link fn}, if any.
 	 */
 	iterate<V>(fn: IterateCallback<undefined, T, V>): util.Awaitable<V | undefined>;

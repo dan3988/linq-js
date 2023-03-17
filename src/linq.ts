@@ -40,7 +40,7 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 
 	select<V>(query: util.Select<T, V>): Linq<V>;
 	select<K extends keyof T>(query: K): Linq<T[K]>;
-	select<K extends (keyof T)[]>(keys: K): Linq<util.KeysToObject<T, K>>;
+	select<K extends readonly (keyof T)[]>(keys: K): Linq<util.KeysToObject<T, K>>;
 	selectMany<K extends util.ValidKey<T, Iterable<any>>>(query: K): Linq<T[K] extends Iterable<infer V> ? V : unknown>;
 	selectMany<V>(query: util.Select<T, Iterable<V>>): Linq<V>;
 
