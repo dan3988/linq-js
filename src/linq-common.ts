@@ -27,6 +27,9 @@ export interface LinqFunction {
 	fromObject<V>(obj: object, select: util.BiSelect<string, any, V>): Linq<V>;
 }
 
+/**
+ * Base type of {@link Linq} and {@link AsyncLinq}. Contains the definitions and JSDocs of functions that have the same parameter types.
+ */
 export interface LinqCommon<T = any> {
 	[Linq.create](): this;
 
@@ -155,7 +158,7 @@ export interface LinqCommon<T = any> {
 	select<K extends keyof T>(key: K): LinqCommon<T[K]>;
 	/**
 	 * Transform each element of this collection by copying a set of properties on each element to a new object.
-	 * @param query An array of property keys to access on each element.
+	 * @param keys An array of property keys to access on each element.
 	 * @returns A new query that contains the transformed elements.
 	 */
 	select<K extends readonly (keyof T)[]>(keys: K): LinqCommon<util.KeysToObject<T, K>>;
@@ -216,7 +219,6 @@ export interface LinqCommon<T = any> {
 	 */
 	iterate<V>(fn: IterateCallback<undefined, T, V>): util.Awaitable<V | undefined>;
 	/**
-	 * Iterate this query and call a function with each result from the iterator.
 	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
 	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
 	 * @returns The result from {@link fn}, if any.
@@ -229,19 +231,16 @@ export interface LinqCommon<T = any> {
 	 */
 	forEach(fn: (item: T) => void | never[]): util.Awaitable<void>;
 	/**
-     * Iterate this query and call a function for each item.
 	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
 	 * @param fn - A function that is called once for each item.
 	 */
 	forEach<E>(thisArg: E, fn: (this: E, item: T) => void | never[]): util.Awaitable<void>;
 	/**
-     * Iterate this query and call a function for each item.
 	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
 	 * @returns The result from {@link fn}, if any.
 	 */
 	forEach<V>(fn: (item: T) => void | never[] | V[]): util.Awaitable<V | undefined>;
 	/**
-     * Iterate this query and call a function for each item.
 	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
 	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
 	 * @returns The result from {@link fn}, if any.

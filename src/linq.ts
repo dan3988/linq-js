@@ -38,10 +38,35 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 
 	where(filter: util.Predictate<T>): Linq<T>;
 
+	/**
+	 * Transform each element of this collection by calling a function on each element
+	 * @param query A function to apply to each element.
+	 * @returns A new query that contains the transformed elements.
+	 */
 	select<V>(query: util.Select<T, V>): Linq<V>;
-	select<K extends keyof T>(query: K): Linq<T[K]>;
+	/**
+	 * Transform each element of this collection by reading a property on each element
+	 * @param key The property key to access on each element.
+	 * @returns A new query that contains the transformed elements.
+	 */
+	select<K extends keyof T>(key: K): Linq<T[K]>;
+	/**
+	 * Transform each element of this collection by copying a set of properties on each element to a new object.
+	 * @param keys An array of property keys to access on each element.
+	 * @returns A new query that contains the transformed elements.
+	 */
 	select<K extends readonly (keyof T)[]>(keys: K): Linq<util.KeysToObject<T, K>>;
-	selectMany<K extends util.ValidKey<T, Iterable<any>>>(query: K): Linq<T[K] extends Iterable<infer V> ? V : unknown>;
+	/**
+	 * Selects an iterable property on each element of this collection and returns a query containing the flattened results
+	 * @param key The property key to access on each element.
+	 * @returns A new query that contains the results.
+	 */
+	selectMany<K extends util.ValidKey<T, Iterable<any>>>(key: K): Linq<T[K] extends Iterable<infer V> ? V : unknown>;
+	/**
+	 * Projects each element of this collection into an iterable and returns a flattened sequence
+	 * @param query A function to apply to each element.
+	 * @returns A new query that contains the results.
+	 */
 	selectMany<V>(query: util.Select<T, Iterable<V>>): Linq<V>;
 
 	distinct(): Linq<T>;
@@ -89,12 +114,37 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 
 	aggregate<V>(initial: V, aggregate: util.BiSelect<V, T, V>): V;
 
+	/**
+	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
+	 * @returns The result from {@link fn}, if any.
+	 */
 	iterate<V>(fn: IterateCallback<undefined, T, V>): V | undefined;
+	/**
+	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
+	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
+	 * @returns The result from {@link fn}, if any.
+	 */
 	iterate<E, V>(thisArg: E, fn: IterateCallback<E, T, V>): V | undefined;
 
+	/**
+	 * @param fn - A function that is called once for each item.
+	 */
 	forEach(fn: (item: T) => void | never[]): void;
+	/**
+	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
+	 * @param fn - A function that is called once for each item.
+	 */
 	forEach<E>(thisArg: E, fn: (this: E, item: T) => void | never[]): void;
+	/**
+	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
+	 * @returns The result from {@link fn}, if any.
+	 */
 	forEach<V>(fn: (item: T) => void | never[] | V[]): V | undefined;
+	/**
+	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
+	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
+	 * @returns The result from {@link fn}, if any.
+	 */
 	forEach<E, V>(thisArg: E, fn: (this: E, item: T) => void | never[] | V[]): V | undefined;
 }
 
