@@ -9,6 +9,7 @@ declare interface SampleRow {
 	guid: string;
 	balance: string;
 	picture: string;
+	isActive: boolean;
 	age: number;
 	eyeColor: string;
 	name: string;

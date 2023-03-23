@@ -53,4 +53,18 @@ describe('array', () => {
 		let right = linq.select(v => v.age);
 		t.testZip(left, right, left.toArray(), right.toArray(), (x, y) => x + " is " + y + " years old.")
 	});
+
+	describe('where', () => {
+		it("should return the correct values when using chained where functions", () => {
+			const filteredLinq = linq.where(v => v.age > 20).where(v => v.age <= 50);
+			const filteredArray = data.filter(v => v.age > 20 && v.age <= 50);
+			assert.deepStrictEqual(filteredArray, filteredLinq.toArray());
+		});
+
+		it("should return the correct values when using property key oveload of where()", () => {
+			const filteredByKey = linq.where("isActive");
+			const filteredByFunc = linq.where(v => v.isActive);
+			assert.deepStrictEqual([...filteredByKey], [...filteredByFunc]);
+		});
+	});
 })

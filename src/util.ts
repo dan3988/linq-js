@@ -15,6 +15,7 @@ export type BiSelect<X = any, Y = any, V = any> = Fn<[x: X, y: Y], V>;
 export type KeysToObject<TSource, TKeys extends readonly (keyof TSource)[]> = { [P in TKeys[number]]: TSource[P] }
 
 export type Predictate<T = any> = Fn<[value: T], boolean>;
+export type WhereType<T = any> = Predictate<T> | keyof T;
 export type Comparer<T = any> = Fn<[x: T, y: T], number>;
 
 export interface MapOrSet<T> extends Iterable<T> {
@@ -81,6 +82,12 @@ export interface GetterFunction {
 	readonly key: PropertyKey;
 }
 
+export interface GetPredictateFunction {
+	<T, K extends keyof T>(this: K, value: T): boolean;
+	(this: PropertyKey, value: any): boolean;
+	readonly key: PropertyKey;
+}
+
 export function getAll(this: readonly PropertyKey[], value: any): any {
 	const result: any = {};
 	for (const key of this)
@@ -99,6 +106,10 @@ export function getter(this: PropertyKey, value: any): any {
 
 const getterToString = function toString(this: GetterFunction) {
 	return "getter(" + keyToString(this.key) + ")";
+}
+
+export function createPredictate(key: PropertyKey): GetPredictateFunction {
+	return createGetter(key);
 }
 
 export function createGetter(key: PropertyKey): GetterFunction {
@@ -134,6 +145,16 @@ export function createGetAll(keys: Iterable<PropertyKey>): GetAllFunction {
 	});
 
 	return fn as any;
+}
+
+export function compilePredictate<T>(where: WhereType<T>): Predictate<T> {
+	if (where == null)
+		throw new TypeError("Predictate function is null or undefined.");
+
+	if (typeof where === "function")
+		return where;
+	
+	return createPredictate(where);
 }
 
 export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: true): Select<T, V>;

@@ -36,7 +36,16 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 
 	zip<V, R>(other: Iterable<V>, selector: util.BiSelect<T, V, R>): Linq<R>;
 
+	/**
+	 * @param filter A function that tests each element in this sequence for a condition.
+	 * @returns A new query that contains the elements that satisfy the condition.
+	 */
 	where(filter: util.Predictate<T>): Linq<T>;
+	/**
+	 * @param key The property key to test for each element.
+	 * @returns A new query that contains the elements where the value of {@link key} resolves to a truthy value.
+	 */
+	where(key: keyof T): Linq<T>;
 
 	/**
 	 * Transform each element of this collection by calling a function on each element

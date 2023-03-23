@@ -1,13 +1,15 @@
 import { AsyncLinqExtend, LinqExtend, OperationType } from '../impl/extend.js';
 import { Linq, AsyncLinq, LinqInternal } from '../linq-base.js';
-import { compileQuery, isInstance, isType, Predictate, SelectType } from '../util.js';
+import { compilePredictate, compileQuery, isInstance, isType, SelectType, WhereType } from '../util.js';
 
-LinqInternal.prototype.where = function(filter: Predictate) {
-	return new LinqExtend(this, OperationType.Filter, filter);
+LinqInternal.prototype.where = function(filter: WhereType) {
+	const predictate = compilePredictate(filter);
+	return new LinqExtend(this, OperationType.Filter, predictate);
 }
 
-AsyncLinq.prototype.where = function(filter: Predictate) {
-	return new AsyncLinqExtend(this, OperationType.Filter, filter);
+AsyncLinq.prototype.where = function(filter: WhereType) {
+	const predictate = compilePredictate(filter);
+	return new AsyncLinqExtend(this, OperationType.Filter, predictate);
 }
 
 LinqInternal.prototype.select = function(query: SelectType) {

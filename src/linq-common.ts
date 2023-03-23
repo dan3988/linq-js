@@ -143,6 +143,12 @@ export interface LinqCommon<T = any> {
 	 * @returns A new query that contains the elements that satisfy the condition.
 	 */
 	where(filter: util.Predictate<T>): LinqCommon<T>;
+	/**
+	 * Filter this sequence using a property key
+	 * @param key The property key to test for each element.
+	 * @returns A new query that contains the elements where the value of {@link key} resolves to a truthy value.
+	 */
+	where(key: keyof T): LinqCommon<T>;
 
 	/**
 	 * Transform each element of this collection by calling a function on each element

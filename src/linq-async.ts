@@ -34,7 +34,16 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 
 	count(filter?: util.Predictate<T>): Promise<number>;
 
+	/**
+	 * @param filter A function that tests each element in this sequence for a condition.
+	 * @returns A new query that contains the elements that satisfy the condition.
+	 */
 	where(filter: util.Predictate<T>): AsyncLinq<T>;
+	/**
+	 * @param key The property key to test for each element.
+	 * @returns A new query that contains the elements where the value of {@link key} resolves to a truthy value.
+	 */
+	where(key: keyof T): AsyncLinq<T>;
 
 	zip<V, R>(other: AsyncIterable<V>, selector: util.BiSelect<T, V, R>): AsyncLinq<R>;
 
