@@ -48,7 +48,7 @@ var count = Linq(numbers).select(v => -v).count();
 var last = Linq(numbers).last();
 ```
 
-* Select using property keys or functions
+* Simplified syntax using property keys
 
 ```typescript
 //select a single property value:
@@ -60,6 +60,11 @@ var names = Linq(users).select("firstName").toArray();
 var names = Linq(users).select(({ firstName, lastName }) => ({ firstName, lastName })).toArray();
 //or
 var names = Linq(users).select(["firstName", "lastName"]).toArray();
+
+//filter based on a property
+var names = Linq(users).where(v => v.isActive).toArray();
+//or
+var names = Linq(users).where("isActive").toArray();
 ```
 
 * Support for JavaScript collections
