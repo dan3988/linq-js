@@ -1,11 +1,15 @@
 {
-  "name": "linq",
+  "name": "@daniel.pickett/linq-js",
   "version": "1.0.0",
   "description": "",
   "author": "dan3988",
   "license": "ISC",
   "main": "lib/index.js",
   "type": "module",
+  "files": [
+    "lib",
+    "README.MD"
+  ],
   "scripts": {
     "prepack": "del /S /Q lib & npx tsc --build tsconfig.json",
     "test": "del /S /Q mochawesome-report & mocha -R mochawesome -O reportFilename=out lib-mocha & start mochawesome-report\\out.html"
