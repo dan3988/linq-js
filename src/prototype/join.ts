@@ -80,17 +80,17 @@ class AsyncLinqJoin<TOuter, TInner, TKey, TResult> extends AsyncLinq<TResult> {
 }
 
 defineFunction(LinqInternal.prototype, "join", function (inner, outerSelector, innerSelector, resultSelector) {
-	return new LinqJoin(this, outerSelector, inner, innerSelector, false, resultSelector);
+	return new LinqJoin(this, outerSelector, Linq(inner), innerSelector, false, resultSelector);
 })
 
 defineFunction(LinqInternal.prototype, "groupJoin", function(inner, outerSelector, innerSelector, resultSelector) {
-	return new LinqJoin(this, outerSelector, inner, innerSelector, true, resultSelector);
+	return new LinqJoin(this, outerSelector, Linq(inner), innerSelector, true, resultSelector);
 })
 
 defineFunction(AsyncLinq.prototype, "join", function(inner, outerSelector, innerSelector, resultSelector) {
-	return new AsyncLinqJoin(this, outerSelector, inner, innerSelector, false, resultSelector);
+	return new AsyncLinqJoin(this, outerSelector, Linq(inner), innerSelector, false, resultSelector);
 })
 
 defineFunction(AsyncLinq.prototype, "groupJoin", function(inner, outerSelector, innerSelector, resultSelector) {
-	return new AsyncLinqJoin(this, outerSelector, inner, innerSelector, true, resultSelector);
+	return new AsyncLinqJoin(this, outerSelector, Linq(inner), innerSelector, true, resultSelector);
 })
