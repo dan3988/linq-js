@@ -4,7 +4,7 @@
   "description": "",
   "author": "dan3988",
   "license": "ISC",
-  "main": "../lib/index.mjs",
+  "main": "lib/index.mjs",
   "type": "module",
   "files": [
     "lib",
