@@ -1,5 +1,7 @@
 # linq.js
 
+[![npm version](https://badge.fury.io/js/@daniel.pickett%2Flinq-js.svg)](https://badge.fury.io/js/@daniel.pickett%2Flinq-js)
+
 A javascript library which adds [C# LINQ](https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable?view=net-6.0) inspired helper methods for iterators. Supported in Node.js and web browsers.
 
 ```typescript

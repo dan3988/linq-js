@@ -10,9 +10,10 @@
     "strict": true,
     "stripInternal": true,
     "skipLibCheck": true,
-    "sourceMap": true,
-    "declaration": true,
-    "outDir": "lib"
+    "outDir": "lib",
+	"sourceMap": true,
+	"declaration": true,
+	"declarationDir": "lib/types"
   },
   "include": [
     "src/**/*.ts"

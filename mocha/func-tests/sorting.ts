@@ -1,5 +1,5 @@
 /// <reference path="../index.d.ts" />
-import Linq, { Comparer, Select } from '../../lib/index.js';
+import Linq, { Comparer, Select } from '../../src/index.js';
 import assert from 'assert';
 
 function defaultCompare(x?: any, y?: any): number {

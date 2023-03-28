@@ -1,4 +1,4 @@
-import Linq from '../lib/index.js';
+import Linq from '../src/index.js';
 import data from './test-data.js';
 import * as t from './func-tests/all.js';
 

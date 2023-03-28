@@ -1,8 +1,8 @@
 /// <reference path="../index.d.ts" />
-import Linq, { Select } from '../../lib/index.js';
+import type Linq from '../../src/index.js';
 import assert from 'assert';
 
-export function testGroupBy<K, V>(linq: Linq<V>, expected: ReadOnlyArray<V>, select: Select<V, K>) {
+export function testGroupBy<K, V>(linq: Linq<V>, expected: ReadOnlyArray<V>, select: (a: V) => K) {
 	let values = linq.groupBy(select);
 	let map = new Map<K, V[]>();
 	for (let value of expected) {

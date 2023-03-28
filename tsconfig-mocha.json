@@ -2,7 +2,7 @@
 	"extends": ".\\tsconfig.json",
 	"compilerOptions": {
 		"outDir": "./lib-mocha",
-		"declaration": false
+		"declaration": false,
 	},
 	"exclude": [],
 	"include": [

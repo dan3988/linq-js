@@ -30,26 +30,25 @@
 			"group": "build",
 		},
 		{
-			"label": "tsc: build ",
-			"type": "typescript",
-			"tsconfig": "./tsconfig.json",
+			"label": "build",
+			"type": "npm",
+			"script": "watch",
 			"problemMatcher": [
 				"$tsc"
 			],
-			"group": "build",
+			"group": "build"
 		},
 		{
-			"label": "tsc: watch",
-			"type": "typescript",
-			"tsconfig": "./tsconfig.json",
-			"option": "watch",
+			"label": "watch",
+			"type": "npm",
+			"script": "watch",
 			"problemMatcher": [
 				"$tsc-watch"
 			],
 			"runOptions": {
 				"runOn": "folderOpen"
 			},
-			"group": "build"
+			"group": "build",
 		}
 	]
 }

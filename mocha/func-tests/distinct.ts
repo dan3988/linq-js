@@ -1,5 +1,5 @@
 /// <reference path="../index.d.ts"/>
-import type Linq from '../../lib/index.js';
+import type Linq from '../../src/index.js';
 import assert from 'assert';
 
 export function testDistinct<T>(linq: Linq<T>, expected: ReadOnlyArray<T>) {

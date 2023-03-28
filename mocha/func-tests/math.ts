@@ -1,5 +1,5 @@
 /// <reference path="../index.d.ts" />
-import Linq, { Select } from '../../lib/index.js';
+import Linq, { Select } from '../../src/index.js';
 import assert from 'assert';
 
 export function testMaths<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, select: Select<T, number>): void

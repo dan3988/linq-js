@@ -1,5 +1,5 @@
 import data from './test-data.js';
-import Linq from '../lib/index.js';
+import Linq from '../src/index.js';
 import * as t from './func-tests/all.js';
 import assert from 'assert';
 

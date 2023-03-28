@@ -1,7 +1,7 @@
-import Linq, { BiSelect } from '../../lib/index.js';
+import Linq from '../../src/index.js';
 import assert from 'assert';
 
-export function testZip<X, Y, V>(left: Linq<X>, right: Linq<Y>, expectedLeft: readonly X[], expectedRight: readonly Y[], select: BiSelect<X, Y, V>): void {
+export function testZip<X, Y, V>(left: Linq<X>, right: Linq<Y>, expectedLeft: readonly X[], expectedRight: readonly Y[], select: (x: X, y: Y) => V): void {
 	let values = left.zip(right, select);
 
 	it('should have the same count as the smallest source', () => {

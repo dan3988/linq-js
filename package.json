@@ -1,10 +1,10 @@
 {
   "name": "@daniel.pickett/linq-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "author": "dan3988",
   "license": "ISC",
-  "main": "lib/index.js",
+  "main": "../lib/index.mjs",
   "type": "module",
   "files": [
     "lib",
@@ -12,7 +12,10 @@
     "README.MD"
   ],
   "scripts": {
-    "prepack": "del /S /Q lib & npx tsc --build tsconfig.json",
+    "prepack": "del /S /Q lib & npx rollup -c",
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "pretest": "dir /S /Q lib-mocha & rollup -c",
     "test": "del /S /Q mochawesome-report & mocha -R mochawesome -O reportFilename=out lib-mocha & start mochawesome-report\\out.html"
   },
   "homepage": "https://github.com/dan3988/linq-js",
@@ -20,7 +23,7 @@
     "type": "git",
     "url": "https://github.com/dan3988/linq-js"
   },
-  "types": "lib/index.d.ts",
+  "types": "lib/types/index.d.ts",
   "keywords": [
     "linq",
     "array",
@@ -34,10 +37,15 @@
     "query"
   ],
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-typescript": "^11.0.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.6.1",
     "mocha": "^10.0.0",
     "mochawesome": "^7.1.3",
+    "rollup": "^3.20.2",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "tslib": "^2.5.0",
     "typescript": "^4.9.1-beta"
   }
 }

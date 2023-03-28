@@ -1,6 +1,6 @@
 /// <reference path="../index.d.ts"/>
-import type Linq from '../../lib/index.js';
-import type { Predictate } from '../../lib/index.js';
+import type Linq from '../../src/index.js';
+import type { Predictate } from '../../src/index.js';
 import assert from 'assert';
 
 export function testFirst<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, predictate: Predictate<T>) {
