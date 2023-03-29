@@ -76,3 +76,39 @@ var set: Set<User> = Linq(users).toSet();
 var map: Map<string, User> = Linq(users).toMap("id");
 var obj: Record<string, User> = Linq(users).toObject("id");
 ```
+# Importing
+LinqJS is built in both ESM and UMD formats.
+
+Node.JS (ESM)
+```javascript
+import Linq from "@daniel.pickett/linq-js";
+```
+
+Node.JS (UMD)
+```javascript
+const Linq = require("node_modules/@daniel.pickett/linq-js/lib/index.cjs");
+```
+
+Browser (ESM)
+```html
+<script type="module">
+	import Linq from "./node_modules/@daniel.pickett/linq-js/lib/index.mjs";
+
+	let sum = Linq([1,2,3,4,5]).sum();
+	console.log({ sum });
+</script>
+```
+
+Browser (UMD)
+```html
+<script type="text/javascript" src="/node_modules/requirejs/require.js"></script>
+<script type="text/javascript" src="/node_modules/@daniel.pickett/linq-js/lib/index.cjs"></script>
+<script type="text/javascript">
+	debugger;
+	//const Linq = require("linq-js");
+	requirejs(["linq-js"], function({ Linq }) {
+		let sum = Linq([1,2,3,4,5]).sum();
+		console.log({ sum });
+	});
+</script>
+```
