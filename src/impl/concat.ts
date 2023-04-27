@@ -15,7 +15,7 @@ export class LinqConcat<T> extends LinqInternal<T> {
 		let l = 0;
 		let v: Linq<T>[] = [];
 		for (let value of values) {
-			let lq: LinqInternal<T> = value instanceof LinqInternal ? value : LinqInternal(value);
+			let lq: LinqInternal<T> = value instanceof LinqInternal ? value : <any>Linq(value);
 			l += lq.length ?? NaN;
 			v.push(lq);
 		}
@@ -42,7 +42,7 @@ export class AsyncLinqConcat<T> extends AsyncLinq<T> {
 	constructor(values: readonly AsyncIterable<T>[]) {
 		let v: AsyncLinq<T>[] = [];
 		for (let value of values) {
-			let lq: AsyncLinq<T> = value instanceof AsyncLinq ? value : LinqInternal(value);
+			let lq: AsyncLinq<T> = value instanceof AsyncLinq ? value : Linq(value);
 			v.push(lq);
 		}
 
