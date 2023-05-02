@@ -20,8 +20,8 @@ export class LinqArray<T> extends LinqInternal<T> {
 	}
 
 	#first(query: undefined | Predictate<T>, required: true): T;
-	#first(query: undefined | Predictate<T>, required: false): T | undefined;
-	#first(query: undefined | Predictate<T>, required: boolean) {
+	#first<V>(query: undefined | Predictate<T>, required: false, def: V): T | V
+	#first(query: undefined | Predictate<T>, required: boolean, def?: any) {
 		let array = this.#source;
 		if (array.length !== 0) {
 			if (query == null)
@@ -41,12 +41,12 @@ export class LinqArray<T> extends LinqInternal<T> {
 		if (required)
 			throw errNoElements();
 
-		return undefined;
+		return def;
 	}
 
 	#last(query: undefined | Predictate<T>, required: true): T;
-	#last(query: undefined | Predictate<T>, required: false): T | undefined;
-	#last(query: undefined | Predictate<T>, required: boolean) {
+	#last<V>(query: undefined | Predictate<T>, required: false, def: V): T | V;
+	#last(query: undefined | Predictate<T>, required: boolean, def?: any) {
 		let array = this.#source;
 		if (array.length !== 0) {
 			let i = array.length - 1;
@@ -66,23 +66,23 @@ export class LinqArray<T> extends LinqInternal<T> {
 		if (required)
 			throw errNoElements();
 
-		return undefined;
+		return def;
 	}
 
 	first(query?: Predictate<T>) {
 		return this.#first(query, true);
 	}
 
-	firstOrDefault(query?: Predictate<T>) {
-		return this.#first(query, false);
+	firstOrDefault<V>(query?: Predictate<T>, def?: V) {
+		return this.#first(query, false, def);
 	}
 
 	last(query?: Predictate<T>) {
 		return this.#last(query, true);
 	}
 
-	lastOrDefault(query?: Predictate<T>) {
-		return this.#last(query, false);
+	lastOrDefault<V>(query?: Predictate<T>, def?: V) {
+		return this.#last(query, false, def);
 	}
 
 	any(predictate?: Predictate<T>): boolean {

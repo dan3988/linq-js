@@ -7,11 +7,39 @@ export interface AsyncLinqConstructor extends LinqFunction {
 }
 
 export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
-	first(query?: util.Predictate<T>): Promise<T>;
+	first(predictate?: util.Predictate<T>): Promise<T>;
+	/**
+	 * Iterates this query, and returns the first matching item, or `undefined` one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The first matching item in this query, or undefined
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
 	firstOrDefault(query?: util.Predictate<T>): Promise<T | undefined>;
+	/**
+	 * Iterates this query, and returns the first matching item, or a default value if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @param def The value to return if no match is found
+	 * @returns The first matching item in this query, or {@link def}
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
+	firstOrDefault<V = undefined>(predictate: undefined | util.Predictate<T>, def: V): Promise<T | V>;
 
-	last(query?: util.Predictate<T>): T;
-	lastOrDefault(query?: util.Predictate<T>): Promise<T | undefined>;
+	last(predictate?: util.Predictate<T>): Promise<T>;
+	/**
+	 * Iterates this query, and returns the last matching item, or `undefined` one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The last matching item in this query, or undefined
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
+	lastOrDefault(predictate?: util.Predictate<T>): Promise<T | undefined>;
+	/**
+	 * Iterates this query, and returns the last matching item, or a default value if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @param def The value to return if no match is found
+	 * @returns The last matching item in this query, or {@link def}
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
+	lastOrDefault<V = undefined>(predictate: undefined | util.Predictate<T>, def: V): Promise<T | V>;
 
 	any(predictate?: util.Predictate<T>): Promise<boolean>;
 	all(predictate?: util.Predictate<T>): Promise<boolean>;

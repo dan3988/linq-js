@@ -7,8 +7,8 @@ export interface Grouping<K, V> extends Iterable<V> {
 }
 
 export interface IterateCallback<TThis, T, V> {
-	(this: TThis, done: true, value: undefined): void | V[];
-	(this: TThis, done: false, value: T): void | V[];
+	(this: TThis, done: true, value: undefined): void | readonly [V];
+	(this: TThis, done: false, value: T): void | readonly [V];
 }
 
 export interface LinqFunction {
@@ -44,9 +44,15 @@ export interface LinqCommon<T = any> {
 	 * Iterates this query, and returns the first matching item, or `undefined` one is not found.
 	 * @param predictate A function that will called on each element in the query until it returns `true`
 	 * @returns The first matching item in this query, or undefined
-	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
 	 */
 	firstOrDefault(query?: util.Predictate<T>): util.Awaitable<T | undefined>;
+	/**
+	 * Iterates this query, and returns the first matching item, or a default value if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @param def The value to return if no match is found
+	 * @returns The first matching item in this query, or {@link def}
+	 */
+	firstOrDefault<V = undefined>(predictate: undefined | util.Predictate<T>, def: V): util.Awaitable<T | V>;
 
 	/**
 	 * Iterates this query, and returns the first matching item, or throws an error if one is not found.
@@ -54,14 +60,20 @@ export interface LinqCommon<T = any> {
 	 * @returns The first matching item in this query
 	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
 	 */
-	last(predictate?: util.Predictate<T>): T;
+	last(predictate?: util.Predictate<T>): util.Awaitable<T>;
 	/**
 	 * Iterates this query, and returns the last matching item, or `undefined` one is not found.
 	 * @param predictate A function that will called on each element in the query until it returns `true`
 	 * @returns The last matching item in this query, or undefined
-	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
 	 */
 	lastOrDefault(predictate?: util.Predictate<T>): util.Awaitable<T | undefined>;
+	/**
+	 * Iterates this query, and returns the last matching item, or a default value if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @param def The value to return if no match is found
+	 * @returns The last matching item in this query, or {@link def}
+	 */
+	lastOrDefault<V = undefined>(predictate: undefined | util.Predictate<T>, def: V): util.Awaitable<T | V>;
 
 	/**
 	 * Iterates this query, and returns `true` if a single item is found.
@@ -223,13 +235,13 @@ export interface LinqCommon<T = any> {
 	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
 	 * @returns The result from {@link fn}, if any.
 	 */
-	iterate<V>(fn: IterateCallback<undefined, T, V>): util.Awaitable<V | undefined>;
+	iterate<V>(fn: IterateCallback<undefined, T, V>): util.Awaitable<V>;
 	/**
 	 * @param thisArg - The object to passed into {@link fn} as the {@code this} argument
 	 * @param fn - A function that is called once for each item. This function can return an array, which will cause the iteration to stop and the first value in the array to be returned.
 	 * @returns The result from {@link fn}, if any.
 	 */
-	iterate<E, V>(thisArg: E, fn: IterateCallback<E, T, V>): util.Awaitable<V | undefined>;
+	iterate<E, V>(thisArg: E, fn: IterateCallback<E, T, V>): util.Awaitable<V>;
 
 	/**
      * Iterate this query and call a function for each item.

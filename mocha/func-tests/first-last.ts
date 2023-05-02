@@ -32,8 +32,16 @@ export function testFirst<T>(linq: Linq<T>, expected: ReadOnlyArray<T>, predicta
 		assert.strictEqual(undefined, linq.firstOrDefault(() => false));
 	});
 
+	it('firstOrDefault() should return the passed in parameter when no matching item is found', () => {
+		assert.strictEqual("test", linq.firstOrDefault(() => false, "test"));
+	});
+
 	it('where().firstOrDefault() should return undefined when no matching item is found', () => {
 		assert.strictEqual(undefined, linq.where(() => false).firstOrDefault());
+	});
+
+	it('where().firstOrDefault() should return the passed in parameter when no matching item is found', () => {
+		assert.strictEqual("test", linq.where(() => false).firstOrDefault(undefined, "test"));
 	});
 }
 

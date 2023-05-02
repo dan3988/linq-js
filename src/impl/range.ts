@@ -67,7 +67,7 @@ export class LinqRange extends LinqInternal<number> {
 		return v;
 	}
 
-	firstOrDefault(query?: Predictate<number>) {
+	firstOrDefault<V = undefined>(query?: Predictate<number>, def?: V) {
 		if (this.#count === 0)
 			throw errNoElements();
 
@@ -79,7 +79,7 @@ export class LinqRange extends LinqInternal<number> {
 			if (query(v))
 				return v;
 
-		return undefined;
+		return def;
 	}
 
 	last(query?: Predictate<number>) {
@@ -90,7 +90,7 @@ export class LinqRange extends LinqInternal<number> {
 		return v;
 	}
 
-	lastOrDefault(query?: Predictate<number>) {
+	lastOrDefault<V = undefined>(query?: Predictate<number>, def?: V) {
 		if (this.#count === 0)
 			throw errNoElements();
 
@@ -102,7 +102,7 @@ export class LinqRange extends LinqInternal<number> {
 			if (query(v -= this.#step))
 				return v;
 
-		return undefined;
+		return def;
 	}
 
 	any(predictate?: Predictate<number>): boolean {

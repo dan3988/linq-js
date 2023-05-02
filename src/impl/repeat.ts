@@ -17,14 +17,14 @@ export class LinqRepeat<T> extends LinqInternal<T> {
 		this.#count = count;
 	}
 
-	#getAny(required: true, query?: Predictate<T>): T
-	#getAny(required: false, query?: Predictate<T>): T | undefined;
-	#getAny(required: boolean, query?: Predictate<T>) {
+	#getAny(required: true, def: undefined, query?: Predictate<T>): T
+	#getAny<V>(required: false, def: V, query?: Predictate<T>): T | V;
+	#getAny(required: boolean, def?: any, query?: Predictate<T>): any {
 		if (this.#count !== 0 && (query == null || query(this.#value)))
 			return this.#value;
 
 		if (!required)
-			return undefined;
+			return def;
 
 		throw errNoElements();
 	}
@@ -61,19 +61,19 @@ export class LinqRepeat<T> extends LinqInternal<T> {
 	}
 
 	first(query?: Predictate<T>): T {
-		return this.#getAny(true, query);
+		return this.#getAny(true, undefined, query);
 	}
 
-	firstOrDefault(query?: Predictate<T>) {
-		return this.#getAny(false, query);
+	firstOrDefault<V = undefined>(query?: Predictate<T>, def?: V) {
+		return this.#getAny(false, def, query);
 	}
 
 	last(query?: Predictate<T>) {
-		return this.#getAny(true, query);
+		return this.#getAny(true, undefined, query);
 	}
 
-	lastOrDefault(query?: Predictate<T>) {
-		return this.#getAny(false, query);
+	lastOrDefault<V = undefined>(query?: Predictate<T>, def?: V) {
+		return this.#getAny(false, def, query);
 	}
 
 	any(predictate?: Predictate<T>): boolean {

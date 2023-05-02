@@ -8,10 +8,34 @@ export interface LinqConstructor extends LinqFunction {
 
 export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	first(predictate?: util.Predictate<T>): T;
-	firstOrDefault(predictate?: util.Predictate<T>): T | undefined;
+	/**
+	 * Iterates this query, and returns the first matching item, or `undefined` one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The first matching item in this query, or undefined
+	 */
+	firstOrDefault(query?: util.Predictate<T>): T | undefined;
+	/**
+	 * Iterates this query, and returns the first matching item, or a default value if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @param def The value to return if no match is found
+	 * @returns The first matching item in this query, or {@link def}
+	 */
+	firstOrDefault<V = undefined>(predictate: undefined | util.Predictate<T>, def: V): T | V;
 
 	last(predictate?: util.Predictate<T>): T;
+	/**
+	 * Iterates this query, and returns the last matching item, or `undefined` one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The last matching item in this query, or undefined
+	 */
 	lastOrDefault(predictate?: util.Predictate<T>): T | undefined;
+	/**
+	 * Iterates this query, and returns the last matching item, or a default value if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @param def The value to return if no match is found
+	 * @returns The last matching item in this query, or {@link def}
+	 */
+	lastOrDefault<V = undefined>(predictate: undefined | util.Predictate<T>, def: V): T | V;
 
 	any(predictate?: util.Predictate<T>): boolean;
 	all(predictate?: util.Predictate<T>): boolean;

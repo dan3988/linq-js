@@ -1,20 +1,22 @@
 import { Linq, LinqCommon } from '../linq-base.js';
 import { defineCommonFunction, errNoElements, Predictate } from "../util.js";
 
-function firstImpl<T>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean) {
-	return linq.iterate(undefined, (done, value) => {
+function firstImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean, def: V) {
+	return linq.iterate<void, T | V>(undefined, (done, value) => {
 		if (done) {
 			if (required)
 				throw errNoElements();
+
+			return [def];
 		} else if (query == null || query(value)) {
-			return [value];
+			return [value!];
 		}
 	});
 }
 
-function lastImpl<T>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean) {
+function lastImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean, def: V) {
 	let found = false;
-	let last: undefined | T = undefined;
+	let last: T | V = def;
 
 	return linq.iterate(undefined, (done, value) => {
 		if (done) {
@@ -24,25 +26,25 @@ function lastImpl<T>(linq: LinqCommon<T>, query: undefined | Predictate, require
 			return [last];
 		} else if (query == null || query(value)) {
 			found = true;
-			last = value;
+			last = value!;
 		}
 	});
 }
 
 defineCommonFunction(Linq.prototype, 'first', function(query) {
-	return firstImpl(this, query, true);
+	return firstImpl(this, query, true, undefined);
 })
 
-defineCommonFunction(Linq.prototype, 'firstOrDefault', function(query) {
-	return firstImpl(this, query, false);
+defineCommonFunction(Linq.prototype, 'firstOrDefault', function(query, def) {
+	return firstImpl(this, query, false, def);
 })
 
 defineCommonFunction(Linq.prototype, 'last', function(query) {
-	return lastImpl(this, query, true);
+	return lastImpl(this, query, true, undefined);
 })
 
-defineCommonFunction(Linq.prototype, 'lastOrDefault', function(query) {
-	return lastImpl(this, query, false);
+defineCommonFunction(Linq.prototype, 'lastOrDefault', function(query, def) {
+	return lastImpl(this, query, false, def);
 })
 
 defineCommonFunction(Linq.prototype, 'any', function(query) {
