@@ -1,7 +1,6 @@
 import { AsyncLinqConcat, LinqConcat } from "../impl/concat.js";
 import { AsyncLinqPartition, LinqPartition } from "../impl/partition";
-import { AsyncLinq } from "../linq-async";
-import { Linq, LinqCommon, LinqInternal } from "../linq-base.js";
+import { Linq, LinqCommon, LinqInternal, AsyncLinq } from "../linq-base.js";
 import { defineCommonFunction, Predictate } from "../util.js";
 
 defineCommonFunction(Linq.prototype, "count", function<T>(this: LinqCommon<T>, filter?: Predictate<T>) {

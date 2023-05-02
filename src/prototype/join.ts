@@ -1,5 +1,4 @@
-import { AsyncLinq } from "../linq-async.js";
-import { Linq, LinqInternal } from "../linq-base.js";
+import { Linq, LinqInternal, AsyncLinq } from "../linq-base.js";
 import { compileQuery, defineFunction, Fn, returnArgs, Select, SelectKeyType } from "../util.js";
 import { buildGrouping } from "./group.js";
 

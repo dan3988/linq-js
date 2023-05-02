@@ -197,15 +197,3 @@ export interface AsyncLinqOrdered<T> extends AsyncLinq<T>, LinqCommonOrdered<T> 
 	thenByDesc<K extends keyof T>(query: K, comparer?: util.Comparer<T[K]>): AsyncLinqOrdered<T>;
 	thenByDesc<V>(query: util.Select<T, V>, comparer?: util.Comparer<V>): AsyncLinqOrdered<T>;
 }
-
-export var AsyncLinq: AsyncLinqConstructor = <any>class AsyncLinq<T> {
-	readonly #source: AsyncIterable<T>;
-
-	constructor(source: AsyncIterable<T>) {
-		this.#source = source;
-	}
-
-	[Symbol.asyncIterator]() {
-		return this.#source[Symbol.asyncIterator]();
-	}
-}

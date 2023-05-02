@@ -1,10 +1,9 @@
-import { Linq, LinqInternal } from "./linq-base.js";
+import { Linq, LinqInternal, AsyncLinq } from "./linq-base.js";
 import { LinqArray } from "./impl/array.js";
 import { LinqRange } from "./impl/range.js";
 import { LinqRepeat } from "./impl/repeat.js";
 import { LinqSet } from "./impl/set.js";
 import { BiSelect, getSharedPrototypes, TypedArray, typedArrayViews } from "./util.js";
-import { AsyncLinq } from "./linq-async.js";
 
 Linq.isLinq = function(v): v is LinqInternal {
 	return v instanceof LinqInternal;
