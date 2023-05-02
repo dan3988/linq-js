@@ -64,7 +64,7 @@ if (!production) {
 		},
 		plugins: [
 			typescript({
-				tsconfig: "tsconfig-mocha.json"
+				tsconfig: "tsconfig-test.json"
 			}),
 		]
 	})
