@@ -1,5 +1,6 @@
-import { LinqConcat } from "../impl/concat.js";
-import { LinqPartition } from "../impl/partition";
+import { AsyncLinqConcat, LinqConcat } from "../impl/concat.js";
+import { AsyncLinqPartition, LinqPartition } from "../impl/partition";
+import { AsyncLinq } from "../linq-async";
 import { Linq, LinqCommon, LinqInternal } from "../linq-base.js";
 import { defineCommonFunction, Predictate } from "../util.js";
 
@@ -16,10 +17,23 @@ LinqInternal.prototype.concat = function(...values) {
 	return new LinqConcat<any>(values);
 }
 
+AsyncLinq.prototype.concat = function(...values) {
+	values.unshift(this);
+	return new AsyncLinqConcat<any>(values);
+}
+
 LinqInternal.prototype.take = function(count) {
 	return new LinqPartition(this, 0, count);
 }
 
+AsyncLinq.prototype.take = function(count) {
+	return new AsyncLinqPartition(this, 0, count);
+}
+
 LinqInternal.prototype.skip = function(count) {
 	return new LinqPartition(this, count);
+}
+
+AsyncLinq.prototype.skip = function(count) {
+	return new AsyncLinqPartition(this, count);
 }
