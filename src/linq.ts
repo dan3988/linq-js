@@ -144,6 +144,8 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 
 	concat<V>(...values: Iterable<V>[]): Linq<T | V>;
 
+	joinText(sep?: string): string;
+
 	join<V, K>(other: Iterable<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>): Linq<[outer: T, inner: V]>;
 	join<V, K, R>(other: Iterable<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>, resultSelector: util.Fn<[outer: T, inner: V], R>): Linq<R>;
 

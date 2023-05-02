@@ -229,6 +229,12 @@ export interface LinqCommon<T = any> {
 	ofType<V>(type: util.Constructor<V>): LinqCommon<V>;
 
 	/**
+	 * Create a string using the elements in the sequence, separated by the specified separator string
+	 * @param sep The string to insert between each element in the sequence (defaults to an empty string)
+	 */
+	joinText(sep?: string): util.Awaitable<string>;
+
+	/**
 	 * Skip a specified number of elements in the sequence
 	 * @param count The amount of elements to skip
 	 */

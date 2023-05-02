@@ -11,6 +11,22 @@ defineCommonFunction(Linq.prototype, "count", function<T>(this: LinqCommon<T>, f
 	}
 })
 
+defineCommonFunction(Linq.prototype, "joinText", function(sep) {
+	sep ??= "";
+	let text = "";
+	let first = true;
+	return this.iterate((done, value) => {
+		if (done) {
+			return [text];
+		} else if (first) {
+			text = String(value);
+			first = false;
+		} else {
+			text += sep + String(value);
+		}
+	});
+});
+
 LinqInternal.prototype.concat = function(...values) {
 	values.unshift(this);
 	return new LinqConcat<any>(values);
