@@ -25,6 +25,11 @@ Linq.repeat = function(value, count) {
 	return new LinqRepeat(value, count);
 }
 
+Linq.fromKeys = function(obj: object) {
+	const keys = Object.keys(obj);
+	return new LinqArray(keys);
+}
+
 Linq.fromObject = function(obj: object, select?: BiSelect<string>) {
 	let source = Object.entries(obj);
 	let linq: Linq<[string, any]> = new LinqArray(source);
