@@ -143,6 +143,9 @@ export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
 	ofType(type: 'undefined'): AsyncLinq<undefined>;
 	ofType<V>(type: util.Constructor<V>): AsyncLinq<V>;
 
+	skip(count: number): AsyncLinq<T>;
+	take(count: number): AsyncLinq<T>;
+
 	concat<V>(...values: AsyncIterable<V>[]): AsyncLinq<T | V>;
 
 	join<V, K>(other: AsyncIterable<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>): AsyncLinq<[outer: T, inner: V]>;

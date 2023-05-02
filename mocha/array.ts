@@ -11,6 +11,7 @@ describe('array', () => {
 	describe('math', () => t.testMaths(linq, data, v => v.age));
 	describe('order', () => t.testOrder(linq, data));
 	describe('distinct', () => t.testDistinct(linq, data));
+	describe('partition', () => t.testPartition(linq.select("name"), data.map(v => v.name), 100, 500));
 
 	describe('orderBy', () => {
 		let select = (v: SampleRow) => v.name + ' ' + v.age;

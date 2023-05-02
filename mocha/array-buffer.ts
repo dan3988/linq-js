@@ -10,4 +10,5 @@ describe('array-buffer', () => {
 	describe('last', () => t.testLast(linq, buffer, v => v < 50));
 	describe('math', () => t.testMaths(linq, buffer));
 	describe('order', () => t.testOrder(linq, buffer, (x, y) => x - y));
+	describe('partition', () => t.testPartition(linq, buffer, 16, 64));
 })

@@ -13,4 +13,5 @@ describe('range', () => {
 	describe('math', () => t.testMaths(linq, expected));
 	describe('order', () => t.testOrder(linq, expected));
 	describe('orderBy', () => t.testOrderBy(linq, expected, v => ~v));
+	describe('partition', () => t.testPartition(linq, expected, 2, 5));
 })

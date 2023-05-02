@@ -228,6 +228,17 @@ export interface LinqCommon<T = any> {
 	ofType(type: 'undefined'): LinqCommon<undefined>;
 	ofType<V>(type: util.Constructor<V>): LinqCommon<V>;
 
+	/**
+	 * Skip a specified number of elements in the sequence
+	 * @param count The amount of elements to skip
+	 */
+	skip(count: number): LinqCommon<T>;
+	/**
+	 * Return a sequence containing specified number of elements
+	 * @param count The maximum amount of elements to include in the sequence
+	 */
+	take(count: number): LinqCommon<T>;
+
 	aggregate<V>(initial: V, aggregate: util.BiSelect<V, T, V>): util.Awaitable<V>;
 
 	/**

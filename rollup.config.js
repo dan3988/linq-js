@@ -37,6 +37,7 @@ const configs = [
 	{
 		input: "mocha/main.ts",
 		output: {
+			sourcemap: true,
 			format: "es",
 			dir: "lib-mocha",
 		},

@@ -139,6 +139,9 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	ofType(type: 'undefined'): Linq<undefined>;
 	ofType<V>(type: util.Constructor<V>): Linq<V>;
 
+	skip(count: number): Linq<T>;
+	take(count: number): Linq<T>;
+
 	concat<V>(...values: Iterable<V>[]): Linq<T | V>;
 
 	join<V, K>(other: Iterable<V>, outerKeySelector: util.SelectKeyType<T, K>, innerKeySelector: util.SelectKeyType<V, K>): Linq<[outer: T, inner: V]>;

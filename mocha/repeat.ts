@@ -11,4 +11,5 @@ describe('repeat', () => {
 	describe('last', () => t.testLast(linq, expected, v => v.age > 50));
 	describe('distinct', () => t.testDistinct(linq, expected));
 	describe('math', () => t.testMaths(linq, expected, v => v.age));
+	describe('partition', () => t.testPartition(linq, expected, 2, 5));
 })
