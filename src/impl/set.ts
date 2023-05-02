@@ -26,7 +26,7 @@ export class LinqSet<T> extends LinqInternal<T> {
 		return new Set(this.#source);
 	}
 
-	[Symbol.iterator](): Iterator<T> {
+	[Symbol.iterator](): IterableIterator<T> {
 		return this.#source[Symbol.iterator]();
 	}
 }

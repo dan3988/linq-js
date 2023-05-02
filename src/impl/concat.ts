@@ -30,7 +30,7 @@ export class LinqConcat<T> extends LinqInternal<T> {
 		return new LinqConcat<any>([...this.#values, ...values]);
 	}
 
-	[Symbol.iterator](): Iterator<T> {
+	[Symbol.iterator](): IterableIterator<T> {
 		return new ConcatIterator(this.#values[Symbol.iterator]());
 	}
 }
@@ -55,7 +55,7 @@ export class AsyncLinqConcat<T> extends AsyncLinq<T> {
 		return new AsyncLinqConcat<any>([...this.#values, ...values]);
 	}
 
-	[Symbol.iterator](): AsyncIterator<T> {
+	[Symbol.iterator](): AsyncIterableIterator<T> {
 		return new AsyncConcatIterator(this.#values);
 	}
 }

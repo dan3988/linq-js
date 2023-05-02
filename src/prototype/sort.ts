@@ -60,7 +60,7 @@ export class LinqOrderedImpl<T> extends LinqInternal<T> implements LinqOrdered<T
 		return this.#source.toArray().sort(s);
 	}
 
-	[Symbol.iterator](): Iterator<T> {
+	[Symbol.iterator](): IterableIterator<T> {
 		let arr = this.toArray();
 		return arr[Symbol.iterator]();
 	}
@@ -101,7 +101,7 @@ export class AsyncLinqOrderedImpl<T> extends AsyncLinq<T> implements AsyncLinqOr
 		return this.#source.toArray().then(v => v.sort(s));
 	}
 
-	[Symbol.asyncIterator](): AsyncIterator<T> {
+	[Symbol.asyncIterator](): AsyncIterableIterator<T> {
 		return new AsyncArrayIterator(this, this.toArray);
 	}
 }

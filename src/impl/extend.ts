@@ -198,7 +198,7 @@ export class LinqExtend extends LinqInternal<any> implements ExtendBase<Linq> {
 		return linq;
 	}
 	
-	[Symbol.iterator](): Iterator<any> {
+	[Symbol.iterator](): IterableIterator<any> {
 		const it = this.#source[Symbol.iterator]();
 		return new ExtendIterator(it, this.#ops);
 	}
@@ -221,7 +221,7 @@ export class AsyncLinqExtend extends AsyncLinq<any> implements ExtendBase<AsyncL
 		return linq;
 	}
 	
-	[Symbol.asyncIterator](): AsyncIterator<any> {
+	[Symbol.asyncIterator](): AsyncIterableIterator<any> {
 		const it = this.#source[Symbol.asyncIterator]();
 		return new AsyncExtendIterator(it, this.#ops);
 	}

@@ -139,7 +139,7 @@ export class FilteringIterator<T> implements IterableIterator<T> {
 	}
 }
 
-export class RangeIterator implements Iterable<number>, Iterator<number, number> {
+export class RangeIterator implements Iterable<number>, Iterator<number, number>, IterableIterator<number> {
 	readonly #start: number;
 	readonly #count: number;
 	readonly #step: number;
@@ -167,7 +167,7 @@ export class RangeIterator implements Iterable<number>, Iterator<number, number>
 		return res(false, this.#current);
 	}
 
-	[Symbol.iterator](): Iterator<number, number, undefined> {
+	[Symbol.iterator](): this {
 		return this;
 	}
 }

@@ -7,6 +7,8 @@ export interface LinqConstructor extends LinqFunction {
 }
 
 export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
+	[Symbol.iterator](): IterableIterator<T>;
+
 	first(predictate?: util.Predictate<T>): T;
 	/**
 	 * Iterates this query, and returns the first matching item, or `undefined` one is not found.

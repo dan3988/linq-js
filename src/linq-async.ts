@@ -7,6 +7,8 @@ export interface AsyncLinqConstructor extends LinqFunction {
 }
 
 export interface AsyncLinq<T = any> extends AsyncIterable<T>, LinqCommon<T> {
+	[Symbol.asyncIterator](): AsyncIterableIterator<T>;
+
 	first(predictate?: util.Predictate<T>): Promise<T>;
 	/**
 	 * Iterates this query, and returns the first matching item, or `undefined` one is not found.

@@ -20,6 +20,7 @@ export type Comparer<T = any> = Fn<[x: T, y: T], number>;
 
 export interface MapOrSet<T> extends Iterable<T> {
 	readonly size: number;
+	[Symbol.iterator](): IterableIterator<T>;
 }
 
 export interface Constructor<T = any, TArgs extends any[] = any[]> {
