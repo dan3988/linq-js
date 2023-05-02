@@ -5,8 +5,7 @@
 			"name": "Debug",
 			"program": "${workspaceFolder}/lib-test/main.js",
 			"request": "launch",
-			"type": "node",
-			"preLaunchTask": "tsc: build (test)"
+			"type": "node"
 		},
 		{
 			"type": "node",

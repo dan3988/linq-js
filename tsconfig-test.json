@@ -2,7 +2,8 @@
 	"extends": ".\\tsconfig.json",
 	"compilerOptions": {
 		"outDir": "./lib-test",
-		"declaration": false
+		"declaration": false,
+		"declarationDir": null
 	},
 	"exclude": [],
 	"include": [

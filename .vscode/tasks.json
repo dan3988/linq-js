@@ -2,34 +2,6 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "tsc: build (test)",
-			"type": "typescript",
-			"tsconfig": "./tsconfig-test.json",
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": "build",
-		},
-		{
-			"label": "tsc: build (mocha)",
-			"type": "typescript",
-			"tsconfig": "./tsconfig-mocha.json",
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": "build",
-		},
-		{
-			"label": "tsc: watch (mocha)",
-			"type": "typescript",
-			"tsconfig": "./tsconfig-mocha.json",
-			"option": "watch",
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": "build",
-		},
-		{
 			"label": "build",
 			"type": "npm",
 			"script": "watch",

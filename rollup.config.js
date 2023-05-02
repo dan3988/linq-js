@@ -54,4 +54,20 @@ const configs = [
 	}
 ];
 
+if (!production) {
+	configs.push({
+		input: "test/main.ts",
+		output: {
+			sourcemap: true,
+			format: "es",
+			dir: "lib-test",
+		},
+		plugins: [
+			typescript({
+				tsconfig: "tsconfig-mocha.json"
+			}),
+		]
+	})
+}
+
 export default configs;
