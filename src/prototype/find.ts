@@ -2,14 +2,14 @@ import { Linq, LinqCommon } from '../linq-base.js';
 import { defineCommonFunction, errNoElements, Predictate } from "../util.js";
 
 function firstImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean, def: V) {
-	return linq.iterate<void, T | V>(undefined, (done, value) => {
+	return linq.iterate<void, T | V>(undefined, ({ done, value }) => {
 		if (done) {
 			if (required)
 				throw errNoElements();
 
 			return [def];
 		} else if (query == null || query(value)) {
-			return [value!];
+			return [value];
 		}
 	});
 }
@@ -18,7 +18,7 @@ function lastImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Pred
 	let found = false;
 	let last: T | V = def;
 
-	return linq.iterate(undefined, (done, value) => {
+	return linq.iterate(undefined, ({ done, value }) => {
 		if (done) {
 			if (!found && required)
 				throw errNoElements();
@@ -26,7 +26,7 @@ function lastImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Pred
 			return [last];
 		} else if (query == null || query(value)) {
 			found = true;
-			last = value!;
+			last = value;
 		}
 	});
 }
@@ -49,9 +49,9 @@ defineCommonFunction(Linq.prototype, 'lastOrDefault', function(query, def) {
 
 defineCommonFunction(Linq.prototype, 'any', function(query) {
 	if (query == null) {
-		return this.iterate((done) => [!done]);
+		return this.iterate(({ done }) => [done]);
 	} else {
-		return this.iterate((done, value) => {
+		return this.iterate(({ done, value }) => {
 			if (done) {
 				return [false];
 			} else if (query(value)) {
@@ -62,7 +62,7 @@ defineCommonFunction(Linq.prototype, 'any', function(query) {
 })
 
 defineCommonFunction(Linq.prototype, 'all', function(query) {
-	return this.iterate((done, value) => {
+	return this.iterate(({ done, value }) => {
 		if (done)
 			return [true];
 

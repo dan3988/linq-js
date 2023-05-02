@@ -3,11 +3,11 @@ import { Linq, LinqCommon } from '../linq-base.js';
 
 function arithmetic<T>(it: LinqCommon<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number) {
 	const select = compileQuery(query, false);
-	return it.iterate(undefined, (done, value) => {
+	return it.iterate(undefined, ({ done, value }) => {
 		if (done)
 			return [start];
 		
-		let v = +(select ? select(value!) : value);
+		let v = +(select ? select(value) : value);
 		if (isNaN(v))
 			return [NaN];
 
@@ -33,14 +33,14 @@ defineCommonFunction(Linq.prototype, "average", function<T>(this: LinqCommon<T>,
 	let sum = 0;
 	let count = 0;
 
-	return this.iterate(undefined, (done, value) => {
+	return this.iterate(undefined, ({ done, value }) => {
 		if (done) {
 			if (count === 0)
 				throw errNoElements();
 			
 			return [sum / count];
 		} else {
-			let v = +(select ? select(value!) : value);
+			let v = +(select ? select(value) : value);
 			if (isNaN(v))
 				return [NaN];
 

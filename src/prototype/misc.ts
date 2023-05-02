@@ -15,7 +15,7 @@ defineCommonFunction(Linq.prototype, "joinText", function(sep) {
 	sep ??= "";
 	let text = "";
 	let first = true;
-	return this.iterate((done, value) => {
+	return this.iterate(({ done, value }) => {
 		if (done) {
 			return [text];
 		} else if (first) {

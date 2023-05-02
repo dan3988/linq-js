@@ -6,10 +6,7 @@ export interface Grouping<K, V> extends Iterable<V> {
 	readonly key: K;
 }
 
-export interface IterateCallback<TThis, T, V> {
-	(this: TThis, done: true, value: undefined): void | readonly [V];
-	(this: TThis, done: false, value: T): void | readonly [V];
-}
+export type IterateCallback<TThis, T, V> = (this: TThis, result: IteratorResult<T>) => void | readonly [V];
 
 export interface LinqFunction {
 	readonly create: unique symbol;
