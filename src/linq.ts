@@ -129,15 +129,15 @@ export interface Linq<T = any> extends Iterable<T>, LinqCommon<T> {
 	toMap<K extends keyof T, V>(keySelector: K, valueSelector: util.Select<T, V>): Map<T[K], V>;
 	toMap<K extends keyof T, V extends keyof T>(keySelector: K, valueSelector: V): Map<T[K], T[V]>;
 
-	ofType(type: 'string'): Linq<string>;
-	ofType(type: 'boolean'): Linq<number>;
-	ofType(type: 'number'): Linq<number>;
-	ofType(type: 'bigint'): Linq<bigint>;
-	ofType(type: 'symbol'): Linq<symbol>;
-	ofType(type: 'object'): Linq<object>;
-	ofType(type: 'function'): Linq<Function>;
-	ofType(type: 'undefined'): Linq<undefined>;
-	ofType<V>(type: util.Constructor<V>): Linq<V>;
+	ofType(type: 'string'): Linq<Extract<T, string>>;
+	ofType(type: 'boolean'): Linq<Extract<T, number>>;
+	ofType(type: 'number'): Linq<Extract<T, number>>;
+	ofType(type: 'bigint'): Linq<Extract<T, bigint>>;
+	ofType(type: 'symbol'): Linq<Extract<T, symbol>>;
+	ofType(type: 'object'): Linq<Extract<T, object>>;
+	ofType(type: 'function'): Linq<Extract<T, Function>>;
+	ofType(type: 'undefined'): Linq<Extract<T, undefined>>;
+	ofType<V>(type: util.Constructor<V>): Linq<Extract<T, V>>;
 
 	skip(count: number): Linq<T>;
 	take(count: number): Linq<T>;
