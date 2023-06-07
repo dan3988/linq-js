@@ -12,7 +12,7 @@ AsyncLinq.prototype.where = function(filter: WhereType) {
 	return new AsyncLinqExtend(this, OperationType.Filter, predictate);
 }
 
-LinqInternal.prototype.select = function(query: SelectType) {
+LinqInternal.prototype.select = function(query: SelectType): Linq<any> {
 	const select = compileQuery(query, true);
 	return new LinqExtend(this, OperationType.Select, select);
 }
@@ -22,7 +22,7 @@ AsyncLinq.prototype.select = function(query: SelectType) {
 	return new AsyncLinqExtend(this, OperationType.Select, select);
 }
 
-LinqInternal.prototype.selectMany = function(query: SelectType) {
+LinqInternal.prototype.selectMany = function(query: SelectType): Linq<any> {
 	const select = compileQuery(query, true);
 	return new LinqExtend(this, OperationType.SelectMany, select);
 }
