@@ -1,8 +1,8 @@
 # linq.js
 
-[![npm version](https://badge.fury.io/js/@daniel.pickett%2Flinq-js.svg)](https://badge.fury.io/js/@daniel.pickett%2Flinq-js)
-
 A javascript library which adds [C# LINQ](https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable?view=net-6.0) inspired helper methods for iterators. Supported in Node.js and web browsers.
+
+[![npm version](https://badge.fury.io/js/@daniel.pickett%2Flinq-js.svg)](https://badge.fury.io/js/@daniel.pickett%2Flinq-js)
 
 ```typescript
 import Linq from "linq";
@@ -73,8 +73,18 @@ var names = Linq(users).where("isActive").toArray();
 ```typescript
 var array: User[] = Linq(users).toArray();
 var set: Set<User> = Linq(users).toSet();
-var map: Map<string, User> = Linq(users).toMap("id");
+var map: Map<string, User> = Linq(users).toMap(({ firstName, lastName }) => firstName + " " + lastName);
 var obj: Record<string, User> = Linq(users).toObject("id");
+```
+
+* Static functions for creating sequences
+```typescript
+Linq.range(1, 10).toArray();
+// [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+Linq.range(0, 4, 5).toArray();
+// [ 0, 5, 10, 15 ]
+Linq.repeat("test", 3).toArray();
+// [ 'test', 'test', 'test' ]
 ```
 # Importing
 LinqJS is built in both ESM and UMD formats.
@@ -104,11 +114,8 @@ Browser (UMD)
 <script type="text/javascript" src="/node_modules/requirejs/require.js"></script>
 <script type="text/javascript" src="/node_modules/@daniel.pickett/linq-js/lib/index.cjs"></script>
 <script type="text/javascript">
-	debugger;
-	//const Linq = require("linq-js");
-	requirejs(["linq-js"], function({ Linq }) {
-		let sum = Linq([1,2,3,4,5]).sum();
-		console.log({ sum });
-	});
+	const Linq = require("linq-js");
+	const sum = Linq([1,2,3,4,5]).sum();
+	console.log({ sum });
 </script>
 ```
