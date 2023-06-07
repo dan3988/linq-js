@@ -4,3 +4,4 @@ import "./object.js";
 import "./range.js";
 import "./repeat.js";
 import "./concat.js";
+import "./empty.js";

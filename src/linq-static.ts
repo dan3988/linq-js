@@ -4,6 +4,7 @@ import { LinqRange } from "./impl/range.js";
 import { LinqRepeat } from "./impl/repeat.js";
 import { LinqSet } from "./impl/set.js";
 import { BiSelect, getSharedPrototypes, TypedArray, typedArrayViews } from "./util.js";
+import { EmptyLinq } from "./impl/empty";
 
 Linq.isLinq = function(v): v is LinqInternal {
 	return v instanceof LinqInternal;
@@ -13,8 +14,8 @@ Linq.isAsyncLinq = function(v): v is AsyncLinq {
 	return v instanceof AsyncLinq;
 }
 
-Linq.empty = function<T>() {
-	return LinqInternal.prototype as LinqInternal<T>;
+Linq.empty = function() {
+	return EmptyLinq.instance;
 }
 
 Linq.range = function(start, count, step) {

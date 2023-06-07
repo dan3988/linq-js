@@ -17,7 +17,7 @@ export interface LinqFunction {
 	isLinq(v: any): v is Linq<any>;
 	isAsyncLinq(v: any): v is AsyncLinq<any>;
 
-	empty<T = any>(): Linq<T>;
+	empty<T = never>(): Linq<T>;
 	range(start: number, count: number, step?: number): Linq<number>;
 	repeat<T>(value: T, count: number): Linq<T>;
 	fromKeys(obj: object): Linq<string>;
