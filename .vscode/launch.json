@@ -11,7 +11,7 @@
 			"type": "node",
 			"request": "launch",
 			"name": "Mocha Tests",
-			"args": ["lib-mocha"],
+			"args": ["lib-mocha", "-R", "mochawesome"],
 			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
 		}
 	]

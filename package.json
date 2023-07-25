@@ -16,8 +16,7 @@
     "prepack": "del /S /Q lib & npx rollup -c",
     "build": "rollup -c",
     "watch": "rollup -c -w",
-    "_pretest": "dir /S /Q lib-mocha & rollup -c",
-    "test": "del /S /Q mochawesome-report & mocha -R mochawesome -O reportFilename=out lib-mocha & start mochawesome-report\\out.html"
+    "test": "mocha lib-mocha"
   },
   "homepage": "https://github.com/dan3988/linq-js",
   "repository": {
