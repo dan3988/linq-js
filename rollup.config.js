@@ -1,5 +1,6 @@
 import typescript from "@rollup/plugin-typescript";
 import terser from '@rollup/plugin-terser';
+import onwarn from "./rollup-typescript-log.js";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -36,6 +37,7 @@ const configs = [
 	},
 	{
 		input: "mocha/main.ts",
+		onwarn,
 		output: {
 			sourcemap: true,
 			format: "es",
@@ -57,6 +59,7 @@ const configs = [
 if (!production) {
 	configs.push({
 		input: "test/main.ts",
+		onwarn,
 		output: {
 			sourcemap: true,
 			format: "es",
