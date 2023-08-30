@@ -13,7 +13,8 @@
     "outDir": "lib",
 	"sourceMap": true,
 	"declaration": true,
-	"declarationDir": "lib/types"
+	"declarationDir": "lib/types",
+	"noErrorTruncation": true
   },
   "include": [
     "src/**/*.ts"
