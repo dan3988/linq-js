@@ -1,6 +1,4 @@
-import type { Linq } from "./linq-base.js";
-import type { LinqOrdered } from "./linq.js";
-import type { AsyncLinq, AsyncLinqOrdered } from "./linq-async.js";
+import type { Linq, LinqOrdered, AsyncLinq, AsyncLinqOrdered } from "./linq-base.js";
 import type * as util from "./util.js";
 
 export interface Grouping<K, V> extends Iterable<V> {

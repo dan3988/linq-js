@@ -1,5 +1,5 @@
 import { EmptyIterator } from "../iterators";
-import { Linq } from "../linq";
+import { Linq } from "../linq-base.js";
 import { LinqInternal, LinqOrdered } from "../linq-base";
 import { errNoElements } from "../util";
 

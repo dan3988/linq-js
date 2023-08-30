@@ -1,19 +1,46 @@
-import type * as l from './linq.js';
 import type * as lc from './linq-common.js';
-import type * as la from './linq-async.js';
 import { returnSelf } from './util.js';
 import { EmptyIterator } from './iterators.js';
 
 export type LinqCommon<T = any> = lc.LinqCommon<T>;
 export type LinqCommonOrdered<T = any> = lc.LinqCommonOrdered<T>;
 
-export type Linq<T = any> = l.Linq<T>;
-export type LinqOrdered<T = any> = l.LinqOrdered<T>;
-export type LinqConstructor = l.LinqConstructor;
+/** @internal */
+export interface LinqInternal<T = any> extends Linq<T> {
+	get length(): number | undefined;
+}
 
-export type AsyncLinq<T = any> = la.AsyncLinq<T>;
-export type AsyncLinqOrdered<T = any> = la.AsyncLinqOrdered<T>;
-export type AsyncLinqConstructor = la.AsyncLinqConstructor;
+/** @internal */
+export interface LinqInternalConstructor extends lc.LinqFunction {
+	readonly prototype: LinqInternal;
+	<T>(values: Iterable<T>): LinqInternal<T>;
+	<T>(values: AsyncIterable<T>): AsyncLinq<T>;
+	new<T>(values?: Iterable<T>): LinqInternal<T>;
+}
+
+export interface LinqConstructor extends lc.LinqFunction {
+	readonly prototype: Linq;
+	new<T>(values?: Iterable<T>): Linq<T>;
+}
+
+export interface Linq<T = any> extends Iterable<T>, lc.LinqCommon<T, false> {
+	[Symbol.iterator](): IterableIterator<T>;
+}
+
+export interface LinqOrdered<T = any> extends Linq<T>, lc.LinqCommonOrdered<T, false> {
+}
+
+export interface AsyncLinqConstructor extends lc.LinqFunction {
+	readonly prototype: AsyncLinq;
+	new<T>(value: AsyncIterable<T>): AsyncLinq<T>;
+}
+
+export interface AsyncLinq<T = any> extends AsyncIterable<T>, lc.LinqCommon<T, true> {
+	[Symbol.asyncIterator](): AsyncIterableIterator<T>;
+}
+
+export interface AsyncLinqOrdered<T> extends AsyncLinq<T>, lc.LinqCommonOrdered<T, true> {
+}
 
 export var AsyncLinq: AsyncLinqConstructor = <any>class AsyncLinq<T> {
 	readonly #source: AsyncIterable<T>;
@@ -25,19 +52,6 @@ export var AsyncLinq: AsyncLinqConstructor = <any>class AsyncLinq<T> {
 	[Symbol.asyncIterator]() {
 		return this.#source[Symbol.asyncIterator]();
 	}
-}
-
-/** @internal */
-export interface LinqInternal<T = any> extends l.Linq<T> {
-	get length(): number | undefined;
-}
-
-/** @internal */
-export interface LinqInternalConstructor extends lc.LinqFunction {
-	readonly prototype: LinqInternal;
-	<T>(values: Iterable<T>): LinqInternal<T>;
-	<T>(values: AsyncIterable<T>): AsyncLinq<T>;
-	new<T>(values?: Iterable<T>): LinqInternal<T>;
 }
 
 /** @internal */
