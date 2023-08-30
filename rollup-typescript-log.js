@@ -4,7 +4,7 @@ function extractLocation(loc) {
 	if (loc) {
 		const { file, column, line } = loc;
 		const relative = path.relative(".", file);
-		return ` \u001b[34m${relative}:${column}:${line}\u001b[39m`;
+		return ` \u001b[34m${relative}:${line}:${column}\u001b[39m`;
 	} else {
 		return "";
 	}
