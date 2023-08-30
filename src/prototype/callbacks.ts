@@ -1,4 +1,4 @@
-import { AsyncLinq, LinqInternal } from '../linq-base.js';
+import { AsyncLinq, LinqInternal } from '../linq.js';
 import { IterateCallback } from '../linq-common';
 
 function forEachSync<TThis, T, V>(linq: LinqInternal<T>, thisArg: TThis, fn: (item: T) => void | never[] | V[]): V | undefined {

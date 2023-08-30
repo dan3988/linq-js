@@ -1,5 +1,5 @@
 import { AsyncArrayIterator } from "../iterators.js";
-import { AsyncLinq, AsyncLinqOrdered, LinqInternal, LinqOrdered } from "../linq-base.js";
+import { AsyncLinq, AsyncLinqOrdered, LinqInternal, LinqOrdered } from "../linq.js";
 import { Comparer, compileQuery, defaultCompare, firstArg, Select, SelectType } from "../util.js";
 
 type Ordering = [query: Select, comp: Comparer, desc: boolean];

@@ -1,4 +1,4 @@
-import { AsyncLinq, LinqInternal } from "../linq-base.js";
+import { AsyncLinq, LinqInternal } from "../linq.js";
 import { BiSelect } from "../util.js";
 
 class LinqZip<X, Y, V> extends LinqInternal<V> {

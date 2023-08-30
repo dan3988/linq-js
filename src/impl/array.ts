@@ -1,4 +1,4 @@
-import { LinqInternal } from "../linq-base.js";
+import { LinqInternal } from "../linq.js";
 import { errNoElements, Predictate } from "../util.js";
 
 interface ReadOnlyArray<T> extends Iterable<T> {

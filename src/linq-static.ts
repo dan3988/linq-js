@@ -1,4 +1,4 @@
-import { Linq, LinqInternal, AsyncLinq } from "./linq-base.js";
+import { Linq, LinqInternal, AsyncLinq } from "./linq.js";
 import { LinqArray } from "./impl/array.js";
 import { LinqRange } from "./impl/range.js";
 import { LinqRepeat } from "./impl/repeat.js";

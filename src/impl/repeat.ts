@@ -1,5 +1,5 @@
 import { RepeatIterator } from "../iterators.js";
-import { LinqInternal } from "../linq-base.js";
+import { LinqInternal } from "../linq.js";
 import { errNoElements, invokeSelect, NumberLike, Predictate, SelectType } from "../util.js";
 
 /** @internal */

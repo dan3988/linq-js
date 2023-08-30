@@ -1,4 +1,4 @@
-import { Linq, LinqCommon } from '../linq-base.js';
+import { Linq, LinqCommon } from '../linq.js';
 import { defineCommonFunction, errNoElements, Predictate } from "../util.js";
 
 function firstImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean, def: V) {

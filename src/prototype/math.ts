@@ -1,5 +1,5 @@
 import { compileQuery, defineCommonFunction, errNoElements, SelectType } from "../util.js";
-import { Linq, LinqCommon } from '../linq-base.js';
+import { Linq, LinqCommon } from '../linq.js';
 
 function arithmetic<T>(it: LinqCommon<T>, query: undefined | SelectType<T>, start: number, handle: (result: number, value: number) => number) {
 	const select = compileQuery(query, false);

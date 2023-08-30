@@ -1,6 +1,6 @@
 import { EmptyIterator } from "../iterators";
-import { Linq } from "../linq-base.js";
-import { LinqInternal, LinqOrdered } from "../linq-base";
+import { Linq } from "../linq.js";
+import { LinqInternal, LinqOrdered } from "../linq";
 import { errNoElements } from "../util";
 
 export class EmptyLinq extends LinqInternal<never> implements LinqOrdered<never>, Linq<never> {

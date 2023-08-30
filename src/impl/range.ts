@@ -1,5 +1,5 @@
 import { RangeIterator } from "../iterators.js";
-import { LinqInternal } from "../linq-base.js";
+import { LinqInternal } from "../linq.js";
 import { compileQuery, errNoElements, Predictate, SelectType } from "../util.js";
 
 /** @internal */

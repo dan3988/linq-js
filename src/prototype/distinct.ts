@@ -1,4 +1,4 @@
-import { AsyncLinq, LinqInternal } from "../linq-base.js";
+import { AsyncLinq, LinqInternal } from "../linq.js";
 
 class LinqDistinct<T> extends LinqInternal<T> {
 	readonly #source: LinqInternal<T>;

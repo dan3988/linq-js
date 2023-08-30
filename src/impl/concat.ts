@@ -1,5 +1,5 @@
 import { AsyncConcatIterator, ConcatIterator } from '../iterators.js';
-import { Linq, LinqInternal, AsyncLinq } from '../linq-base.js';
+import { Linq, LinqInternal, AsyncLinq } from '../linq.js';
 
 /** @internal */
 export class LinqConcat<T> extends LinqInternal<T> {

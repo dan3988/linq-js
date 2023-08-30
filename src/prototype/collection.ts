@@ -1,4 +1,4 @@
-import { Linq } from '../linq-base.js';
+import { Linq } from '../linq.js';
 import { defineCommonFunction, invokeSelect, Select, SelectType } from '../util.js';
 
 function toObjectCallback(keySelector: SelectType, valueSelector: undefined | SelectType, obj: any, value: any) {

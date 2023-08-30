@@ -1,4 +1,4 @@
-import { AsyncLinq, Linq, LinqInternal } from "../linq-base.js";
+import { AsyncLinq, Linq, LinqInternal } from "../linq.js";
 import { compileQuery, isInstance, isType, Predictate, SelectType } from "../util.js";
 
 /** @internal */

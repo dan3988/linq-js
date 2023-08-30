@@ -1,5 +1,5 @@
 import type { Grouping } from "../linq-common.js";
-import { Linq, LinqInternal, LinqCommon, AsyncLinq } from "../linq-base.js";
+import { Linq, LinqInternal, LinqCommon, AsyncLinq } from "../linq.js";
 import { compileQuery, Select, SelectType } from "../util.js";
 
 /** @internal */

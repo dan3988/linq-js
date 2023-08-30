@@ -1,5 +1,5 @@
 import type { MapOrSet } from "../util.js";
-import { LinqInternal } from "../linq-base.js";
+import { LinqInternal } from "../linq.js";
 
 /** @internal */
 export class LinqSet<T> extends LinqInternal<T> {

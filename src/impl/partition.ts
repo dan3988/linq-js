@@ -1,4 +1,4 @@
-import Linq, { LinqInternal, AsyncLinq } from "../linq-base";
+import Linq, { LinqInternal, AsyncLinq } from "../linq";
 
 /** @internal */
 export class LinqPartition<T> extends LinqInternal<T> {
