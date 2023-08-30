@@ -15,5 +15,5 @@ import "./prototype/sort.js";
 import "./prototype/zip.js";
 
 export * from "./linq.js";
-export type { Select, BiSelect, Comparer, Predictate } from "./util.js";
+export type { Select, BiSelect, Comparer, Predictate, PredictateTyped } from "./util.js";
 export default Linq;

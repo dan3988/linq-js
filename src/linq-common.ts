@@ -42,13 +42,26 @@ export interface LinqCommon<T = any, Async extends boolean | unknown = unknown> 
 	 * @returns The first matching item in this query
 	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
 	 */
+	first<V extends T>(predictate?: util.PredictateTyped<T, V>): ReturnElement<Async, V>;
+	/**
+	 * Iterates this query, and returns the first matching item, or throws an error if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The first matching item in this query
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
 	first(predictate?: util.Predictate<T>): ReturnElement<Async, T>;
 	/**
 	 * Iterates this query, and returns the first matching item, or `undefined` one is not found.
 	 * @param predictate A function that will called on each element in the query until it returns `true`
 	 * @returns The first matching item in this query, or undefined
 	 */
-	firstOrDefault(query?: util.Predictate<T>): ReturnElement<Async, T | undefined>;
+	firstOrDefault<V extends T>(predictate?: util.PredictateTyped<T, V>): ReturnElement<Async, V>;
+	/**
+	 * Iterates this query, and returns the first matching item, or `undefined` one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The first matching item in this query, or undefined
+	 */
+	firstOrDefault(predictate?: util.Predictate<T>): ReturnElement<Async, T | undefined>;
 	/**
 	 * Iterates this query, and returns the first matching item, or a default value if one is not found.
 	 * @param predictate A function that will called on each element in the query until it returns `true`
@@ -58,12 +71,25 @@ export interface LinqCommon<T = any, Async extends boolean | unknown = unknown> 
 	firstOrDefault<V = undefined>(predictate: undefined | util.Predictate<T>, def: V): ReturnElement<Async, T | V>;
 
 	/**
-	 * Iterates this query, and returns the first matching item, or throws an error if one is not found.
+	 * Iterates this query, and returns the last matching item, or throws an error if one is not found.
 	 * @param predictate A function that will called on each element in the query until it returns `true`
-	 * @returns The first matching item in this query
+	 * @returns The last matching item in this query
+	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
+	 */
+	last<V extends T>(predictate?: util.PredictateTyped<T, V>): ReturnElement<Async, V>;
+	/**
+	 * Iterates this query, and returns the last matching item, or throws an error if one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The last matching item in this query
 	 * @throws {TypeError} If this query has no items, or {@link predictate} returns `false` for each item.
 	 */
 	last(predictate?: util.Predictate<T>): ReturnElement<Async, T>;
+	/**
+	 * Iterates this query, and returns the last matching item, or `undefined` one is not found.
+	 * @param predictate A function that will called on each element in the query until it returns `true`
+	 * @returns The last matching item in this query, or undefined
+	 */
+	lastOrDefault<V extends T>(predictate?: util.PredictateTyped<T, V>): ReturnElement<Async, V>;
 	/**
 	 * Iterates this query, and returns the last matching item, or `undefined` one is not found.
 	 * @param predictate A function that will called on each element in the query until it returns `true`
@@ -154,10 +180,16 @@ export interface LinqCommon<T = any, Async extends boolean | unknown = unknown> 
 
 	/**
 	 * Filter this sequence using a predictate function
-	 * @param filter A function that tests each element in this sequence for a condition.
+	 * @param predictate A function that tests each element in this sequence for a condition.
 	 * @returns A new query that contains the elements that satisfy the condition.
 	 */
-	where(filter: util.Predictate<T>): ReturnLinq<Async, T>;
+	where<V extends T>(predictate: util.PredictateTyped<T, V>): ReturnLinq<Async, V>;
+	/**
+	 * Filter this sequence using a predictate function
+	 * @param predictate A function that tests each element in this sequence for a condition.
+	 * @returns A new query that contains the elements that satisfy the condition.
+	 */
+	where(predictate: util.Predictate<T>): ReturnLinq<Async, T>;
 	/**
 	 * Filter this sequence using a property key
 	 * @param key The property key to test for each element.

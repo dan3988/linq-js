@@ -13,6 +13,21 @@ let array0 = test0.toArray();
 let array1 = test1.toArray();
 let array2 = test2.toArray();
 
+function notNull<T>(v: T): v is Exclude<T, null | undefined> {
+	return v != null;
+}
+
+function isString(v: any): v is string {
+	return typeof v === "string";
+}
+
+let arr = ["aaaaa", null, "test", undefined, 5, null, true];
+let linq1 = Linq(arr);
+let arr2 = arr.filter(isString);
+let linq2 = linq1.where(isString).toArray();
+let arr3 = arr.filter(notNull);
+let linq3 = linq1.where(notNull).toArray();
+
 let stream = fs.createReadStream('./sample-data.json');
 let al = Linq<Buffer>(stream).select(v => v.toString()).selectMany(v => v.split('\n'));
 let all = await al.toArray();
