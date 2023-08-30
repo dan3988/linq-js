@@ -1,9 +1,9 @@
 /// <reference path="../sample-data.d.ts"/>
-import Linq from '../lib/index.js';
+import Linq, { LinqCommon } from '../src/index.js';
 import fs from 'fs';
 
 let data: SampleRow[] = await fs.promises.readFile('./sample-data.json').then(v => v.toString()).then(JSON.parse);
-let linq = Linq(data);
+let linq: LinqCommon<SampleRow> = Linq(data);
 
 let max = new Date(2018, 1, 1);
 let test0 = linq.where(v => v.age < 50);

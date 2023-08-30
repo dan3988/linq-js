@@ -28,7 +28,7 @@ export var AsyncLinq: AsyncLinqConstructor = <any>class AsyncLinq<T> {
 }
 
 /** @internal */
-export interface LinqInternal<T = any> extends Linq<T> {
+export interface LinqInternal<T = any> extends l.Linq<T> {
 	get length(): number | undefined;
 }
 

@@ -87,9 +87,9 @@ defineFunction(LinqInternal.prototype, "groupJoin", function(inner, outerSelecto
 })
 
 defineFunction(AsyncLinq.prototype, "join", function(inner, outerSelector, innerSelector, resultSelector) {
-	return new AsyncLinqJoin(this, outerSelector, Linq(inner), innerSelector, false, resultSelector);
+	return new AsyncLinqJoin(this, outerSelector, AsyncLinq(inner), innerSelector, false, resultSelector);
 })
 
 defineFunction(AsyncLinq.prototype, "groupJoin", function(inner, outerSelector, innerSelector, resultSelector) {
-	return new AsyncLinqJoin(this, outerSelector, Linq(inner), innerSelector, true, resultSelector);
+	return new AsyncLinqJoin(this, outerSelector, AsyncLinq(inner), innerSelector, true, resultSelector);
 })
