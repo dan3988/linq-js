@@ -1,11 +1,10 @@
 {
-	"extends": ".\\tsconfig.json",
+	"extends": ".\\tsconfig-base.json",
 	"compilerOptions": {
-		"outDir": "./lib-mocha",
-		"declaration": false,
+		"outDir": "./lib-mocha"
 	},
-	"exclude": [],
 	"include": [
+		"./src/**/*.ts",
 		"./mocha/**/*.ts"
 	]
 }

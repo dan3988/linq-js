@@ -1,4 +1,4 @@
-import typescript from "rollup-plugin-typescript2";
+import typescript from "@rollup/plugin-typescript";
 import terser from '@rollup/plugin-terser';
 
 const production = !process.env.ROLLUP_WATCH;
@@ -7,6 +7,7 @@ const production = !process.env.ROLLUP_WATCH;
 const configs = [
 	{
 		input: "src/index.ts",
+		onwarn,
 		output: [
 			{
 				banner: '/// <reference path="./types/index.d.ts" />',
@@ -28,8 +29,7 @@ const configs = [
 		],
 		plugins: [
 			typescript({
-				tsconfig: "tsconfig.json",
-				useTsconfigDeclarationDir: true
+				tsconfig: "tsconfig.json"
 			}),
 			production && terser()
 		],

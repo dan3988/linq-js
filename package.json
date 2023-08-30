@@ -8,7 +8,7 @@
   "type": "module",
   "files": [
     "lib",
-	"src",
+    "src",
     "LICENSE",
     "README.MD"
   ],
@@ -38,13 +38,12 @@
   ],
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.0",
-    "@rollup/plugin-typescript": "^11.0.0",
+    "@rollup/plugin-typescript": "^11.1.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.6.1",
     "mocha": "^10.0.0",
     "mochawesome": "^7.1.3",
     "rollup": "^3.20.2",
-    "rollup-plugin-typescript2": "^0.34.1",
     "tslib": "^2.5.0",
     "typescript": "^4.9.1-beta"
   }

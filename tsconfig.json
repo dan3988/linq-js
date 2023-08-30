@@ -1,22 +1,11 @@
 {
-  "compilerOptions": {
-    "lib": [
-      "ESNext"
-    ],
-    "target": "ESNext",
-    "module": "ESNext",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "stripInternal": true,
-    "skipLibCheck": true,
-    "outDir": "lib",
-	"sourceMap": true,
-	"declaration": true,
-	"declarationDir": "lib/types",
-	"noErrorTruncation": true
-  },
-  "include": [
-    "src/**/*.ts"
-  ]
+	"extends": ".\\tsconfig-base.json",
+	"compilerOptions": {
+		"outDir": "lib",
+		"declaration": true,
+		"declarationDir": "lib/types"
+	},
+	"include": [
+		"src/**/*.ts"
+	]
 }
