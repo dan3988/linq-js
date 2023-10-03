@@ -18,7 +18,7 @@ export interface LinqFunction {
 
 	empty<T = never>(): Linq<T>;
 	range(start: number, count: number, step?: number): Linq<number>;
-	repeat<T>(value: T, count: number): Linq<T>;
+	repeat<const T>(value: T, count: number): Linq<T>;
 	fromKeys(obj: object): Linq<string>;
 	fromObject(obj: object): Linq<[string, any]>;
 	fromObject<V>(obj: object, select: util.BiSelect<string, any, V>): Linq<V>;
