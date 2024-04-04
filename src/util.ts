@@ -19,6 +19,8 @@ export type Predictate<T = any> = Fn<[value: T], any>;
 export type WhereType<T = any> = Predictate<T> | keyof T;
 export type Comparer<T = any> = Fn<[x: T, y: T], number>;
 
+export type FalsyValue = null | undefined | false | 0 | -0 | 0n | "";
+
 export interface MapOrSet<T> extends Iterable<T> {
 	readonly size: number;
 	[Symbol.iterator](): IterableIterator<T>;
@@ -149,9 +151,9 @@ export function createGetAll(keys: Iterable<PropertyKey>): GetAllFunction {
 	return fn as any;
 }
 
-export function compilePredictate<T>(where: WhereType<T>): Predictate<T> {
+export function compilePredictate<T>(where: undefined | WhereType<T>): Predictate<T> {
 	if (where == null)
-		throw new TypeError("Predictate function is null or undefined.");
+		return Boolean;
 
 	if (typeof where === "function")
 		return where;

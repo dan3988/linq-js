@@ -196,6 +196,11 @@ export interface LinqCommon<T = any, Async extends boolean | unknown = unknown> 
 	 * @returns A new query that contains the elements where the value of {@link key} resolves to a truthy value.
 	 */
 	where(key: keyof T): ReturnLinq<Async, T>;
+	/**
+	 * Filter this sequence to only truthy values
+	 * @returns A new query that contains the elements that are truthy.
+	 */
+	where(): ReturnLinq<Async, Exclude<T, util.FalsyValue>>;
 
 	/**
 	 * Transform each element of this collection by calling a function on each element
