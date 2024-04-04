@@ -19,7 +19,7 @@ LinqInternal.prototype.select = function(query: SelectType): Linq<any> {
 
 AsyncLinq.prototype.select = function(query: SelectType) {
 	const select = compileQuery(query, true);
-	return new AsyncLinqExtend(this, OperationType.Select, select);
+	return new AsyncLinqExtend(this, OperationType.Select, select) as AsyncLinq<any>;
 }
 
 LinqInternal.prototype.selectMany = function(query: SelectType): Linq<any> {
@@ -29,7 +29,7 @@ LinqInternal.prototype.selectMany = function(query: SelectType): Linq<any> {
 
 AsyncLinq.prototype.selectMany = function(query: SelectType) {
 	const select = compileQuery(query, true);
-	return new AsyncLinqExtend(this, OperationType.SelectMany, select);
+	return new AsyncLinqExtend(this, OperationType.SelectMany, select) as AsyncLinq<any>;
 }
 
 LinqInternal.prototype.ofType = function(type: string | Function): Linq<any> {
