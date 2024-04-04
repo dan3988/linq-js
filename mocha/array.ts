@@ -67,5 +67,11 @@ describe('array', () => {
 			const filteredByFunc = linq.where(v => v.isActive);
 			assert.deepStrictEqual([...filteredByKey], [...filteredByFunc]);
 		});
+
+		it("should return the correct values when parameterless oveload of where()", () => {
+			const filteredAuto = linq.where();
+			const filteredByFunc = linq.where(v => v);
+			assert.deepStrictEqual([...filteredAuto], [...filteredByFunc]);
+		});
 	});
 })
