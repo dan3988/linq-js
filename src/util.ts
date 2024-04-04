@@ -19,8 +19,6 @@ export type Predicate<T = any> = Fn<[value: T], any>;
 export type WhereType<T = any> = Predicate<T> | keyof T;
 export type Comparer<T = any> = Fn<[x: T, y: T], number>;
 
-export type FalsyValue = null | undefined | false | 0 | -0 | 0n | "";
-
 export interface MapOrSet<T> extends Iterable<T> {
 	readonly size: number;
 	[Symbol.iterator](): IterableIterator<T>;

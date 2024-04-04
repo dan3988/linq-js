@@ -1,6 +1,8 @@
 import type { Linq, LinqOrdered, AsyncLinq, AsyncLinqOrdered } from "./linq.js";
 import type * as util from "./util.js";
 
+type FalsyValue = null | undefined | false | 0 | -0 | 0n | "";
+
 export interface Grouping<K, V> extends Iterable<V> {
 	readonly key: K;
 }
@@ -200,7 +202,7 @@ export interface LinqCommon<T = any, Async extends boolean | unknown = unknown> 
 	 * Filter this sequence to only truthy values
 	 * @returns A new query that contains the elements that are truthy.
 	 */
-	where(): ReturnLinq<Async, Exclude<T, util.FalsyValue>>;
+	where(): ReturnLinq<Async, Exclude<T, FalsyValue>>;
 
 	/**
 	 * Transform each element of this collection by calling a function on each element
