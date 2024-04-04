@@ -253,15 +253,16 @@ export interface LinqCommon<T = any, Async extends boolean | unknown = unknown> 
 	toMap<K extends keyof T, V>(keySelector: K, valueSelector: util.Select<T, V>): ReturnElement<Async, Map<T[K], V>>;
 	toMap<K extends keyof T, V extends keyof T>(keySelector: K, valueSelector: V): ReturnElement<Async, Map<T[K], T[V]>>;
 
-	ofType(type: 'string'): ReturnLinq<Async, string>;
-	ofType(type: 'boolean'): ReturnLinq<Async, number>;
-	ofType(type: 'number'): ReturnLinq<Async, number>;
-	ofType(type: 'bigint'): ReturnLinq<Async, bigint>;
-	ofType(type: 'symbol'): ReturnLinq<Async, symbol>;
-	ofType(type: 'object'): ReturnLinq<Async, object>;
-	ofType(type: 'function'): ReturnLinq<Async, Function>;
+	ofType(type: 'string'): ReturnLinq<Async, Extract<T, string>>;
+	ofType(type: 'boolean'): ReturnLinq<Async, Extract<T, boolean>>;
+	ofType(type: 'number'): ReturnLinq<Async, Extract<T, number>>;
+	ofType(type: 'bigint'): ReturnLinq<Async, Extract<T, bigint>>;
+	ofType(type: 'symbol'): ReturnLinq<Async, Extract<T, symbol>>;
+	ofType(type: 'object'): ReturnLinq<Async, Extract<T, object | null>>;
+	ofType(type: 'function'): ReturnLinq<Async, Extract<T, Function>>;
 	ofType(type: 'undefined'): ReturnLinq<Async, undefined>;
-	ofType<V>(type: util.Constructor<V>): ReturnLinq<Async, V>;
+	ofType(type: ObjectConstructor): ReturnLinq<Async, Exclude<T, string | boolean | number | bigint | symbol | null | undefined>>;
+	ofType<V>(type: util.Constructor<V>): ReturnLinq<Async, Extract<T, V>>;
 
 	concat<V>(...values: InputParam<Async, V>[]): ReturnLinq<Async, T | V>;
 
