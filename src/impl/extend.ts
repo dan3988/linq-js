@@ -1,5 +1,5 @@
 import { AsyncLinq, Linq, LinqInternal } from "../linq.js";
-import { compileQuery, isInstance, isType, Predictate, SelectType } from "../util.js";
+import { compileQuery, isInstance, isType, Predicate, SelectType } from "../util.js";
 
 /** @internal */
 export const enum OperationType {
@@ -164,7 +164,7 @@ abstract class ExtendBase<T> {
 		return this.__extend(OperationType.SelectMany, select);
 	}
 
-	where(filter: Predictate): T {
+	where(filter: Predicate): T {
 		return this.__extend(OperationType.Filter, filter);
 	}
 

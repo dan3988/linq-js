@@ -2,8 +2,8 @@ declare interface ReadOnlyArray<T> extends Iterable<T> {
 	readonly length: number;
 	readonly [i: number]: T;
 
-	find(predictate: (v: T) => boolean): T | undefined;
-	findIndex(predictate: (v: T) => boolean): number;
+	find(predicate: (v: T) => boolean): T | undefined;
+	findIndex(predicate: (v: T) => boolean): number;
 
 	reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: this) => T): T;
 	reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: this) => T, initialValue: T): T;

@@ -1,4 +1,4 @@
-import type { Predictate, Select } from "./util.js";
+import type { Predicate, Select } from "./util.js";
 
 function res<T>(done: false, value?: T): IteratorYieldResult<T>
 function res<T>(done: true, value?: T): IteratorReturnResult<T>
@@ -114,9 +114,9 @@ export class SelectingAsyncIterator<T, V> implements AsyncIterableIterator<V> {
 export class FilteringIterator<T> implements IterableIterator<T> {
 	readonly #iter: Iterator<T>;
 	readonly #thisArg: any;
-	readonly #filter: Predictate<T>;
+	readonly #filter: Predicate<T>;
 
-	constructor(iter: Iterator<T>, thisArg: any, filter: Predictate<T>) {
+	constructor(iter: Iterator<T>, thisArg: any, filter: Predicate<T>) {
 		this.#iter = iter;
 		this.#thisArg = thisArg;
 		this.#filter = filter;

@@ -1,5 +1,5 @@
 import { LinqInternal } from "../linq.js";
-import { errNoElements, Predictate } from "../util.js";
+import { errNoElements, Predicate } from "../util.js";
 
 interface ReadOnlyArray<T> extends Iterable<T> {
 	readonly length: number;
@@ -19,9 +19,9 @@ export class LinqArray<T> extends LinqInternal<T> {
 		this.#source = source;
 	}
 
-	#first(query: undefined | Predictate<T>, required: true): T;
-	#first<V>(query: undefined | Predictate<T>, required: false, def: V): T | V
-	#first(query: undefined | Predictate<T>, required: boolean, def?: any) {
+	#first(query: undefined | Predicate<T>, required: true): T;
+	#first<V>(query: undefined | Predicate<T>, required: false, def: V): T | V
+	#first(query: undefined | Predicate<T>, required: boolean, def?: any) {
 		let array = this.#source;
 		if (array.length !== 0) {
 			if (query == null)
@@ -44,9 +44,9 @@ export class LinqArray<T> extends LinqInternal<T> {
 		return def;
 	}
 
-	#last(query: undefined | Predictate<T>, required: true): T;
-	#last<V>(query: undefined | Predictate<T>, required: false, def: V): T | V;
-	#last(query: undefined | Predictate<T>, required: boolean, def?: any) {
+	#last(query: undefined | Predicate<T>, required: true): T;
+	#last<V>(query: undefined | Predicate<T>, required: false, def: V): T | V;
+	#last(query: undefined | Predicate<T>, required: boolean, def?: any) {
 		let array = this.#source;
 		if (array.length !== 0) {
 			let i = array.length - 1;
@@ -69,38 +69,38 @@ export class LinqArray<T> extends LinqInternal<T> {
 		return def;
 	}
 
-	first(query?: Predictate<T>) {
+	first(query?: Predicate<T>) {
 		return this.#first(query, true);
 	}
 
-	firstOrDefault<V>(query?: Predictate<T>, def?: V) {
+	firstOrDefault<V>(query?: Predicate<T>, def?: V) {
 		return this.#first(query, false, def);
 	}
 
-	last(query?: Predictate<T>) {
+	last(query?: Predicate<T>) {
 		return this.#last(query, true);
 	}
 
-	lastOrDefault<V>(query?: Predictate<T>, def?: V) {
+	lastOrDefault<V>(query?: Predicate<T>, def?: V) {
 		return this.#last(query, false, def);
 	}
 
-	any(predictate?: Predictate<T>): boolean {
+	any(predicate?: Predicate<T>): boolean {
 		const source = this.#source;
-		if (predictate == null)
+		if (predicate == null)
 			return source.length !== 0;
 
 		for (let i = 0; i < source.length; i++)
-			if (predictate(source[i]))
+			if (predicate(source[i]))
 				return true;
 
 		return false;
 	}
 
-	all(predictate: Predictate<T>): boolean {
+	all(predicate: Predicate<T>): boolean {
 		const source = this.#source;
 		for (let i = 0; i < source.length; i++)
-			if (!predictate(source[i]))
+			if (!predicate(source[i]))
 				return false;
 
 		return true;

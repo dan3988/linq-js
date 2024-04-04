@@ -1,9 +1,9 @@
 import { AsyncLinqConcat, LinqConcat } from "../impl/concat.js";
 import { AsyncLinqPartition, LinqPartition } from "../impl/partition";
 import { Linq, LinqCommon, LinqInternal, AsyncLinq } from "../linq.js";
-import { defineCommonFunction, Predictate } from "../util.js";
+import { defineCommonFunction, Predicate } from "../util.js";
 
-defineCommonFunction(Linq.prototype, "count", function<T>(this: LinqCommon<T>, filter?: Predictate<T>) {
+defineCommonFunction(Linq.prototype, "count", function<T>(this: LinqCommon<T>, filter?: Predicate<T>) {
 	if (filter == null) {
 		return this.aggregate(0, (count) => count + 1);
 	} else {

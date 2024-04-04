@@ -14,9 +14,9 @@ export type SelectType<T = any, R = any> = ValidKey<T, R> | ValidKeys<T, R> | Se
 export type BiSelect<X = any, Y = any, V = any> = Fn<[x: X, y: Y], V>;
 export type KeysToObject<TSource, TKeys extends readonly (keyof TSource)[]> = { [P in TKeys[number]]: TSource[P] }
 
-export type PredictateTyped<T = any, V extends T = any> = (value: T) => value is V;
-export type Predictate<T = any> = Fn<[value: T], any>;
-export type WhereType<T = any> = Predictate<T> | keyof T;
+export type PredicateTyped<T = any, V extends T = any> = (value: T) => value is V;
+export type Predicate<T = any> = Fn<[value: T], any>;
+export type WhereType<T = any> = Predicate<T> | keyof T;
 export type Comparer<T = any> = Fn<[x: T, y: T], number>;
 
 export type FalsyValue = null | undefined | false | 0 | -0 | 0n | "";
@@ -86,7 +86,7 @@ export interface GetterFunction {
 	readonly key: PropertyKey;
 }
 
-export interface GetPredictateFunction {
+export interface GetPredicateFunction {
 	<T, K extends keyof T>(this: K, value: T): boolean;
 	(this: PropertyKey, value: any): boolean;
 	readonly key: PropertyKey;
@@ -112,7 +112,7 @@ const getterToString = function toString(this: GetterFunction) {
 	return "getter(" + keyToString(this.key) + ")";
 }
 
-export function createPredictate(key: PropertyKey): GetPredictateFunction {
+export function createPredicate(key: PropertyKey): GetPredicateFunction {
 	return createGetter(key);
 }
 
@@ -151,14 +151,14 @@ export function createGetAll(keys: Iterable<PropertyKey>): GetAllFunction {
 	return fn as any;
 }
 
-export function compilePredictate<T>(where: undefined | WhereType<T>): Predictate<T> {
+export function compilePredicate<T>(where: undefined | WhereType<T>): Predicate<T> {
 	if (where == null)
 		return Boolean;
 
 	if (typeof where === "function")
 		return where;
 	
-	return createPredictate(where);
+	return createPredicate(where);
 }
 
 export function compileQuery<T, V>(select: undefined | SelectType<T, V>, required: true): Select<T, V>;

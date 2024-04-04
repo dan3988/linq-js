@@ -1,6 +1,6 @@
 import { RepeatIterator } from "../iterators.js";
 import { LinqInternal } from "../linq.js";
-import { errNoElements, invokeSelect, NumberLike, Predictate, SelectType } from "../util.js";
+import { errNoElements, invokeSelect, NumberLike, Predicate, SelectType } from "../util.js";
 
 /** @internal */
 export class LinqRepeat<T> extends LinqInternal<T> {
@@ -17,9 +17,9 @@ export class LinqRepeat<T> extends LinqInternal<T> {
 		this.#count = count;
 	}
 
-	#getAny(required: true, def: undefined, query?: Predictate<T>): T
-	#getAny<V>(required: false, def: V, query?: Predictate<T>): T | V;
-	#getAny(required: boolean, def?: any, query?: Predictate<T>): any {
+	#getAny(required: true, def: undefined, query?: Predicate<T>): T
+	#getAny<V>(required: false, def: V, query?: Predicate<T>): T | V;
+	#getAny(required: boolean, def?: any, query?: Predicate<T>): any {
 		if (this.#count !== 0 && (query == null || query(this.#value)))
 			return this.#value;
 
@@ -60,28 +60,28 @@ export class LinqRepeat<T> extends LinqInternal<T> {
 		return v;
 	}
 
-	first(query?: Predictate<T>): T {
+	first(query?: Predicate<T>): T {
 		return this.#getAny(true, undefined, query);
 	}
 
-	firstOrDefault<V = undefined>(query?: Predictate<T>, def?: V) {
+	firstOrDefault<V = undefined>(query?: Predicate<T>, def?: V) {
 		return this.#getAny(false, def, query);
 	}
 
-	last(query?: Predictate<T>) {
+	last(query?: Predicate<T>) {
 		return this.#getAny(true, undefined, query);
 	}
 
-	lastOrDefault<V = undefined>(query?: Predictate<T>, def?: V) {
+	lastOrDefault<V = undefined>(query?: Predicate<T>, def?: V) {
 		return this.#getAny(false, def, query);
 	}
 
-	any(predictate?: Predictate<T>): boolean {
-		return predictate == null ? this.#count > 0 : predictate(this.#value);
+	any(predicate?: Predicate<T>): boolean {
+		return predicate == null ? this.#count > 0 : predicate(this.#value);
 	}
 
-	all(predictate: Predictate<T>): boolean {
-		return this.#count === 0 || predictate(this.#value);
+	all(predicate: Predicate<T>): boolean {
+		return this.#count === 0 || predicate(this.#value);
 	}
 
 	toArray(): T[] {

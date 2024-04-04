@@ -1,6 +1,6 @@
 import { RangeIterator } from "../iterators.js";
 import { LinqInternal } from "../linq.js";
-import { compileQuery, errNoElements, Predictate, SelectType } from "../util.js";
+import { compileQuery, errNoElements, Predicate, SelectType } from "../util.js";
 
 /** @internal */
 export class LinqRange extends LinqInternal<number> {
@@ -59,7 +59,7 @@ export class LinqRange extends LinqInternal<number> {
 		return max;
 	}
 
-	first(query?: Predictate<number>) {
+	first(query?: Predicate<number>) {
 		let v = this.firstOrDefault(query);
 		if (v == null)
 			throw errNoElements();
@@ -67,7 +67,7 @@ export class LinqRange extends LinqInternal<number> {
 		return v;
 	}
 
-	firstOrDefault<V = undefined>(query?: Predictate<number>, def?: V) {
+	firstOrDefault<V = undefined>(query?: Predicate<number>, def?: V) {
 		if (this.#count === 0)
 			throw errNoElements();
 
@@ -82,7 +82,7 @@ export class LinqRange extends LinqInternal<number> {
 		return def;
 	}
 
-	last(query?: Predictate<number>) {
+	last(query?: Predicate<number>) {
 		let v = this.lastOrDefault(query);
 		if (v == null)
 			throw errNoElements();
@@ -90,7 +90,7 @@ export class LinqRange extends LinqInternal<number> {
 		return v;
 	}
 
-	lastOrDefault<V = undefined>(query?: Predictate<number>, def?: V) {
+	lastOrDefault<V = undefined>(query?: Predicate<number>, def?: V) {
 		if (this.#count === 0)
 			throw errNoElements();
 
@@ -105,22 +105,22 @@ export class LinqRange extends LinqInternal<number> {
 		return def;
 	}
 
-	any(predictate?: Predictate<number>): boolean {
-		if (predictate == null)
+	any(predicate?: Predicate<number>): boolean {
+		if (predicate == null)
 			return this.#count > 0;
 
 		let v = this.#start;
 		for (let i = 0; i < this.#count; i++, v += this.#step)
-			if (predictate(v))
+			if (predicate(v))
 				return true;
 
 		return false;
 	}
 
-	all(predictate: Predictate<number>): boolean {
+	all(predicate: Predicate<number>): boolean {
 		let v = this.#start;
 		for (let i = 0; i < this.#count; i++, v += this.#step)
-			if (!predictate(v))
+			if (!predicate(v))
 				return false;
 
 		return true;

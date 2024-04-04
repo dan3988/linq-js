@@ -1,7 +1,7 @@
 import { Linq, LinqCommon } from '../linq.js';
-import { defineCommonFunction, errNoElements, Predictate } from "../util.js";
+import { defineCommonFunction, errNoElements, Predicate } from "../util.js";
 
-function firstImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean, def: V) {
+function firstImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Predicate, required: boolean, def: V) {
 	return linq.iterate<void, T | V>(undefined, ({ done, value }) => {
 		if (done) {
 			if (required)
@@ -14,7 +14,7 @@ function firstImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Pre
 	});
 }
 
-function lastImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Predictate, required: boolean, def: V) {
+function lastImpl<T, V = undefined>(linq: LinqCommon<T>, query: undefined | Predicate, required: boolean, def: V) {
 	let found = false;
 	let last: T | V = def;
 
